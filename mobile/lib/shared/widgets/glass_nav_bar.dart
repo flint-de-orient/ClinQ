@@ -45,14 +45,31 @@ class GlassNavBar extends StatelessWidget {
       ),
       child: Container(
         height: 68,
+        // The same specular pass the cards get, so the bar is made of the same
+        // material rather than merely the same colour.
+        foregroundDecoration: GlassSurface.sheen(
+          radius: AppSpacing.sheetRadius + 8,
+        ),
         decoration: BoxDecoration(
-          image: GlassSurface.grain,
-          // Translucent, not transparent: pure glass leaves the labels
-          // fighting whatever scrolls under them.
-          color: isDark ? const Color(0xFF10161F) : Colors.white,
+          // Translucent, not transparent — pure glass leaves the labels
+          // fighting whatever is behind them — and graded rather than flat so
+          // the pill reads as a slab with thickness.
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              (isDark ? const Color(0xFF10161F) : Colors.white).withValues(
+                alpha: isDark ? 0.72 : 0.86,
+              ),
+              (isDark ? const Color(0xFF10161F) : Colors.white).withValues(
+                alpha: isDark ? 0.58 : 0.70,
+              ),
+            ],
+          ),
           borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
           border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.55),
+            color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.85),
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(

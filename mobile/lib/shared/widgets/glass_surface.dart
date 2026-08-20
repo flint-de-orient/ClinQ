@@ -24,51 +24,46 @@ import '../../core/theme/app_spacing.dart';
 /// hairline. A translucent panel's edge is its weakest feature, and an edge you
 /// cannot find is the accessibility failure this style is known for.
 ///
-/// Every glass surface also carries a grain. Flat translucency reads as plastic
-/// — real frosted glass scatters, and the eye knows the difference even when it
-/// cannot name it. See [GlassSurface.grain] for why the opacity is what it is;
-/// it was set by compositing the texture over the real card colour at four
-/// levels and looking, not by picking a number that sounded subtle.
+/// There is deliberately no grain. Frosted glass scatters and wants texture;
+/// Liquid Glass does not — it is optically clean, and its whole character comes
+/// from how it handles light at the edges rather than across the face. A speckle
+/// over it reads as a dirty screen, which is precisely how it looked when it was
+/// tried here.
+///
+/// What the material actually needs is three things, and all three are edges:
+/// a body that graduates so the slab has thickness, a bright specular line
+/// where light catches the top rim, and a shade along the bottom where the slab
+/// is deepest.
 class GlassSurface {
   const GlassSurface._();
 
-  /// The grain. One AssetImage, so Flutter caches a single decoded copy
-  /// however many surfaces ask for it.
+  /// A translucent card, grained, with the thickness of a slab.
   ///
-  /// Opacity lives here and nowhere else. The first version set it to 3% on a
-  /// texture whose own alpha already topped out at 28%, and the two multiplied
-  /// to about 0.8% — completely invisible. The texture is fully opaque now, so
-  /// this number is the whole of it.
-  ///
-  /// 0.06, set on the device rather than in a preview. A flat composite
-  /// suggested 0.08 and the fine tile argued for more, so 0.10 shipped — and
-  /// on a real screen it read as a dirty display rather than as frosted glass,
-  /// which is the exact failure this was meant to avoid. Grain should be felt
-  /// and not seen; at 0.06 it is.
-  static const DecorationImage grain = DecorationImage(
-    image: AssetImage('assets/textures/noise.png'),
-    repeat: ImageRepeat.repeat,
-    opacity: 0.06,
-    filterQuality: FilterQuality.none,
-  );
-
-  /// A translucent card, grained.
+  /// The fill is a gradient rather than one flat alpha, and that is what makes
+  /// it read as glass with depth instead of a sheet of tracing paper: light
+  /// enters at the top, travels through the body, and the underside sits
+  /// fractionally darker where the slab is thickest.
   static BoxDecoration card(
     BuildContext context, {
     double? radius,
     double opacity = 0.66,
   }) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final tint = dark ? const Color(0xFF121A26) : Colors.white;
     return BoxDecoration(
-      image: grain,
-      color: (dark ? const Color(0xFF121A26) : Colors.white).withValues(
-        alpha: dark ? 0.52 : opacity,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          tint.withValues(alpha: dark ? 0.60 : (opacity + 0.14).clamp(0, 1)),
+          tint.withValues(alpha: dark ? 0.50 : opacity),
+          tint.withValues(alpha: dark ? 0.44 : (opacity - 0.10).clamp(0, 1)),
+        ],
+        stops: const [0, 0.55, 1],
       ),
       borderRadius: BorderRadius.circular(radius ?? AppSpacing.sheetRadius),
       border: Border.all(
-        color: (dark ? Colors.white : Colors.white).withValues(
-          alpha: dark ? 0.10 : 0.75,
-        ),
+        color: Colors.white.withValues(alpha: dark ? 0.14 : 0.85),
         width: 1.2,
       ),
       boxShadow: [
@@ -81,14 +76,46 @@ class GlassSurface {
     );
   }
 
+  /// The specular pass: a rim of light on the top edge, a shade on the bottom.
+  ///
+  /// Painted as a foreground so it sits *on* the glass rather than under the
+  /// content — which is the whole illusion, since real glass catches light on
+  /// its surface, not behind whatever is printed on it.
+  ///
+  /// Both ends are tight. The highlight is gone by 7% of the height and the
+  /// shade does not start until 93%, so the middle of the card — where all the
+  /// text is — is untouched. A sheen that reaches the text washes it, and this
+  /// is a clinical app before it is a pretty one.
+  static BoxDecoration sheen({double? radius}) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radius ?? AppSpacing.sheetRadius),
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Colors.white.withValues(alpha: 0.75),
+        Colors.white.withValues(alpha: 0.14),
+        Colors.white.withValues(alpha: 0),
+        Colors.white.withValues(alpha: 0),
+        const Color(0xFF0B1B3A).withValues(alpha: 0.05),
+      ],
+      stops: const [0, 0.035, 0.07, 0.93, 1],
+    ),
+  );
+
   /// The well an icon sits in, on glass.
   static BoxDecoration well(BuildContext context, {Color? tint}) {
     final base = tint ?? AppColors.primary;
     return BoxDecoration(
       shape: BoxShape.circle,
-      image: grain,
-      color: base.withValues(alpha: 0.12),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.55),
+          base.withValues(alpha: 0.16),
+        ],
+      ),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.70)),
     );
   }
 }
@@ -177,6 +204,7 @@ class GlassCard extends StatelessWidget {
     Widget box = Container(
       width: double.infinity,
       decoration: GlassSurface.card(context, radius: r),
+      foregroundDecoration: GlassSurface.sheen(radius: r),
       padding: padding,
       child: child,
     );

@@ -432,6 +432,7 @@ class _FactCard extends StatelessWidget {
       width: wide ? double.infinity : null,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: GlassSurface.card(context, radius: 12),
+      foregroundDecoration: GlassSurface.sheen(radius: 12),
       child:
           wide
               ? Row(
@@ -560,6 +561,7 @@ class _DietPlanCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: GlassSurface.card(context, radius: 20),
+                      foregroundDecoration: GlassSurface.sheen(radius: 20),
                       child: Text(
                         'Sent ${DateFormat('d MMM').format(plan.sharedAt!)}',
                         style: TextStyle(
@@ -643,6 +645,7 @@ class _MealCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: GlassSurface.card(context, radius: 12),
+      foregroundDecoration: GlassSurface.sheen(radius: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -807,6 +810,7 @@ class _HomeCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: GlassSurface.card(context),
+      foregroundDecoration: GlassSurface.sheen(),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
     );
@@ -928,6 +932,7 @@ class _Greeting extends ConsumerWidget {
         vertical: AppSpacing.sm + AppSpacing.xs,
       ),
       decoration: GlassSurface.card(context),
+      foregroundDecoration: GlassSurface.sheen(),
       child: Row(
         children: [
           GestureDetector(
@@ -1150,6 +1155,7 @@ class _HealthOverview extends ConsumerWidget {
         vertical: AppSpacing.lg,
       ),
       decoration: GlassSurface.card(context),
+      foregroundDecoration: GlassSurface.sheen(),
       child: Row(
         children: [
           for (final it in items) ...[
@@ -1241,6 +1247,7 @@ class _QuickAccess extends StatelessWidget {
         vertical: AppSpacing.lg,
       ),
       decoration: GlassSurface.card(context),
+      foregroundDecoration: GlassSurface.sheen(),
       child: Row(
         children: [
           for (final it in items)
