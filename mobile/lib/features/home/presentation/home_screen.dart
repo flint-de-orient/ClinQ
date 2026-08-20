@@ -11,7 +11,6 @@ import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
 import '../../../shared/widgets/status_avatar.dart';
-import '../../../shared/widgets/user_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../glucose/domain/glucose_trends.dart';
 import '../../glucose/presentation/glucose_providers.dart';
@@ -98,12 +97,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final async = loaded != null ? AsyncData<CareSummary>(loaded) : asyncCare;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      backgroundColor: scheme.surfaceContainer,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            const _BrandHeader(),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async => _refresh(),
@@ -163,8 +161,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 const SizedBox(height: AppSpacing.lg),
                                 _FocalCard(care: care),
                                 const SizedBox(height: AppSpacing.md),
+                                const _SectionLabel('Health overview'),
+                                const SizedBox(height: AppSpacing.sm),
                                 _HealthOverview(care: care),
-                                const SizedBox(height: AppSpacing.md),
+                                const SizedBox(height: AppSpacing.lg),
+                                const _SectionLabel('Quick access'),
+                                const SizedBox(height: AppSpacing.sm),
                                 const _QuickAccess(),
                                 const SizedBox(height: AppSpacing.lg),
 
@@ -216,66 +218,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _BrandHeader extends ConsumerWidget {
-  const _BrandHeader();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
-    final user = ref.watch(authControllerProvider).user;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Image.asset(
-            'assets/brand/medpin_emblem.png',
-            height: 30,
-            errorBuilder:
-                (_, _, _) => Icon(
-                  Icons.favorite_rounded,
-                  size: 26,
-                  color: AppColors.accentOn(context),
-                ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'MedPin',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: AppColors.accentOn(context),
-            ),
-          ),
-          const Spacer(),
-          // Tapping it opens Profile, the same as the doctor's header — the
-          // photo is where people expect their own account to live.
-          GestureDetector(
-            onTap: () => context.go('/profile'),
-            child: UserAvatar(
-              name: user?.name ?? '',
-              avatarUrl: user?.avatarUrl,
-              accent: AppColors.accentOn(context),
-              size: 38,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1818,13 +1760,16 @@ class _Greeting extends ConsumerWidget {
 
     return Row(
       children: [
-        StatusAvatar(
-          name: name,
-          avatarUrl: user?.avatarUrl,
-          role: CareRole.patient,
-          gender: user?.gender,
-          mood: mood,
-          size: 52,
+        GestureDetector(
+          onTap: () => context.go('/profile'),
+          child: StatusAvatar(
+            name: name,
+            avatarUrl: user?.avatarUrl,
+            role: CareRole.patient,
+            gender: user?.gender,
+            mood: mood,
+            size: 52,
+          ),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
@@ -1853,6 +1798,12 @@ class _Greeting extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+        // Where the brand bar's bell and avatar used to be. One row now does
+        // the job both were doing, and the page starts 66px higher.
+        _RoundIconButton(
+          icon: Icons.notifications_none_rounded,
+          onTap: () => context.push('/profile/notifications'),
         ),
       ],
     );
@@ -2151,6 +2102,65 @@ class _QuickAccess extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The small heading above a card. The reference labels each block, and it is
+/// what lets the eye skip to the one it wants instead of reading all of them.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 4),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
+      ),
+    ),
+  );
+}
+
+/// A quiet circular icon button, sized for a thumb.
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: AppSpacing.minTapTarget,
+          height: AppSpacing.minTapTarget,
+          child: Center(
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: scheme.surfaceContainerLowest,
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.7),
+                ),
+              ),
+              child: Icon(icon, size: 21, color: scheme.onSurface),
+            ),
+          ),
+        ),
       ),
     );
   }
