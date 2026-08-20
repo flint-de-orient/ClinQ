@@ -1,25 +1,22 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 
-/// A floating, frosted navigation bar.
+/// A navigation bar that looks like it floats and behaves like it does not.
 ///
-/// This is the one place in the app that blurs, and the restraint is
-/// deliberate. `BackdropFilter` forces a saveLayer and a framebuffer read-back
-/// on every frame it is on screen — it is the commonest cause of jank in
-/// Flutter, and worst on the 32-bit handsets this clinic's patients carry and
-/// that the release build deliberately still supports. One blur, pinned, over
-/// content that scrolls beneath it, is a cost worth paying because you can
-/// actually see it working. A dozen frosted cards would cost twelve times as
-/// much to look like slightly grey rectangles.
+/// It was briefly a real frosted bar over `extendBody`, and that was a mistake
+/// worth writing down. Once content runs underneath, every bottom-anchored
+/// thing in every shell becomes a special case: four FloatingActionButtons
+/// went behind it, and — worse — the chat composers in two of the five patient
+/// tabs, so a text field a patient was meant to type into sat under the bar.
+/// A navigation bar is not the place to spend that.
 ///
-/// Nothing that has to be read sits on the blur except the tab labels, which
-/// are short, bold and high-contrast. Body text over a variable ground is the
-/// part of this style that hurts people with retinopathy, and there is none
-/// here.
+/// So: side margins, a full radius and a soft shadow give the floating
+/// appearance, the Scaffold reserves the whole height so nothing can hide
+/// behind it, and the BackdropFilter is gone — with the body ending above the
+/// bar there was nothing left to blur, and it was costing a saveLayer per
+/// frame to prove it.
 class GlassNavBar extends StatelessWidget {
   const GlassNavBar({
     super.key,
@@ -31,15 +28,6 @@ class GlassNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onSelected;
   final List<GlassNavItem> items;
-
-  /// How much room the floating bar takes at the bottom of a screen.
-  ///
-  /// The bar floats, so `extendBody` lets content run underneath it — which is
-  /// the point, and also the trap: anything anchored to the bottom of a screen
-  /// inside a shell ends up behind it. A FloatingActionButton is exactly that,
-  /// and the Medicines tab's scan button disappeared under the bar the moment
-  /// this shipped. Screens reserve this instead of each inventing a number.
-  static const double clearance = 96;
 
   @override
   Widget build(BuildContext context) {
@@ -54,43 +42,35 @@ class GlassNavBar extends StatelessWidget {
         AppSpacing.md,
         AppSpacing.md + MediaQuery.viewPaddingOf(context).bottom * 0.35,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Container(
-            height: 68,
-            decoration: BoxDecoration(
-              // Translucent, not transparent: pure glass leaves the labels
-              // fighting whatever scrolls under them.
-              color: (isDark ? Colors.black : Colors.white).withValues(
-                alpha: isDark ? 0.55 : 0.72,
-              ),
-              borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.55),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                for (var i = 0; i < items.length; i++)
-                  Expanded(
-                    child: _Tab(
-                      item: items[i],
-                      selected: i == currentIndex,
-                      onTap: () => onSelected(i),
-                    ),
-                  ),
-              ],
-            ),
+      child: Container(
+        height: 68,
+        decoration: BoxDecoration(
+          // Translucent, not transparent: pure glass leaves the labels
+          // fighting whatever scrolls under them.
+          color: isDark ? const Color(0xFF10161F) : Colors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.55),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.14),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            for (var i = 0; i < items.length; i++)
+              Expanded(
+                child: _Tab(
+                  item: items[i],
+                  selected: i == currentIndex,
+                  onTap: () => onSelected(i),
+                ),
+              ),
+          ],
         ),
       ),
     );

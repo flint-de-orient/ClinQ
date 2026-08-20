@@ -22,16 +22,14 @@ class ClinicianShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Content passes under the bar, which is what gives the frost something
-      // to work on.
-      extendBody: true,
       body: navigationShell,
       bottomNavigationBar: GlassNavBar(
         currentIndex: navigationShell.currentIndex,
-        onSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onSelected:
+            (index) => navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            ),
         // Labels kept to single short words so none wrap on a narrow phone.
         items: const [
           GlassNavItem(

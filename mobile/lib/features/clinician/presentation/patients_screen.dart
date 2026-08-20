@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/glass_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -122,9 +121,6 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen>
     return Scaffold(
       backgroundColor: scheme.surface,
       // Desk intake: register a walk-in patient without leaving the directory.
-      // Lifted clear of the floating nav bar, which content passes
-      // under by design.
-      floatingActionButtonLocation: _liftedFab,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/clinician/patients/new'),
         backgroundColor: AppColors.primary,
@@ -775,20 +771,4 @@ class _Chip extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Bottom-right, raised above the floating navigation bar.
-final FloatingActionButtonLocation _liftedFab = const _OffsetFabLocation(
-  FloatingActionButtonLocation.endFloat,
-);
-
-class _OffsetFabLocation extends StandardFabLocation
-    with FabEndOffsetX, FabFloatOffsetY {
-  const _OffsetFabLocation(this.base);
-
-  final FloatingActionButtonLocation base;
-
-  @override
-  double getOffsetY(ScaffoldPrelayoutGeometry g, double adjustment) =>
-      super.getOffsetY(g, adjustment) - GlassNavBar.clearance;
 }

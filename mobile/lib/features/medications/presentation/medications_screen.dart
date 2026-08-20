@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/glass_nav_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -161,9 +160,6 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      // Lifted clear of the floating nav bar, which content passes
-      // under by design.
-      floatingActionButtonLocation: _liftedFab,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _onScan(context, ref),
         backgroundColor: AppColors.primary,
@@ -851,20 +847,4 @@ class _DoseHero extends StatelessWidget {
               : null,
     );
   }
-}
-
-/// Bottom-right, raised above the floating navigation bar.
-final FloatingActionButtonLocation _liftedFab = const _OffsetFabLocation(
-  FloatingActionButtonLocation.endFloat,
-);
-
-class _OffsetFabLocation extends StandardFabLocation
-    with FabEndOffsetX, FabFloatOffsetY {
-  const _OffsetFabLocation(this.base);
-
-  final FloatingActionButtonLocation base;
-
-  @override
-  double getOffsetY(ScaffoldPrelayoutGeometry g, double adjustment) =>
-      super.getOffsetY(g, adjustment) - GlassNavBar.clearance;
 }

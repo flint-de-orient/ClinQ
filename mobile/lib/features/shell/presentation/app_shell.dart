@@ -8,9 +8,10 @@ import '../../../shared/widgets/glass_nav_bar.dart';
 /// [StatefulNavigationShell] so each branch keeps its own navigation stack and
 /// scroll position when switching tabs.
 ///
-/// The bar floats and is frosted, which only works if content passes beneath
-/// it — hence `extendBody`. Every screen in these branches already reserves
-/// bottom padding for a bar, so nothing ends up trapped underneath.
+/// The bar looks like it floats but occupies real layout space, so nothing —
+/// a composer, a floating button, the last row of a list — can end up
+/// underneath it. See [GlassNavBar] for why that matters more than the frost
+/// did.
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -20,7 +21,6 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      extendBody: true,
       body: navigationShell,
       bottomNavigationBar: GlassNavBar(
         currentIndex: navigationShell.currentIndex,

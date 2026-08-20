@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/glass_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -41,9 +40,6 @@ class FoodLogScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Meal history')),
-      // Lifted clear of the floating nav bar, which content passes
-      // under by design.
-      floatingActionButtonLocation: _liftedFab,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _logMeal(context, ref),
         backgroundColor: AppColors.primary,
@@ -515,20 +511,4 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
           ),
     );
   }
-}
-
-/// Bottom-right, raised above the floating navigation bar.
-final FloatingActionButtonLocation _liftedFab = const _OffsetFabLocation(
-  FloatingActionButtonLocation.endFloat,
-);
-
-class _OffsetFabLocation extends StandardFabLocation
-    with FabEndOffsetX, FabFloatOffsetY {
-  const _OffsetFabLocation(this.base);
-
-  final FloatingActionButtonLocation base;
-
-  @override
-  double getOffsetY(ScaffoldPrelayoutGeometry g, double adjustment) =>
-      super.getOffsetY(g, adjustment) - GlassNavBar.clearance;
 }

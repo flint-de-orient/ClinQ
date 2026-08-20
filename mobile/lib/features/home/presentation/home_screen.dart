@@ -169,9 +169,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 const SizedBox(height: AppSpacing.sm),
                                 const _QuickAccess(),
                                 const SizedBox(height: AppSpacing.lg),
+                                const _SectionLabel('Your details'),
+                                const SizedBox(height: AppSpacing.sm),
+                                // Condition, measurements and the review
+                                // interval sat at the very bottom, under the
+                                // diet plan and the meal rail. They are what a
+                                // patient checks when they want to know what
+                                // the clinic has on file, and burying them
+                                // below two scrolls of content answered that
+                                // question last.
+                                _FactGrid(care: care),
+                                const SizedBox(height: AppSpacing.lg),
 
                                 const SizedBox(height: AppSpacing.md),
                                 const _GlucoseCard(),
+
+                                if (care.dietPlan != null) ...[
+                                  const SizedBox(height: AppSpacing.md),
+                                  _DietPlanCard(plan: care.dietPlan!),
+                                ],
 
                                 // Meals, not lab reports. A result is
                                 // something a patient reads once and cannot
@@ -183,23 +199,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 const SizedBox(height: AppSpacing.md),
                                 _FoodLogs(items: care.recentFoodLogs),
 
-                                if (care.dietPlan != null) ...[
-                                  const SizedBox(height: AppSpacing.md),
-                                  _DietPlanCard(plan: care.dietPlan!),
-                                ],
-
                                 if (care.profile.allergies.isNotEmpty) ...[
                                   const SizedBox(height: AppSpacing.md),
                                   _Allergies(items: care.profile.allergies),
                                 ],
-
-                                // Last, deliberately. Condition, measurements
-                                // and the like are reference material — real,
-                                // and not what anyone opens the app to find.
-                                // Everything above it is either today's care
-                                // or something to look at.
-                                const SizedBox(height: AppSpacing.md),
-                                _FactGrid(care: care),
 
                                 // Each section now carries its own heading inside its
                                 // card, so the spacing between them is uniform and the
@@ -334,7 +337,6 @@ class _FactGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = care.profile;
-    final hba1c = care.latestHba1c;
     // Facts, not widgets: the grid decides afterwards whether each one is drawn
     // as a square tile or, when it is the odd one out at the end, as a wide bar.
     final facts = <_Fact>[
@@ -349,21 +351,13 @@ class _FactGrid extends ConsumerWidget {
       // value wrapped onto a second line, which made that row taller than the
       // one beside it and broke the grid — and three numbers separated by
       // slashes is a thing to decode rather than read.
+      if (p.bmi != null) _Fact('BMI', '${p.bmi}'),
       if (p.weightKg != null) _Fact('Weight', '${p.weightKg} kg'),
       if (p.heightCm != null) _Fact('Height', '${p.heightCm} cm'),
       if (p.reviewLabel != null) _Fact('Food-log review', p.reviewLabel!),
       // The newest reading, beside the numbers it belongs with. The chart below
       // shows the shape of the last month; this answers the simpler question a
       // patient asks first — where am I right now.
-      if (hba1c != null)
-        _Fact(
-          'Last HbA1c',
-          '${hba1c.percentage}%${hba1c.isHigh ? ' (High)' : ''}',
-          // Coloured only when it is above this patient's own target — a red
-          // number they cannot act on tonight is alarm without information, so
-          // it stays plain when the result is where the doctor wants it.
-          color: hba1c.isHigh ? AppColors.danger : null,
-        ),
     ];
 
     if (facts.isEmpty) return const SizedBox.shrink();
@@ -399,11 +393,10 @@ class _FactGrid extends ConsumerWidget {
 /// One fact on the grid: what it is, what it says, and whether that value is
 /// outside the target the clinic set.
 class _Fact {
-  const _Fact(this.label, this.value, {this.color});
+  const _Fact(this.label, this.value);
 
   final String label;
   final String value;
-  final Color? color;
 }
 
 class _FactCard extends StatelessWidget {
@@ -429,7 +422,7 @@ class _FactCard extends StatelessWidget {
         fontSize: 16,
         fontWeight: FontWeight.w700,
         height: 1.3,
-        color: fact.color ?? scheme.onSurface,
+        color: scheme.onSurface,
       ),
     );
 
@@ -1134,6 +1127,7 @@ class _HealthOverview extends ConsumerWidget {
     final trends = ref.watch(glucoseTrendsProvider).valueOrNull;
     final latest = (trends?.series ?? const <GlucoseTrendPoint>[]).lastOrNull;
     final bp = care.profile.bloodPressure;
+    final hba1c = care.latestHba1c;
 
     final items = <({IconData icon, Color tone, String value, String label})>[
       (
@@ -1149,10 +1143,16 @@ class _HealthOverview extends ConsumerWidget {
         label: 'Blood pressure',
       ),
       (
-        icon: Icons.monitor_weight_rounded,
-        tone: AppColors.success,
-        value: care.profile.bmi == null ? '—' : '${care.profile.bmi}',
-        label: 'BMI',
+        // The headline number in diabetes, and it was the very last thing on
+        // the screen — below height and weight. BMI takes its place in the
+        // fact grid, where a figure nobody checks daily belongs.
+        icon: Icons.science_rounded,
+        tone:
+            hba1c == null
+                ? AppColors.success
+                : (hba1c.isHigh ? AppColors.danger : AppColors.success),
+        value: hba1c == null ? '—' : '${hba1c.percentage}%',
+        label: 'HbA1c',
       ),
     ];
 
