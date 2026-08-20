@@ -96,55 +96,56 @@ class _ClinicianDashboardScreenState
                       ? const Center(child: CircularProgressIndicator())
                       : RefreshIndicator(
                         onRefresh: () async => _refresh(),
-                        // A CustomScrollView so the band can be a pinned,
-                        // collapsing sliver. Everything below it stays one
-                        // padded column — the list was never the interesting
-                        // part and turning it into slivers would buy nothing.
-                        child: CustomScrollView(
-                          slivers: [
+                        // A plain list. This was briefly a CustomScrollView
+                        // with the band as a collapsing sliver, which was a
+                        // mistake worth recording: FlexibleSpaceBar draws its
+                        // title at *every* extent, not only when collapsed, so
+                        // the compact line rendered on top of the expanded
+                        // band, and CollapseMode.parallax scales the
+                        // background — which pushed the avatar off the right
+                        // edge. Collapsing this header needs a
+                        // SliverPersistentHeader with its own layout, not
+                        // FlexibleSpaceBar.
+                        child: ListView(
+                          children: [
                             if (analytics != null)
                               _ControlHero(analytics: analytics),
-                            SliverPadding(
+                            Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 AppSpacing.md,
                                 AppSpacing.md,
                                 AppSpacing.md,
                                 AppSpacing.xl,
                               ),
-                              sliver: SliverToBoxAdapter(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    if (overview != null) ...[
-                                      const SizedBox(height: AppSpacing.md),
-                                      _HeadlineRow(overview: overview),
-                                      const SizedBox(height: AppSpacing.md),
-                                      // "Active today" is gone. It counted appointments
-                                      // booked through the app, and this clinic does not
-                                      // book that way — so it read 0 every day and cost a
-                                      // card's worth of the screen saying nothing.
-                                      _AlertStrip(overview: overview),
-                                      if (analytics != null) ...[
-                                        const SizedBox(height: AppSpacing.sm),
-                                        _MonitoringStrip(analytics: analytics),
-                                      ],
-                                      const SizedBox(height: AppSpacing.lg),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (overview != null) ...[
+                                    const SizedBox(height: AppSpacing.md),
+                                    _HeadlineRow(overview: overview),
+                                    const SizedBox(height: AppSpacing.md),
+                                    // "Active today" is gone. It counted appointments
+                                    // booked through the app, and this clinic does not
+                                    // book that way — so it read 0 every day and cost a
+                                    // card's worth of the screen saying nothing.
+                                    _AlertStrip(overview: overview),
+                                    if (analytics != null) ...[
+                                      const SizedBox(height: AppSpacing.sm),
+                                      _MonitoringStrip(analytics: analytics),
                                     ],
-                                    if (attention.isNotEmpty) ...[
-                                      AttentionListCard(patients: attention),
-                                      const SizedBox(height: AppSpacing.lg),
-                                    ],
-                                    _TriageQueue(alerts: alerts),
-                                    if (overview != null &&
-                                        overview
-                                            .nutritionReviews
-                                            .isNotEmpty) ...[
-                                      const SizedBox(height: AppSpacing.lg),
-                                      _NutritionReviews(overview: overview),
-                                    ],
+                                    const SizedBox(height: AppSpacing.lg),
                                   ],
-                                ),
+                                  if (attention.isNotEmpty) ...[
+                                    AttentionListCard(patients: attention),
+                                    const SizedBox(height: AppSpacing.lg),
+                                  ],
+                                  _TriageQueue(alerts: alerts),
+                                  if (overview != null &&
+                                      overview.nutritionReviews.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.lg),
+                                    _NutritionReviews(overview: overview),
+                                  ],
+                                ],
                               ),
                             ),
                           ],
@@ -1127,8 +1128,7 @@ class _ControlHero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final (pct, delta) = _control(analytics.controlTrend);
-    // A sliver, so the empty case has to be one too.
-    if (pct == 0) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (pct == 0) return const SizedBox.shrink();
 
     final rising = (delta ?? 0) >= 0;
     final pts =
@@ -1137,11 +1137,9 @@ class _ControlHero extends ConsumerWidget {
             .map((p) => p.inRange / p.total * 100)
             .toList();
 
-    return SliverHeroBand(
+    return HeroBand(
       eyebrow: DateFormat('EEEE, d MMMM').format(DateTime.now()),
       title: 'Your clinic',
-      // What the band becomes once it has been read and scrolled past.
-      compact: 'Your clinic  •  $pct% in range',
       // The face answers "does my clinic need me right now" before the number
       // has been read. Driven by open alerts and monitoring, never by scroll.
       trailing: CharacterAvatar(
