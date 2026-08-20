@@ -11,7 +11,7 @@ import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/glass_chip.dart';
 import '../../../shared/widgets/mood_avatar.dart';
-import '../../../shared/widgets/soft_surface.dart';
+import '../../../shared/widgets/glass_surface.dart';
 import '../../../shared/widgets/status_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../glucose/domain/glucose_trends.dart';
@@ -90,7 +90,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final asyncCare = ref.watch(careSummaryProvider);
     // Read the last value during a background refresh: .when would drop the
     // whole screen to a spinner every thirty seconds.
@@ -98,132 +97,137 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final async = loaded != null ? AsyncData<CareSummary>(loaded) : asyncCare;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () async => _refresh(),
-                child: async.when(
-                  loading:
-                      () => const Center(child: CircularProgressIndicator()),
-                  error:
-                      (_, _) => ListView(
-                        children: [
-                          const SizedBox(height: 140),
-                          const Center(
-                            child: Text('Could not load your care summary'),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Center(
-                            child: OutlinedButton(
-                              onPressed:
-                                  () => ref.invalidate(careSummaryProvider),
-                              child: const Text('Retry'),
+      // Transparent: GlassGround paints the colour, and the cards above are
+      // translucent so they show it. A flat scaffold colour here would put an
+      // opaque layer between the two and undo the whole effect.
+      backgroundColor: Colors.transparent,
+      body: GlassGround(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async => _refresh(),
+                  child: async.when(
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error:
+                        (_, _) => ListView(
+                          children: [
+                            const SizedBox(height: 140),
+                            const Center(
+                              child: Text('Could not load your care summary'),
                             ),
-                          ),
-                        ],
-                      ),
-                  // Zero padding on the list so the hero can run to both
-                  // edges; everything after it is padded individually. A
-                  // colour that stops short of the screen edge reads as a
-                  // card, not as the ground the screen is standing on.
-                  data:
-                      (care) => ListView(
-                        padding: const EdgeInsets.only(bottom: 110),
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.md,
-                              AppSpacing.md,
-                              AppSpacing.md,
-                              0,
+                            const SizedBox(height: AppSpacing.md),
+                            Center(
+                              child: OutlinedButton(
+                                onPressed:
+                                    () => ref.invalidate(careSummaryProvider),
+                                child: const Text('Retry'),
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _Greeting(
-                                  mood: switch (ref
-                                      .watch(glucoseTrendsProvider)
-                                      .valueOrNull
-                                      ?.series
-                                      .lastOrNull
-                                      ?.flag) {
-                                    'severe_low' ||
-                                    'low' ||
-                                    'severe_high' ||
-                                    'high' => Mood.concerned,
-                                    null => Mood.watchful,
-                                    _ => Mood.calm,
-                                  },
-                                ),
-                                const SizedBox(height: AppSpacing.lg),
-                                _FocalCard(care: care),
-                                const SizedBox(height: AppSpacing.md),
-                                const _SectionLabel('Health overview'),
-                                const SizedBox(height: AppSpacing.sm),
-                                _HealthOverview(care: care),
-                                const SizedBox(height: AppSpacing.lg),
-                                const _SectionLabel('Quick access'),
-                                const SizedBox(height: AppSpacing.sm),
-                                const _QuickAccess(),
-                                const SizedBox(height: AppSpacing.lg),
-                                const _SectionLabel('Your details'),
-                                const SizedBox(height: AppSpacing.sm),
-                                // Condition, measurements and the review
-                                // interval sat at the very bottom, under the
-                                // diet plan and the meal rail. They are what a
-                                // patient checks when they want to know what
-                                // the clinic has on file, and burying them
-                                // below two scrolls of content answered that
-                                // question last.
-                                _FactGrid(care: care),
-                                const SizedBox(height: AppSpacing.lg),
-
-                                const SizedBox(height: AppSpacing.md),
-                                const _GlucoseCard(),
-
-                                if (care.dietPlan != null) ...[
+                          ],
+                        ),
+                    // Zero padding on the list so the hero can run to both
+                    // edges; everything after it is padded individually. A
+                    // colour that stops short of the screen edge reads as a
+                    // card, not as the ground the screen is standing on.
+                    data:
+                        (care) => ListView(
+                          padding: const EdgeInsets.only(bottom: 110),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.md,
+                                AppSpacing.md,
+                                AppSpacing.md,
+                                0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _Greeting(
+                                    mood: switch (ref
+                                        .watch(glucoseTrendsProvider)
+                                        .valueOrNull
+                                        ?.series
+                                        .lastOrNull
+                                        ?.flag) {
+                                      'severe_low' ||
+                                      'low' ||
+                                      'severe_high' ||
+                                      'high' => Mood.concerned,
+                                      null => Mood.watchful,
+                                      _ => Mood.calm,
+                                    },
+                                  ),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  _FocalCard(care: care),
                                   const SizedBox(height: AppSpacing.md),
-                                  _DietPlanCard(plan: care.dietPlan!),
-                                ],
+                                  const _SectionLabel('Health overview'),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  _HealthOverview(care: care),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  const _SectionLabel('Quick access'),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  const _QuickAccess(),
+                                  const SizedBox(height: AppSpacing.lg),
+                                  const _SectionLabel('Your details'),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  // Condition, measurements and the review
+                                  // interval sat at the very bottom, under the
+                                  // diet plan and the meal rail. They are what a
+                                  // patient checks when they want to know what
+                                  // the clinic has on file, and burying them
+                                  // below two scrolls of content answered that
+                                  // question last.
+                                  _FactGrid(care: care),
+                                  const SizedBox(height: AppSpacing.lg),
 
-                                // Meals, not lab reports. A result is
-                                // something a patient reads once and cannot
-                                // act on from here; a photograph of what they
-                                // ate yesterday is the most engaging thing in
-                                // the app and the one that gets them logging
-                                // the next one. Lab reports live in Profile,
-                                // one tap away from Quick access.
-                                const SizedBox(height: AppSpacing.md),
-                                _FoodLogs(items: care.recentFoodLogs),
-
-                                if (care.profile.allergies.isNotEmpty) ...[
                                   const SizedBox(height: AppSpacing.md),
-                                  _Allergies(items: care.profile.allergies),
-                                ],
+                                  const _GlucoseCard(),
 
-                                // Each section now carries its own heading inside its
-                                // card, so the spacing between them is uniform and the
-                                // page reads as one stack rather than headings and
-                                // content taking turns.
-                                // Medicines and food logs are gone from Home.
-                                // Each is an entire tab, each is one tap away
-                                // from Quick access, and the next dose is
-                                // already the subject of the focal card — so
-                                // showing the full list here was the same
-                                // content in a third place.
-                              ],
+                                  if (care.dietPlan != null) ...[
+                                    const SizedBox(height: AppSpacing.md),
+                                    _DietPlanCard(plan: care.dietPlan!),
+                                  ],
+
+                                  // Meals, not lab reports. A result is
+                                  // something a patient reads once and cannot
+                                  // act on from here; a photograph of what they
+                                  // ate yesterday is the most engaging thing in
+                                  // the app and the one that gets them logging
+                                  // the next one. Lab reports live in Profile,
+                                  // one tap away from Quick access.
+                                  const SizedBox(height: AppSpacing.md),
+                                  _FoodLogs(items: care.recentFoodLogs),
+
+                                  if (care.profile.allergies.isNotEmpty) ...[
+                                    const SizedBox(height: AppSpacing.md),
+                                    _Allergies(items: care.profile.allergies),
+                                  ],
+
+                                  // Each section now carries its own heading inside its
+                                  // card, so the spacing between them is uniform and the
+                                  // page reads as one stack rather than headings and
+                                  // content taking turns.
+                                  // Medicines and food logs are gone from Home.
+                                  // Each is an entire tab, each is one tap away
+                                  // from Quick access, and the next dose is
+                                  // already the subject of the focal card — so
+                                  // showing the full list here was the same
+                                  // content in a third place.
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -815,7 +819,7 @@ class _HomeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: SoftSurface.raised(context),
+      decoration: GlassSurface.card(context),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
     );
@@ -1148,7 +1152,7 @@ class _HealthOverview extends ConsumerWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.lg,
       ),
-      decoration: SoftSurface.raised(context),
+      decoration: GlassSurface.card(context),
       child: Row(
         children: [
           for (final it in items) ...[
@@ -1158,11 +1162,7 @@ class _HealthOverview extends ConsumerWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: SoftSurface.pressed(
-                      context,
-                      tint: it.tone,
-                      circle: true,
-                    ),
+                    decoration: GlassSurface.well(context, tint: it.tone),
                     child: Icon(it.icon, size: 20, color: it.tone),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -1243,7 +1243,7 @@ class _QuickAccess extends StatelessWidget {
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.lg,
       ),
-      decoration: SoftSurface.raised(context),
+      decoration: GlassSurface.card(context),
       child: Row(
         children: [
           for (final it in items)
@@ -1259,7 +1259,7 @@ class _QuickAccess extends StatelessWidget {
                       Container(
                         width: 52,
                         height: 52,
-                        decoration: SoftSurface.pressed(context, circle: true),
+                        decoration: GlassSurface.well(context),
                         child: Icon(
                           it.icon,
                           size: 24,
