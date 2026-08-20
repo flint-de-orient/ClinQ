@@ -11,6 +11,7 @@ import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/glass_chip.dart';
 import '../../../shared/widgets/mood_avatar.dart';
+import '../../../shared/widgets/soft_surface.dart';
 import '../../../shared/widgets/status_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../glucose/domain/glucose_trends.dart';
@@ -812,23 +813,9 @@ class _HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.55),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0B1B33).withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: SoftSurface.raised(context),
       clipBehavior: Clip.antiAlias,
       child: Padding(padding: padding, child: child),
     );
@@ -1161,11 +1148,7 @@ class _HealthOverview extends ConsumerWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.lg,
       ),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppSpacing.sheetRadius),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-      ),
+      decoration: SoftSurface.raised(context),
       child: Row(
         children: [
           for (final it in items) ...[
@@ -1175,9 +1158,10 @@ class _HealthOverview extends ConsumerWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: it.tone.withValues(alpha: 0.10),
+                    decoration: SoftSurface.pressed(
+                      context,
+                      tint: it.tone,
+                      circle: true,
                     ),
                     child: Icon(it.icon, size: 20, color: it.tone),
                   ),
@@ -1259,11 +1243,7 @@ class _QuickAccess extends StatelessWidget {
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.lg,
       ),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppSpacing.sheetRadius),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-      ),
+      decoration: SoftSurface.raised(context),
       child: Row(
         children: [
           for (final it in items)
@@ -1279,10 +1259,7 @@ class _QuickAccess extends StatelessWidget {
                       Container(
                         width: 52,
                         height: 52,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary.withValues(alpha: 0.08),
-                        ),
+                        decoration: SoftSurface.pressed(context, circle: true),
                         child: Icon(
                           it.icon,
                           size: 24,
