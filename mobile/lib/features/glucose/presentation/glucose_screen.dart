@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../shared/widgets/glass_nav_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_spacing.dart';
@@ -24,6 +26,9 @@ class GlucoseScreen extends ConsumerWidget {
     final trendsAsync = ref.watch(glucoseTrendsProvider);
 
     return Scaffold(
+      // Lifted clear of the floating nav bar, which content passes
+      // under by design.
+      floatingActionButtonLocation: _liftedFab,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showLogGlucoseSheet(context),
         icon: const Icon(Icons.add_rounded),
@@ -39,19 +44,27 @@ class GlucoseScreen extends ConsumerWidget {
           ]);
         },
         child: readingsAsync.when(
-          loading: () => ListView(
-            children: const [
-              SizedBox(height: 240, child: Center(child: CircularProgressIndicator())),
-            ],
-          ),
-          error: (error, _) => ListView(
-            children: [
-              SizedBox(
-                height: 400,
-                child: ErrorView(error: error, onRetry: () => ref.invalidate(glucoseReadingsProvider)),
+          loading:
+              () => ListView(
+                children: const [
+                  SizedBox(
+                    height: 240,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ],
               ),
-            ],
-          ),
+          error:
+              (error, _) => ListView(
+                children: [
+                  SizedBox(
+                    height: 400,
+                    child: ErrorView(
+                      error: error,
+                      onRetry: () => ref.invalidate(glucoseReadingsProvider),
+                    ),
+                  ),
+                ],
+              ),
           data: (paged) {
             if (paged.items.isEmpty) {
               return ListView(
@@ -76,17 +89,22 @@ class GlucoseScreen extends ConsumerWidget {
               ),
               children: [
                 trendsAsync.when(
-                  loading: () => const SizedBox(
-                    height: 220,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
+                  loading:
+                      () => const SizedBox(
+                        height: 220,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
                   error: (_, _) => const SizedBox.shrink(),
                   data: (trends) {
-                    if (trends.series.length < 2) return const SizedBox.shrink();
+                    if (trends.series.length < 2)
+                      return const SizedBox.shrink();
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.glucoseTrend, style: Theme.of(context).textTheme.titleSmall),
+                        Text(
+                          l10n.glucoseTrend,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
                         const SizedBox(height: AppSpacing.sm),
                         AppCard(child: GlucoseTrendChart(trends: trends)),
                         const SizedBox(height: AppSpacing.md),
@@ -96,13 +114,18 @@ class GlucoseScreen extends ConsumerWidget {
                     );
                   },
                 ),
-                Text(l10n.glucoseRecentReadings, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.glucoseRecentReadings,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 for (final reading in paged.items)
                   GlucoseReadingTile(
                     reading: reading,
                     onDelete: () async {
-                      await ref.read(glucoseRepositoryProvider).deleteReading(reading.id);
+                      await ref
+                          .read(glucoseRepositoryProvider)
+                          .deleteReading(reading.id);
                       ref.invalidate(glucoseReadingsProvider);
                       ref.invalidate(glucoseTrendsProvider);
                     },
@@ -114,4 +137,20 @@ class GlucoseScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Bottom-right, raised above the floating navigation bar.
+final FloatingActionButtonLocation _liftedFab = const _OffsetFabLocation(
+  FloatingActionButtonLocation.endFloat,
+);
+
+class _OffsetFabLocation extends StandardFabLocation
+    with FabEndOffsetX, FabFloatOffsetY {
+  const _OffsetFabLocation(this.base);
+
+  final FloatingActionButtonLocation base;
+
+  @override
+  double getOffsetY(ScaffoldPrelayoutGeometry g, double adjustment) =>
+      super.getOffsetY(g, adjustment) - GlassNavBar.clearance;
 }

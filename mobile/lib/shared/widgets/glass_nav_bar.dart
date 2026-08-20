@@ -32,6 +32,15 @@ class GlassNavBar extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final List<GlassNavItem> items;
 
+  /// How much room the floating bar takes at the bottom of a screen.
+  ///
+  /// The bar floats, so `extendBody` lets content run underneath it — which is
+  /// the point, and also the trap: anything anchored to the bottom of a screen
+  /// inside a shell ends up behind it. A FloatingActionButton is exactly that,
+  /// and the Medicines tab's scan button disappeared under the bar the moment
+  /// this shipped. Screens reserve this instead of each inventing a number.
+  static const double clearance = 96;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/widgets/glass_nav_bar.dart';
+
 /// Bottom-navigation scaffold for the dietician: Home · Patients · Profile.
 ///
 /// Home says what needs doing today, the patient list is everyone, and Profile
@@ -15,28 +17,29 @@ class DieticianShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
+      bottomNavigationBar: GlassNavBar(
+        currentIndex: navigationShell.currentIndex,
+        onSelected:
+            (index) => navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            ),
+        items: const [
+          GlassNavItem(
+            icon: Icons.home_outlined,
+            selectedIcon: Icons.home_rounded,
             label: 'Home',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            selectedIcon: Icon(Icons.groups_rounded),
+          GlassNavItem(
+            icon: Icons.groups_outlined,
+            selectedIcon: Icons.groups_rounded,
             label: 'Patients',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
+          GlassNavItem(
+            icon: Icons.person_outline_rounded,
+            selectedIcon: Icons.person_rounded,
             label: 'Profile',
           ),
         ],

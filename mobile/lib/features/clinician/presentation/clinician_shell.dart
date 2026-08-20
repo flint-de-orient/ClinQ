@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/widgets/glass_nav_bar.dart';
+
 /// Bottom-navigation scaffold for the clinician (doctor + staff) app:
-/// Home · Patients · Nutrition · Profile.
+/// Home · Care · Nutrition · Profile.
 ///
-/// Home is the dashboard — the clinic's pulse at a glance. Patients lists the
-/// care conversations (doctor↔patient), each row leading into that thread.
-/// Nutrition lists the dietician↔patient conversations so the doctor can watch
-/// and step in to guide. Clinical tools live in the Profile hub.
+/// Home is the dashboard — the clinic's pulse at a glance. Care lists the
+/// doctor↔patient conversations, each row leading into that thread. Nutrition
+/// lists the dietician↔patient conversations so the doctor can watch and step
+/// in to guide. Clinical tools live in the Profile hub.
+///
+/// The bar is the same floating frosted one the patient and dietician apps
+/// use. Three panels that navigate differently read as three products; this is
+/// one.
 class ClinicianShell extends StatelessWidget {
   const ClinicianShell({super.key, required this.navigationShell});
 
@@ -16,37 +22,39 @@ class ClinicianShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Content passes under the bar, which is what gives the frost something
+      // to work on.
+      extendBody: true,
       body: navigationShell,
-      // Labels kept to single short words so none wrap on a narrow phone.
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (index) => navigationShell.goBranch(
+      bottomNavigationBar: GlassNavBar(
+        currentIndex: navigationShell.currentIndex,
+        onSelected: (index) => navigationShell.goBranch(
           index,
           initialLocation: index == navigationShell.currentIndex,
         ),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
+        // Labels kept to single short words so none wrap on a narrow phone.
+        items: const [
+          GlassNavItem(
+            icon: Icons.dashboard_outlined,
+            selectedIcon: Icons.dashboard_rounded,
             label: 'Home',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            selectedIcon: Icon(Icons.groups_rounded),
-            // 'Care' rather than 'Patients': it pairs with the Nutrition tab as
-            // the clinic's two conversation streams (care vs nutrition), which is
-            // also how the threads are modelled server-side.
+          GlassNavItem(
+            icon: Icons.groups_outlined,
+            selectedIcon: Icons.groups_rounded,
+            // 'Care' rather than 'Patients': it pairs with the Nutrition tab
+            // as the clinic's two conversation streams (care vs nutrition),
+            // which is also how the threads are modelled server-side.
             label: 'Care',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.restaurant_menu_outlined),
-            selectedIcon: Icon(Icons.restaurant_menu_rounded),
+          GlassNavItem(
+            icon: Icons.restaurant_menu_outlined,
+            selectedIcon: Icons.restaurant_menu_rounded,
             label: 'Nutrition',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
+          GlassNavItem(
+            icon: Icons.person_outline_rounded,
+            selectedIcon: Icons.person_rounded,
             label: 'Profile',
           ),
         ],
