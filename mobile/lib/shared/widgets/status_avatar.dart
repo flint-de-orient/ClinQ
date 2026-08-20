@@ -53,7 +53,12 @@ class StatusAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPhoto = (avatarUrl ?? '').trim().isNotEmpty;
-    final ring = size * 0.045;
+    // No ring when everything is in range. A ring that is always there is
+    // decoration; one that appears only when something wants looking at is
+    // information — and on a blue screen a permanent amber circle round
+    // someone's face is the loudest thing on it for no reason.
+    final quiet = mood == Mood.calm;
+    final ring = quiet ? 0.0 : size * 0.038;
     final inner = size - ring * 4;
 
     return SizedBox(
@@ -74,7 +79,7 @@ class StatusAvatar extends StatelessWidget {
             padding: EdgeInsets.all(ring),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: _tone, width: ring),
+              border: quiet ? null : Border.all(color: _tone, width: ring),
               color: Colors.white,
             ),
             child: ClipOval(
@@ -99,22 +104,24 @@ class StatusAvatar extends StatelessWidget {
                       ),
             ),
           ),
-          // A small solid dot at the corner. The ring alone is a colour, and a
-          // colour alone is not something everyone can read — the dot gives it
-          // a second, positional cue.
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: size * 0.26,
-              height: size * 0.26,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _tone,
-                border: Border.all(color: Colors.white, width: size * 0.035),
+          // A small solid dot at the corner, and only when the ring is there.
+          // Colour alone is not readable for everyone, so the state gets a
+          // second, positional cue — but neither appears when there is no
+          // state to report.
+          if (!quiet)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: size * 0.22,
+                height: size * 0.22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _tone,
+                  border: Border.all(color: Colors.white, width: size * 0.03),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

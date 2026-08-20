@@ -920,11 +920,12 @@ class _Greeting extends ConsumerWidget {
     final name = (user?.name ?? '').trim();
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.sm,
+      // The same 16 every other card uses. At 8 the avatar nearly touched the
+      // edge and the block read as shorter and cheaper than the cards under
+      // it, which is most of why the top of the screen looked unfinished.
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm + AppSpacing.xs,
       ),
       decoration: GlassSurface.card(context),
       child: Row(
@@ -1326,10 +1327,16 @@ class _RoundIconButton extends StatelessWidget {
           height: AppSpacing.minTapTarget,
           child: Center(
             child: Container(
-              width: 44,
-              height: 44,
-              decoration: GlassSurface.well(context),
-              child: Icon(icon, size: 21, color: scheme.onSurface),
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                // Sitting on glass already, so it only needs an edge — a
+                // second tinted disc inside a tinted panel reads as a patch.
+                color: Colors.white.withValues(alpha: 0.55),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.85)),
+              ),
+              child: Icon(icon, size: 20, color: scheme.onSurface),
             ),
           ),
         ),
