@@ -12,6 +12,7 @@ import '../../../shared/widgets/user_avatar.dart';
 import '../domain/clinician_models.dart';
 import 'clinician_providers.dart';
 import '../../../shared/widgets/hero_band.dart';
+import '../../../shared/widgets/mood_avatar.dart';
 import 'widgets/panel_ui.dart';
 import 'widgets/clinic_analytics.dart';
 import 'widgets/clinician_notification_sheet.dart';
@@ -94,49 +95,55 @@ class _ClinicianDashboardScreenState
                       ? const Center(child: CircularProgressIndicator())
                       : RefreshIndicator(
                         onRefresh: () async => _refresh(),
-                        // Zero padding so the band reaches both edges; the
-                        // rest is padded on its own, as on the other panels.
-                        child: ListView(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-                          children: [
+                        // A CustomScrollView so the band can be a pinned,
+                        // collapsing sliver. Everything below it stays one
+                        // padded column — the list was never the interesting
+                        // part and turning it into slivers would buy nothing.
+                        child: CustomScrollView(
+                          slivers: [
                             if (analytics != null)
                               _ControlHero(analytics: analytics),
-                            Padding(
+                            SliverPadding(
                               padding: const EdgeInsets.fromLTRB(
                                 AppSpacing.md,
                                 AppSpacing.md,
                                 AppSpacing.md,
-                                0,
+                                AppSpacing.xl,
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  if (overview != null) ...[
-                                    const SizedBox(height: AppSpacing.md),
-                                    _HeadlineRow(overview: overview),
-                                    const SizedBox(height: AppSpacing.md),
-                                    // "Active today" is gone. It counted appointments
-                                    // booked through the app, and this clinic does not
-                                    // book that way — so it read 0 every day and cost a
-                                    // card's worth of the screen saying nothing.
-                                    _AlertStrip(overview: overview),
-                                    if (analytics != null) ...[
-                                      const SizedBox(height: AppSpacing.sm),
-                                      _MonitoringStrip(analytics: analytics),
+                              sliver: SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    if (overview != null) ...[
+                                      const SizedBox(height: AppSpacing.md),
+                                      _HeadlineRow(overview: overview),
+                                      const SizedBox(height: AppSpacing.md),
+                                      // "Active today" is gone. It counted appointments
+                                      // booked through the app, and this clinic does not
+                                      // book that way — so it read 0 every day and cost a
+                                      // card's worth of the screen saying nothing.
+                                      _AlertStrip(overview: overview),
+                                      if (analytics != null) ...[
+                                        const SizedBox(height: AppSpacing.sm),
+                                        _MonitoringStrip(analytics: analytics),
+                                      ],
+                                      const SizedBox(height: AppSpacing.lg),
                                     ],
-                                    const SizedBox(height: AppSpacing.lg),
+                                    if (attention.isNotEmpty) ...[
+                                      AttentionListCard(patients: attention),
+                                      const SizedBox(height: AppSpacing.lg),
+                                    ],
+                                    _TriageQueue(alerts: alerts),
+                                    if (overview != null &&
+                                        overview
+                                            .nutritionReviews
+                                            .isNotEmpty) ...[
+                                      const SizedBox(height: AppSpacing.lg),
+                                      _NutritionReviews(overview: overview),
+                                    ],
                                   ],
-                                  if (attention.isNotEmpty) ...[
-                                    AttentionListCard(patients: attention),
-                                    const SizedBox(height: AppSpacing.lg),
-                                  ],
-                                  _TriageQueue(alerts: alerts),
-                                  if (overview != null &&
-                                      overview.nutritionReviews.isNotEmpty) ...[
-                                    const SizedBox(height: AppSpacing.lg),
-                                    _NutritionReviews(overview: overview),
-                                  ],
-                                ],
+                                ),
                               ),
                             ),
                           ],
@@ -1070,10 +1077,24 @@ class _ReviewProgressCard extends StatelessWidget {
 /// that answers "how is my clinic doing" before anything else is read, and it
 /// was already in the payload: controlTrend carries low/inRange/high per day
 /// and nothing was reading it.
-class _ControlHero extends StatelessWidget {
+class _ControlHero extends ConsumerWidget {
   const _ControlHero({required this.analytics});
 
   final ClinicAnalytics analytics;
+
+  /// Anything urgent open is concern; anything drifting is watchfulness.
+  Mood _mood(WidgetRef ref) {
+    final o = ref.watch(overviewProvider).valueOrNull;
+    if (o != null && (o.emergencyAlerts > 0 || o.urgentAlerts > 0)) {
+      return Mood.concerned;
+    }
+    if (analytics.trendingWorse > 0 ||
+        analytics.overdueCheckIns > 0 ||
+        (o?.pendingReviews ?? 0) > 0) {
+      return Mood.watchful;
+    }
+    return Mood.calm;
+  }
 
   static (int pct, int? delta) _control(List<ControlPoint> t) {
     if (t.isEmpty) return (0, null);
@@ -1103,9 +1124,10 @@ class _ControlHero extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final (pct, delta) = _control(analytics.controlTrend);
-    if (pct == 0) return const SizedBox.shrink();
+    // A sliver, so the empty case has to be one too.
+    if (pct == 0) return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     final rising = (delta ?? 0) >= 0;
     final pts =
@@ -1114,9 +1136,14 @@ class _ControlHero extends StatelessWidget {
             .map((p) => p.inRange / p.total * 100)
             .toList();
 
-    return HeroBand(
+    return SliverHeroBand(
       eyebrow: DateFormat('EEEE, d MMMM').format(DateTime.now()),
       title: 'Your clinic',
+      // What the band becomes once it has been read and scrolled past.
+      compact: 'Your clinic  •  $pct% in range',
+      // The face answers "does my clinic need me right now" before the number
+      // has been read. Driven by open alerts and monitoring, never by scroll.
+      trailing: MoodAvatar(mood: _mood(ref), size: 56),
       figure: HeroFigure(
         value: '$pct%',
         // The delta alone. "this fortnight" reads better in the caption than

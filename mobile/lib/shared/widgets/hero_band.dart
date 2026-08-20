@@ -102,6 +102,91 @@ class HeroBand extends StatelessWidget {
   }
 }
 
+/// [HeroBand] as a collapsing sliver.
+///
+/// Scrolling shrinks the band into a slim bar carrying the same information in
+/// one line. This is the scroll-linked motion worth having in a clinical
+/// screen: it is not decoration, it is the header giving its space back to the
+/// data once you have read it, and it never moves anything you were reading.
+///
+/// The parallax and the crossfade are Flutter's own — FlexibleSpaceBar already
+/// does both correctly against real scroll physics, including overscroll and a
+/// fling. Driving a ScrollController by hand would reimplement that and get the
+/// edges wrong.
+///
+/// Motion is dropped entirely when the platform asks for it. "Remove
+/// animations" is an accessibility setting a doctor with vestibular sensitivity
+/// may well have on, and a parallaxing header is exactly what it means.
+class SliverHeroBand extends StatelessWidget {
+  const SliverHeroBand({
+    super.key,
+    required this.eyebrow,
+    required this.title,
+    required this.compact,
+    this.trailing,
+    this.figure,
+    this.footer,
+    this.child,
+    this.expandedHeight = 260,
+  });
+
+  final String eyebrow;
+  final String title;
+
+  /// The one line the band becomes once collapsed.
+  final String compact;
+
+  final Widget? trailing;
+  final HeroFigure? figure;
+  final Widget? footer;
+  final Widget? child;
+  final double expandedHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
+    return SliverAppBar(
+      pinned: true,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      backgroundColor: scheme.surface,
+      automaticallyImplyLeading: false,
+      // Scaled by the text factor: at large system text the band's own content
+      // grows, and a fixed height would clip the figure rather than the gap.
+      expandedHeight: MediaQuery.textScalerOf(context).scale(expandedHeight),
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: reduceMotion ? CollapseMode.none : CollapseMode.parallax,
+        titlePadding: const EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          bottom: AppSpacing.md,
+        ),
+        title: Text(
+          compact,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurface,
+          ),
+        ),
+        background: HeroBand(
+          eyebrow: eyebrow,
+          title: title,
+          trailing: trailing,
+          figure: figure,
+          footer: footer,
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 /// The tinted ground the bands sit on, on its own so a screen whose hero is
 /// not a number — Profile, whose subject is a face — can use the same colour
 /// without pretending to have a figure.

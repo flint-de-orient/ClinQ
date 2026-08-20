@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/hero_band.dart';
+import '../../../shared/widgets/mood_avatar.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../glucose/domain/glucose_trends.dart';
@@ -1847,8 +1848,31 @@ class _Hero extends ConsumerWidget {
     return HeroBand(
       eyebrow: _greeting(),
       title: name.isEmpty ? 'Welcome' : name.split(' ').first,
-      trailing:
-          care.profile.showRisk ? _RiskBadge(profile: care.profile) : null,
+      // The face reacts to the patient's own last reading. Concern here is
+      // raised-inner-brow worry, not disapproval — that distinction is the
+      // whole reason it is drawn rather than picked off a sheet of emoji.
+      // The badge stays: it is the clinic's own assessment and the face is not
+      // a substitute for it. They answer different questions — "what did the
+      // clinic decide about me" and "how am I doing right now".
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (care.profile.showRisk) ...[
+            _RiskBadge(profile: care.profile),
+            const SizedBox(width: AppSpacing.sm),
+          ],
+          MoodAvatar(
+            mood: switch (latest?.flag) {
+              'severe_low' ||
+              'low' ||
+              'severe_high' ||
+              'high' => Mood.concerned,
+              null => Mood.watchful,
+              _ => Mood.calm,
+            },
+          ),
+        ],
+      ),
       figure:
           latest == null
               ? null
