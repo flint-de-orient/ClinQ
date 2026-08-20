@@ -12,6 +12,7 @@ import '../../../shared/widgets/user_avatar.dart';
 import '../domain/clinician_models.dart';
 import 'clinician_providers.dart';
 import '../../../shared/widgets/hero_band.dart';
+import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
 import 'widgets/panel_ui.dart';
 import 'widgets/clinic_analytics.dart';
@@ -1143,7 +1144,11 @@ class _ControlHero extends ConsumerWidget {
       compact: 'Your clinic  •  $pct% in range',
       // The face answers "does my clinic need me right now" before the number
       // has been read. Driven by open alerts and monitoring, never by scroll.
-      trailing: MoodAvatar(mood: _mood(ref), size: 56),
+      trailing: CharacterAvatar(
+        role: CareRole.doctor,
+        gender: ref.watch(authControllerProvider).user?.gender,
+        mood: _mood(ref),
+      ),
       figure: HeroFigure(
         value: '$pct%',
         // The delta alone. "this fortnight" reads better in the caption than

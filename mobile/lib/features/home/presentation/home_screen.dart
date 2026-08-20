@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/hero_band.dart';
+import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -1861,7 +1862,9 @@ class _Hero extends ConsumerWidget {
             _RiskBadge(profile: care.profile),
             const SizedBox(width: AppSpacing.sm),
           ],
-          MoodAvatar(
+          CharacterAvatar(
+            role: CareRole.patient,
+            gender: ref.watch(authControllerProvider).user?.gender,
             mood: switch (latest?.flag) {
               'severe_low' ||
               'low' ||
