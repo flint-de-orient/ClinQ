@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/hero_band.dart';
+import '../../../shared/widgets/image_tile.dart';
 import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
 import '../../../shared/widgets/status_avatar.dart';
@@ -154,6 +155,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 // change pushed the actual care down the page.
                                 // They live in Profile, which is where someone
                                 // goes when they want to check them.
+                                const SizedBox(height: AppSpacing.lg),
+
+                                // Image-led routes into the four things a
+                                // patient actually comes here to do. Every way
+                                // into a section used to be a line of text in
+                                // a box; the reference apps navigate with
+                                // pictures, and that is most of why they read
+                                // as finished.
+                                const _QuickTiles(),
                                 const SizedBox(height: AppSpacing.lg),
 
                                 _FactGrid(care: care),
@@ -1902,6 +1912,56 @@ class _Hero extends ConsumerWidget {
           latest == null
               ? _CheckInPrompt(accent: AppColors.accentOn(context))
               : null,
+    );
+  }
+}
+
+/// The four routes out of Home, as artwork rather than as rows.
+class _QuickTiles extends StatelessWidget {
+  const _QuickTiles();
+
+  @override
+  Widget build(BuildContext context) {
+    // Two columns, because a single column of full-width banners turns the
+    // top of the screen into a poster wall and pushes the actual care below
+    // the fold.
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: AppSpacing.sm,
+      crossAxisSpacing: AppSpacing.sm,
+      childAspectRatio: 1.32,
+      children: [
+        ImageTile(
+          image: 'assets/cards/glucose.png',
+          title: 'Log a reading',
+          subtitle: 'Blood sugar',
+          height: double.infinity,
+          onTap: () => showLogGlucoseSheet(context),
+        ),
+        ImageTile(
+          image: 'assets/cards/medicines.png',
+          title: 'Medicines',
+          subtitle: "Today's doses",
+          height: double.infinity,
+          onTap: () => context.go('/medications'),
+        ),
+        ImageTile(
+          image: 'assets/cards/nutrition.png',
+          title: 'Nutrition',
+          subtitle: 'Meals and plan',
+          height: double.infinity,
+          onTap: () => context.go('/food-log'),
+        ),
+        ImageTile(
+          image: 'assets/cards/labs.png',
+          title: 'Lab reports',
+          subtitle: 'Tests and results',
+          height: double.infinity,
+          onTap: () => context.push('/profile/tests'),
+        ),
+      ],
     );
   }
 }

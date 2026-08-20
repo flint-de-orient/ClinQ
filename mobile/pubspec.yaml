@@ -97,6 +97,8 @@ flutter:
     # Role/gender/expression art. Missing files fall back to a drawn face,
     # so this can be filled in or replaced one image at a time.
     - assets/characters/
+    # Illustrated section artwork for the image-led tiles.
+    - assets/cards/
 
   # Bundled, not fetched. google_fonts downloads on first run, so a clinic on a
   # weak connection would see the first screen in the wrong face — and with no
