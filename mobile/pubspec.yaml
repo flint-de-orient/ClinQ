@@ -99,6 +99,8 @@ flutter:
     - assets/characters/
     # Illustrated section artwork for the image-led tiles.
     - assets/cards/
+    # A 64px tileable grain, overlaid on glass surfaces.
+    - assets/textures/
 
   # Bundled, not fetched. google_fonts downloads on first run, so a clinic on a
   # weak connection would see the first screen in the wrong face — and with no

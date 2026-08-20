@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import 'glass_surface.dart';
 
 /// A navigation bar that looks like it floats and behaves like it does not.
 ///
@@ -45,6 +46,7 @@ class GlassNavBar extends StatelessWidget {
       child: Container(
         height: 68,
         decoration: BoxDecoration(
+          image: GlassSurface.grain,
           // Translucent, not transparent: pure glass leaves the labels
           // fighting whatever scrolls under them.
           color: isDark ? const Color(0xFF10161F) : Colors.white,

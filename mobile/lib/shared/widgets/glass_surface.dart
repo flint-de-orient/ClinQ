@@ -23,10 +23,24 @@ import '../../core/theme/app_spacing.dart';
 /// One rule is kept from the earlier soft surfaces: every card holds a bright
 /// hairline. A translucent panel's edge is its weakest feature, and an edge you
 /// cannot find is the accessibility failure this style is known for.
+///
+/// Every glass surface also carries a grain. Flat translucency reads as plastic
+/// — real frosted glass scatters, and the eye knows the difference even when it
+/// cannot name it. A 64px tile at 3% is enough; any more and it stops being
+/// texture and starts being dirt on the screen.
 class GlassSurface {
   const GlassSurface._();
 
-  /// A translucent card. [blur] only earns its cost over detailed content.
+  /// The grain. One AssetImage, so Flutter caches a single decoded copy
+  /// however many surfaces ask for it.
+  static const DecorationImage grain = DecorationImage(
+    image: AssetImage('assets/textures/noise.png'),
+    repeat: ImageRepeat.repeat,
+    opacity: 0.030,
+    filterQuality: FilterQuality.none,
+  );
+
+  /// A translucent card, grained.
   static BoxDecoration card(
     BuildContext context, {
     double? radius,
@@ -34,6 +48,7 @@ class GlassSurface {
   }) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return BoxDecoration(
+      image: grain,
       color: (dark ? const Color(0xFF121A26) : Colors.white).withValues(
         alpha: dark ? 0.52 : opacity,
       ),
@@ -59,6 +74,7 @@ class GlassSurface {
     final base = tint ?? AppColors.primary;
     return BoxDecoration(
       shape: BoxShape.circle,
+      image: grain,
       color: base.withValues(alpha: 0.12),
       border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
     );
