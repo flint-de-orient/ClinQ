@@ -12,9 +12,6 @@ import '../../../shared/widgets/user_avatar.dart';
 import '../domain/clinician_models.dart';
 import 'clinician_providers.dart';
 import '../../../shared/widgets/hero_band.dart';
-import '../../../shared/widgets/character_avatar.dart';
-import '../../../shared/widgets/mood_avatar.dart';
-import '../../../shared/widgets/status_avatar.dart';
 import 'widgets/panel_ui.dart';
 import 'widgets/clinic_analytics.dart';
 import 'widgets/clinician_notification_sheet.dart';
@@ -1085,20 +1082,6 @@ class _ControlHero extends ConsumerWidget {
 
   final ClinicAnalytics analytics;
 
-  /// Anything urgent open is concern; anything drifting is watchfulness.
-  Mood _mood(WidgetRef ref) {
-    final o = ref.watch(overviewProvider).valueOrNull;
-    if (o != null && (o.emergencyAlerts > 0 || o.urgentAlerts > 0)) {
-      return Mood.concerned;
-    }
-    if (analytics.trendingWorse > 0 ||
-        analytics.overdueCheckIns > 0 ||
-        (o?.pendingReviews ?? 0) > 0) {
-      return Mood.watchful;
-    }
-    return Mood.calm;
-  }
-
   static (int pct, int? delta) _control(List<ControlPoint> t) {
     if (t.isEmpty) return (0, null);
     var inRange = 0, total = 0;
@@ -1141,20 +1124,14 @@ class _ControlHero extends ConsumerWidget {
     return HeroBand(
       eyebrow: DateFormat('EEEE, d MMMM').format(DateTime.now()),
       title: 'Your clinic',
+
       // The face answers "does my clinic need me right now" before the number
       // has been read. Driven by open alerts and monitoring, never by scroll.
-      trailing: Builder(
-        builder: (context) {
-          final u = ref.watch(authControllerProvider).user;
-          return StatusAvatar(
-            name: u?.name ?? '',
-            avatarUrl: u?.avatarUrl,
-            role: CareRole.doctor,
-            gender: u?.gender,
-            mood: _mood(ref),
-          );
-        },
-      ),
+      // No avatar here. The doctor's photo is already in the header a few
+      // pixels above, and ringing it by the clinic's state put a red circle
+      // around their own face — which reads as something being wrong with
+      // them, not with the ward. The alert counts in the tiles below say it
+      // properly, attached to the thing they are actually about.
       figure: HeroFigure(
         value: '$pct%',
         // The delta alone. "this fortnight" reads better in the caption than

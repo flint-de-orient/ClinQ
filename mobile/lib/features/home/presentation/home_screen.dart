@@ -7,8 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/character_avatar.dart';
+import '../../../shared/widgets/glass_chip.dart';
 import '../../../shared/widgets/mood_avatar.dart';
 import '../../../shared/widgets/status_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
@@ -201,13 +201,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 // card, so the spacing between them is uniform and the
                                 // page reads as one stack rather than headings and
                                 // content taking turns.
-                                if (care.medications.isNotEmpty) ...[
-                                  const SizedBox(height: AppSpacing.md),
-                                  _Medicines(items: care.medications),
-                                ],
-
-                                const SizedBox(height: AppSpacing.md),
-                                _FoodLogs(items: care.recentFoodLogs),
+                                // Medicines and food logs are gone from Home.
+                                // Each is an entire tab, each is one tap away
+                                // from Quick access, and the next dose is
+                                // already the subject of the focal card — so
+                                // showing the full list here was the same
+                                // content in a third place.
                               ],
                             ),
                           ),
@@ -332,45 +331,26 @@ class _FactGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = care.profile;
     final hba1c = care.latestHba1c;
-    // Oldest to newest, so the last point is the most recent reading.
-    final latestGlucose =
-        ref.watch(glucoseTrendsProvider).valueOrNull?.series.lastOrNull;
-
     // Facts, not widgets: the grid decides afterwards whether each one is drawn
     // as a square tile or, when it is the odd one out at the end, as a wide bar.
     final facts = <_Fact>[
       if (p.conditionLabel != null) _Fact('Condition', p.conditionLabel!),
       // The doctor's next-visit instruction — arguably the most useful single
       // thing on this screen: "when do I come back?".
-      if (care.followUpOn != null)
-        _Fact('Next Visit', DateFormat('d MMM yyyy').format(care.followUpOn!)),
+      // Next visit, BMI, blood pressure and the latest glucose are all on
+      // the four blocks above. Repeating them here made the same fact appear
+      // twice on one screen, which reads as the app not knowing what it has
+      // already told you.
       // One measurement per tile. Crammed into a single "BMI / Wt / Ht" cell the
       // value wrapped onto a second line, which made that row taller than the
       // one beside it and broke the grid — and three numbers separated by
       // slashes is a thing to decode rather than read.
-      if (p.bmi != null) _Fact('BMI', '${p.bmi}'),
       if (p.weightKg != null) _Fact('Weight', '${p.weightKg} kg'),
       if (p.heightCm != null) _Fact('Height', '${p.heightCm} cm'),
-      if (p.bloodPressure != null)
-        _Fact(
-          'Blood Pressure',
-          '${p.bloodPressure!.label} mmHg',
-          // Red only when above this patient's own target — plain otherwise, so a
-          // number they cannot act on tonight is not an alarm.
-          color: p.bloodPressure!.isHigh ? AppColors.danger : null,
-        ),
       if (p.reviewLabel != null) _Fact('Food-log review', p.reviewLabel!),
       // The newest reading, beside the numbers it belongs with. The chart below
       // shows the shape of the last month; this answers the simpler question a
       // patient asks first — where am I right now.
-      if (latestGlucose != null)
-        _Fact(
-          'Current glucose',
-          '${latestGlucose.value} mg/dL',
-          // Flagged by the server against the clinic's own range, not by a
-          // threshold copied into the app.
-          color: latestGlucose.isOutOfRange ? AppColors.danger : null,
-        ),
       if (hba1c != null)
         _Fact(
           'Last HbA1c',
@@ -812,466 +792,7 @@ class _FullPlanSheet extends StatelessWidget {
 
 // ---- Medicines ------------------------------------------------------------
 
-class _Medicines extends ConsumerWidget {
-  const _Medicines({required this.items});
-
-  final List<CareMedication> items;
-
-  /// "20:00" as the patient reads a clock.
-  static String _clock(String hhmm) {
-    final parts = hhmm.split(':');
-    final h = int.tryParse(parts.first);
-    if (h == null || parts.length < 2) return hhmm;
-    final suffix = h < 12 ? 'AM' : 'PM';
-    final hour12 = h % 12 == 0 ? 12 : h % 12;
-    return '$hour12:${parts[1]} $suffix';
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
-    final accent = AppColors.accentOn(context);
-    final today = ref.watch(todayScheduleProvider).valueOrNull;
-
-    final slots = today?.slots ?? const [];
-    final done = slots.where((s) => s.status == 'taken').length;
-    // The next thing to take: the earliest slot still waiting. Skipped and
-    // missed ones are behind the patient and are not what they came here for.
-    final next = slots.where((s) => s.status == 'pending').firstOrNull;
-
-    return _HomeCard(
-      // stretch, not the default centre: without it each row shrinks to the
-      // width of its own text and floats in the middle, so a list of medicines
-      // has a different left edge on every line and nothing to read down.
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _CardHeader(
-            icon: Icons.medication_rounded,
-            title: 'Medicines',
-            trailing:
-                slots.isEmpty
-                    ? _CountBadge(count: items.length)
-                    : _CountBadge.text('$done of ${slots.length} taken'),
-          ),
-
-          // Today, before the prescription. A patient opening this screen wants
-          // "what do I take next", not "what am I on" — they already know what
-          // they are on. The list below answers the second question and stays,
-          // because the pharmacy and the family carer both need it.
-          if (slots.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.sm + 2),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: LinearProgressIndicator(
-                value: slots.isEmpty ? 0 : done / slots.length,
-                minHeight: 7,
-                backgroundColor: accent.withValues(alpha: 0.12),
-                valueColor: AlwaysStoppedAnimation<Color>(accent),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm + 2),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm + 2),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.07),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: accent.withValues(alpha: 0.18)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    next == null
-                        ? Icons.task_alt_rounded
-                        : Icons.schedule_rounded,
-                    size: 17,
-                    color: accent,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child:
-                        next == null
-                            ? Text(
-                              'Every dose for today is marked.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: accent,
-                              ),
-                            )
-                            : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Next dose  ${_clock(next.time)}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: accent,
-                                  ),
-                                ),
-                                const SizedBox(height: 0),
-                                Text(
-                                  [
-                                    next.name,
-                                    next.dose,
-                                  ].where((s) => s.isNotEmpty).join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: scheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go('/medications'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: accent,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: const Text('Open'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'YOUR PRESCRIPTION',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          for (var i = 0; i < items.length; i++) ...[
-            // Inset, not edge to edge: the rule separates the two names, and
-            // stopping it short of the card wall keeps the list feeling like one
-            // block rather than a stack of separate strips.
-            if (i > 0)
-              Padding(
-                padding: const EdgeInsets.only(left: 48, top: 8, bottom: 8),
-                child: Divider(
-                  height: 1,
-                  color: scheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-              ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.medication_liquid_rounded,
-                    size: 17,
-                    color: accent,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        items[i].title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          height: 1.25,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        items[i].scheduleLabel,
-                        style: TextStyle(
-                          fontSize: 14,
-                          height: 1.3,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// The small count on a section header — "how many of these are there" answered
-/// without making the reader count the rows.
-class _CountBadge extends StatelessWidget {
-  const _CountBadge({required int count}) : label = '$count';
-  const _CountBadge.text(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = AppColors.accentOn(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          color: accent,
-        ),
-      ),
-    );
-  }
-}
-
 // ---- Food logs ------------------------------------------------------------
-
-class _FoodLogs extends StatelessWidget {
-  const _FoodLogs({required this.items});
-
-  final List<CareFoodLog> items;
-
-  static String _when(DateTime? at) {
-    if (at == null) return '';
-    final now = DateTime.now();
-    final day = DateTime(at.year, at.month, at.day);
-    final today = DateTime(now.year, now.month, now.day);
-    final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    return DateFormat('d MMM').format(at);
-  }
-
-  static String _meal(String type) =>
-      type.isEmpty ? '' : type[0].toUpperCase() + type.substring(1);
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    // Padding only at the top: the rail below runs to both card walls, so a
-    // half-visible card at the right edge shows there is more to swipe to.
-    return _HomeCard(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.md,
-        AppSpacing.md,
-        0,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _CardHeader(
-            icon: Icons.photo_camera_rounded,
-            title: 'Recent Food Logs',
-            actionLabel: items.isEmpty ? null : 'View all',
-            // The meal history, not the dietician thread. Logging happens in
-            // the conversation, so "Log a meal" below rightly opens it — but
-            // "View all" next to a row of past meals means show me the rest of
-            // them, and dropping the patient into a chat is not that.
-            onAction:
-                items.isEmpty ? null : () => context.push('/food-log/history'),
-          ),
-          if (items.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                0,
-                AppSpacing.lg,
-                0,
-                AppSpacing.lg,
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.restaurant_menu_rounded,
-                    size: 34,
-                    color: scheme.outlineVariant,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  const Text(
-                    'No meals logged yet',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 0),
-                  Text(
-                    'Photos of what you eat help your dietician give better advice.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.35,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  FilledButton.tonalIcon(
-                    onPressed: () => context.go('/food-log'),
-                    icon: const Icon(Icons.add_a_photo_rounded, size: 18),
-                    label: const Text('Log a meal'),
-                  ),
-                ],
-              ),
-            )
-          else
-            SizedBox(
-              // One fixed rectangle now that the caption sits on the photo,
-              // but still scaled by the text factor: the overlaid note grows
-              // with the system setting and would otherwise clip.
-              height: MediaQuery.textScalerOf(context).scale(168),
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                // Negative-free bleed: the list starts at the card's text edge
-                // and ends past it, so the last card is not jammed against the
-                // wall.
-                padding: const EdgeInsets.only(
-                  top: AppSpacing.sm,
-                  bottom: AppSpacing.md,
-                  right: AppSpacing.md,
-                ),
-                itemCount: items.length,
-                separatorBuilder:
-                    (_, _) => const SizedBox(width: AppSpacing.sm),
-                itemBuilder:
-                    (context, i) => _FoodLogTile(
-                      log: items[i],
-                      when: _when(items[i].createdAt),
-                      meal: _meal(items[i].mealType),
-                    ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One meal in the rail.
-///
-/// The photo *is* the tile rather than sitting in a box above a caption. A
-/// meal photograph is the only genuinely appealing image this app has, and the
-/// old layout spent two thirds of the tile on a white caption panel around a
-/// thumbnail. The caption now rides on the picture behind a scrim, which is
-/// both the editorial treatment the reference kit uses and the one that gives
-/// the photograph the room to be worth looking at.
-class _FoodLogTile extends StatelessWidget {
-  const _FoodLogTile({
-    required this.log,
-    required this.when,
-    required this.meal,
-  });
-
-  final CareFoodLog log;
-  final String when;
-  final String meal;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final hasPhoto = log.photoUrl != null;
-    final note = log.note.trim();
-
-    return SizedBox(
-      width: 148,
-      child: Container(
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.55),
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (hasPhoto)
-              AuthedImage(path: log.photoUrl!, fit: BoxFit.cover)
-            else
-              Center(
-                child: Icon(
-                  Icons.restaurant_rounded,
-                  size: 32,
-                  color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
-                ),
-              ),
-
-            // The scrim. Without it a caption over a bright plate is
-            // unreadable, and over a dark one it disappears — this makes the
-            // bottom third predictable whatever the photograph is doing.
-            if (hasPhoto)
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.center,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x00000000), Color(0xCC000000)],
-                  ),
-                ),
-              ),
-
-            Positioned(
-              left: AppSpacing.sm,
-              right: AppSpacing.sm,
-              bottom: AppSpacing.sm,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    [
-                      if (meal.isNotEmpty) meal,
-                      if (when.isNotEmpty) when,
-                    ].join('  •  '),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: hasPhoto ? Colors.white : scheme.onSurface,
-                    ),
-                  ),
-                  if (note.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      note,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.3,
-                        color:
-                            hasPhoto
-                                ? Colors.white.withValues(alpha: 0.85)
-                                : scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Lab reports: what the doctor has asked for, and what came back.
 ///
@@ -1619,13 +1140,13 @@ class _LabResultRow extends StatelessWidget {
 /// Matches `PanelCard` in the doctor's panel — same radius, same hairline, same
 /// shadow — so a patient and their doctor are looking at the same product.
 class _HomeCard extends StatelessWidget {
-  const _HomeCard({
-    required this.child,
-    this.padding = const EdgeInsets.all(AppSpacing.md),
-  });
+  const _HomeCard({required this.child});
 
   final Widget child;
-  final EdgeInsetsGeometry padding;
+
+  /// Fixed. It was configurable only for the food rail, which bled its cards
+  /// to the card wall — and that rail now lives in the Dietician tab.
+  static const EdgeInsetsGeometry padding = EdgeInsets.all(AppSpacing.md);
 
   @override
   Widget build(BuildContext context) {
@@ -1831,18 +1352,24 @@ class _FocalCard extends ConsumerWidget {
     final String eyebrow;
     final String headline;
     final String detail;
+    // The artwork follows the state. A card that says "all clear" beside a
+    // picture of a pill is a card arguing with itself.
+    final String art;
     if (next != null) {
       eyebrow = 'Next dose';
       headline = next.time;
       detail = '${next.name}  •  ${next.dose}';
+      art = 'dose';
     } else if (care.followUpOn != null) {
       eyebrow = 'Next visit';
       headline = DateFormat('d MMM').format(care.followUpOn!);
       detail = DateFormat('EEEE').format(care.followUpOn!);
+      art = 'steth';
     } else {
       eyebrow = 'Today';
       headline = 'All clear';
       detail = 'Nothing due right now';
+      art = 'clear';
     }
 
     return Container(
@@ -1868,14 +1395,15 @@ class _FocalCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  eyebrow,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: Colors.white.withValues(alpha: 0.68),
-                  ),
+                GlassChip(
+                  label: eyebrow.toUpperCase(),
+                  icon:
+                      next != null
+                          ? Icons.schedule_rounded
+                          : Icons.check_circle_outline_rounded,
+                  // The one chip large enough, and on a rich enough panel, for
+                  // a real frost to be worth its saveLayer.
+                  blur: true,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
@@ -1903,13 +1431,21 @@ class _FocalCard extends ConsumerWidget {
               ],
             ),
           ),
-          // Decorative, and small enough to be. The motif says "clinic" at a
-          // glance; the words carry everything that matters.
-          Image.asset(
-            'assets/cards/steth.png',
-            width: 84,
-            height: 84,
-            errorBuilder: (_, _, _) => const SizedBox(width: 84, height: 84),
+          // Illustrative rather than decorative: it names the state before
+          // the words are read. Crossfaded, so a dose being ticked off does
+          // not make the card flicker.
+          AnimatedSwitcher(
+            duration:
+                MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 350),
+            child: Image.asset(
+              'assets/cards/$art.png',
+              key: ValueKey(art),
+              width: 96,
+              height: 96,
+              errorBuilder: (_, _, _) => const SizedBox(width: 96, height: 96),
+            ),
           ),
         ],
       ),
