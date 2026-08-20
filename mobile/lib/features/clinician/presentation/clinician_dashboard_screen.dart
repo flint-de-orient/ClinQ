@@ -14,6 +14,7 @@ import 'clinician_providers.dart';
 import '../../../shared/widgets/hero_band.dart';
 import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
+import '../../../shared/widgets/status_avatar.dart';
 import 'widgets/panel_ui.dart';
 import 'widgets/clinic_analytics.dart';
 import 'widgets/clinician_notification_sheet.dart';
@@ -1142,10 +1143,17 @@ class _ControlHero extends ConsumerWidget {
       title: 'Your clinic',
       // The face answers "does my clinic need me right now" before the number
       // has been read. Driven by open alerts and monitoring, never by scroll.
-      trailing: CharacterAvatar(
-        role: CareRole.doctor,
-        gender: ref.watch(authControllerProvider).user?.gender,
-        mood: _mood(ref),
+      trailing: Builder(
+        builder: (context) {
+          final u = ref.watch(authControllerProvider).user;
+          return StatusAvatar(
+            name: u?.name ?? '',
+            avatarUrl: u?.avatarUrl,
+            role: CareRole.doctor,
+            gender: u?.gender,
+            mood: _mood(ref),
+          );
+        },
       ),
       figure: HeroFigure(
         value: '$pct%',

@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+
+import '../../core/theme/app_colors.dart';
+import 'character_avatar.dart';
+import 'mood_avatar.dart';
+import 'user_avatar.dart';
+
+/// A real photograph, ringed by what the data says.
+///
+/// The reference apps this was measured against all lead with photography of
+/// actual people, and none of them uses an illustrated mascot. That is the
+/// whole reason this exists: the drawn face was answering a question — "show a
+/// character" — that the professional answer solves with a photo.
+///
+/// The state has not been dropped, only moved. What the expression was saying,
+/// the ring now says: green when everything is in range, amber when something
+/// is drifting, red when an alert is open. It reads at a glance, it does not
+/// risk looking like the app is judging anybody, and it costs no asset at all
+/// because the photograph is already in the account.
+///
+/// Most people never upload a photo, so the fallback is the part that matters
+/// in practice. It goes: the real photograph when the account has one, then the
+/// generated character for that role and gender, then the drawn face. Initials
+/// are deliberately skipped — two grey letters is what the reference apps look
+/// better than, and a figure with a face reads as a person where "SJ" does not.
+class StatusAvatar extends StatelessWidget {
+  const StatusAvatar({
+    super.key,
+    required this.name,
+    required this.mood,
+    required this.role,
+    this.avatarUrl,
+    this.gender,
+    this.size = 64,
+  });
+
+  final String name;
+  final String? avatarUrl;
+  final Mood mood;
+
+  /// Decides which generated figure stands in when there is no photograph.
+  final CareRole role;
+  final String? gender;
+
+  final double size;
+
+  Color get _tone => switch (mood) {
+    Mood.calm => AppColors.success,
+    Mood.watchful => AppColors.warning,
+    Mood.concerned => AppColors.danger,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto = (avatarUrl ?? '').trim().isNotEmpty;
+    final ring = size * 0.045;
+    final inner = size - ring * 4;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        children: [
+          // The ring is drawn as a padded, bordered circle rather than a
+          // painted arc: it has to sit outside the photo without cropping it,
+          // and a border does that for free at any size.
+          AnimatedContainer(
+            duration:
+                MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 400),
+            width: size,
+            height: size,
+            padding: EdgeInsets.all(ring),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: _tone, width: ring),
+              color: Colors.white,
+            ),
+            child: ClipOval(
+              child:
+                  hasPhoto
+                      ? UserAvatar(
+                        name: name,
+                        avatarUrl: avatarUrl,
+                        accent: AppColors.accentOn(context),
+                        size: inner,
+                      )
+                      // No photo: the generated figure, which itself falls
+                      // back to the drawn face if that combination has no art.
+                      : ColoredBox(
+                        color: AppColors.accentSoft,
+                        child: CharacterAvatar(
+                          role: role,
+                          gender: gender,
+                          mood: mood,
+                          size: inner,
+                        ),
+                      ),
+            ),
+          ),
+          // A small solid dot at the corner. The ring alone is a colour, and a
+          // colour alone is not something everyone can read — the dot gives it
+          // a second, positional cue.
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: size * 0.26,
+              height: size * 0.26,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _tone,
+                border: Border.all(color: Colors.white, width: size * 0.035),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -11,6 +11,7 @@ import '../../../shared/widgets/authed_image.dart';
 import '../../../shared/widgets/hero_band.dart';
 import '../../../shared/widgets/character_avatar.dart';
 import '../../../shared/widgets/mood_avatar.dart';
+import '../../../shared/widgets/status_avatar.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../../glucose/domain/glucose_trends.dart';
@@ -1862,7 +1863,9 @@ class _Hero extends ConsumerWidget {
             _RiskBadge(profile: care.profile),
             const SizedBox(width: AppSpacing.sm),
           ],
-          CharacterAvatar(
+          StatusAvatar(
+            name: name,
+            avatarUrl: ref.watch(authControllerProvider).user?.avatarUrl,
             role: CareRole.patient,
             gender: ref.watch(authControllerProvider).user?.gender,
             mood: switch (latest?.flag) {
