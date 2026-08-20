@@ -46,7 +46,7 @@ class GlassSurface {
   static BoxDecoration card(
     BuildContext context, {
     double? radius,
-    double opacity = 0.66,
+    double opacity = 0.40,
   }) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final tint = dark ? const Color(0xFF121A26) : Colors.white;
@@ -55,9 +55,13 @@ class GlassSurface {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          tint.withValues(alpha: dark ? 0.60 : (opacity + 0.14).clamp(0, 1)),
-          tint.withValues(alpha: dark ? 0.50 : opacity),
-          tint.withValues(alpha: dark ? 0.44 : (opacity - 0.10).clamp(0, 1)),
+          // Transparent enough that the ground reads through the panel. Below
+          // about 0.5 the colour behind starts to show and the thing becomes
+          // glass; above it, it is a white card with a border, which is what
+          // it was.
+          tint.withValues(alpha: dark ? 0.46 : (opacity + 0.16).clamp(0, 1)),
+          tint.withValues(alpha: dark ? 0.38 : opacity),
+          tint.withValues(alpha: dark ? 0.32 : (opacity - 0.08).clamp(0, 1)),
         ],
         stops: const [0, 0.55, 1],
       ),
@@ -135,7 +139,9 @@ class GlassGround extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final base = dark ? const Color(0xFF070C16) : const Color(0xFFEAF0FA);
+    // A touch deeper than the cards, so there is a real difference between
+    // looking at the ground and looking through the glass at it.
+    final base = dark ? const Color(0xFF070C16) : const Color(0xFFDCE6F6);
 
     Widget bloom(Color c, double opacity, double size) => Container(
       width: size,
@@ -159,17 +165,17 @@ class GlassGround extends StatelessWidget {
           Positioned(
             top: -120,
             left: -90,
-            child: bloom(AppColors.primary, 0.30, 340),
+            child: bloom(AppColors.primary, 0.48, 380),
           ),
           Positioned(
             top: 180,
             right: -130,
-            child: bloom(AppColors.accent, 0.26, 320),
+            child: bloom(AppColors.accent, 0.44, 360),
           ),
           Positioned(
             bottom: -140,
             left: 20,
-            child: bloom(const Color(0xFF38BDF8), 0.20, 360),
+            child: bloom(const Color(0xFF38BDF8), 0.38, 400),
           ),
           child,
         ],
