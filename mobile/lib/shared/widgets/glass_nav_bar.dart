@@ -1,0 +1,147 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
+
+/// A floating, frosted navigation bar.
+///
+/// This is the one place in the app that blurs, and the restraint is
+/// deliberate. `BackdropFilter` forces a saveLayer and a framebuffer read-back
+/// on every frame it is on screen — it is the commonest cause of jank in
+/// Flutter, and worst on the 32-bit handsets this clinic's patients carry and
+/// that the release build deliberately still supports. One blur, pinned, over
+/// content that scrolls beneath it, is a cost worth paying because you can
+/// actually see it working. A dozen frosted cards would cost twelve times as
+/// much to look like slightly grey rectangles.
+///
+/// Nothing that has to be read sits on the blur except the tab labels, which
+/// are short, bold and high-contrast. Body text over a variable ground is the
+/// part of this style that hurts people with retinopathy, and there is none
+/// here.
+class GlassNavBar extends StatelessWidget {
+  const GlassNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onSelected,
+    required this.items,
+  });
+
+  final int currentIndex;
+  final ValueChanged<int> onSelected;
+  final List<GlassNavItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      // Floating, not seated. The gap is what makes the content behind it
+      // visible, which is the entire point of frosting the thing.
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md + MediaQuery.viewPaddingOf(context).bottom * 0.35,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            height: 68,
+            decoration: BoxDecoration(
+              // Translucent, not transparent: pure glass leaves the labels
+              // fighting whatever scrolls under them.
+              color: (isDark ? Colors.black : Colors.white).withValues(
+                alpha: isDark ? 0.55 : 0.72,
+              ),
+              borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.55),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.14),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                for (var i = 0; i < items.length; i++)
+                  Expanded(
+                    child: _Tab(
+                      item: items[i],
+                      selected: i == currentIndex,
+                      onTap: () => onSelected(i),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GlassNavItem {
+  const GlassNavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+}
+
+class _Tab extends StatelessWidget {
+  const _Tab({required this.item, required this.selected, required this.onTap});
+
+  final GlassNavItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final tone =
+        selected ? AppColors.accentOn(context) : scheme.onSurfaceVariant;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: item.label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              selected ? item.selectedIcon : item.icon,
+              size: 23,
+              color: tone,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: tone,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
