@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/widgets/glass_nav_bar.dart';
+import '../../../shared/widgets/glass_surface.dart';
 
 /// Bottom-navigation scaffold for the clinician (doctor + staff) app:
 /// Home · Care · Nutrition · Profile.
@@ -21,41 +22,48 @@ class ClinicianShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: GlassNavBar(
-        currentIndex: navigationShell.currentIndex,
-        onSelected:
-            (index) => navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
+    // The ground wraps the Scaffold rather than sitting inside the body, so
+    // it runs behind the navigation bar as well. The bar's surround is only
+    // padding — it was always transparent; what was covering the ground was
+    // the Scaffold's own background underneath it.
+    return GlassGround(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: navigationShell,
+        bottomNavigationBar: GlassNavBar(
+          currentIndex: navigationShell.currentIndex,
+          onSelected:
+              (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+          // Labels kept to single short words so none wrap on a narrow phone.
+          items: const [
+            GlassNavItem(
+              icon: Icons.dashboard_outlined,
+              selectedIcon: Icons.dashboard_rounded,
+              label: 'Home',
             ),
-        // Labels kept to single short words so none wrap on a narrow phone.
-        items: const [
-          GlassNavItem(
-            icon: Icons.dashboard_outlined,
-            selectedIcon: Icons.dashboard_rounded,
-            label: 'Home',
-          ),
-          GlassNavItem(
-            icon: Icons.groups_outlined,
-            selectedIcon: Icons.groups_rounded,
-            // 'Care' rather than 'Patients': it pairs with the Nutrition tab
-            // as the clinic's two conversation streams (care vs nutrition),
-            // which is also how the threads are modelled server-side.
-            label: 'Care',
-          ),
-          GlassNavItem(
-            icon: Icons.restaurant_menu_outlined,
-            selectedIcon: Icons.restaurant_menu_rounded,
-            label: 'Nutrition',
-          ),
-          GlassNavItem(
-            icon: Icons.person_outline_rounded,
-            selectedIcon: Icons.person_rounded,
-            label: 'Profile',
-          ),
-        ],
+            GlassNavItem(
+              icon: Icons.groups_outlined,
+              selectedIcon: Icons.groups_rounded,
+              // 'Care' rather than 'Patients': it pairs with the Nutrition tab
+              // as the clinic's two conversation streams (care vs nutrition),
+              // which is also how the threads are modelled server-side.
+              label: 'Care',
+            ),
+            GlassNavItem(
+              icon: Icons.restaurant_menu_outlined,
+              selectedIcon: Icons.restaurant_menu_rounded,
+              label: 'Nutrition',
+            ),
+            GlassNavItem(
+              icon: Icons.person_outline_rounded,
+              selectedIcon: Icons.person_rounded,
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
