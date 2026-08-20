@@ -26,17 +26,29 @@ import '../../core/theme/app_spacing.dart';
 ///
 /// Every glass surface also carries a grain. Flat translucency reads as plastic
 /// — real frosted glass scatters, and the eye knows the difference even when it
-/// cannot name it. A 64px tile at 3% is enough; any more and it stops being
-/// texture and starts being dirt on the screen.
+/// cannot name it. See [GlassSurface.grain] for why the opacity is what it is;
+/// it was set by compositing the texture over the real card colour at four
+/// levels and looking, not by picking a number that sounded subtle.
 class GlassSurface {
   const GlassSurface._();
 
   /// The grain. One AssetImage, so Flutter caches a single decoded copy
   /// however many surfaces ask for it.
+  ///
+  /// Opacity lives here and nowhere else. The first version set it to 3% on a
+  /// texture whose own alpha already topped out at 28%, and the two multiplied
+  /// to about 0.8% — completely invisible. The texture is fully opaque now, so
+  /// this number is the whole of it.
+  ///
+  /// 0.06, set on the device rather than in a preview. A flat composite
+  /// suggested 0.08 and the fine tile argued for more, so 0.10 shipped — and
+  /// on a real screen it read as a dirty display rather than as frosted glass,
+  /// which is the exact failure this was meant to avoid. Grain should be felt
+  /// and not seen; at 0.06 it is.
   static const DecorationImage grain = DecorationImage(
     image: AssetImage('assets/textures/noise.png'),
     repeat: ImageRepeat.repeat,
-    opacity: 0.030,
+    opacity: 0.06,
     filterQuality: FilterQuality.none,
   );
 
