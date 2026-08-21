@@ -128,6 +128,12 @@ abstract final class T {
   /// The logo's lighter blue — interactive states, links, the lit accent.
   static const Color primaryLight = Color(0xFF4890F0);
 
+  /// The brand taken as dark as it goes while still reading as blue. For a
+  /// mark that has to stand off a [primary] line without leaving the palette —
+  /// amber and red are the conventional warning colours, but on a chart drawn
+  /// in blues they read as a second, unrelated data series.
+  static const Color primaryDeep = Color(0xFF0A1F4D);
+
   /// The primary at ~8%: badge and section backgrounds. Never a text colour.
   static const Color primaryTint = Color(0xFFEBF1FB);
 

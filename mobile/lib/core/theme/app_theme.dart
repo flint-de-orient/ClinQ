@@ -78,7 +78,8 @@ class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+      scaffoldBackgroundColor:
+          isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
     );
 
     // One family, Inter, at every size. Two faces meant a heading and the
@@ -142,7 +143,8 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        backgroundColor:
+            isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         // Material 3 tints the bar as content scrolls under it, which shows as
@@ -163,7 +165,9 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
           // Flat. A raised primary button under a Material 3 tint picks up a
           // grey wash on press that reads as a rendering fault.
           elevation: 0,
@@ -175,7 +179,9 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           ),
@@ -184,7 +190,9 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          textStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
           side: BorderSide(color: colorScheme.outlineVariant, width: 1.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -193,7 +201,10 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          minimumSize: const Size(AppSpacing.minTapTarget, AppSpacing.minTapTarget),
+          minimumSize: const Size(
+            AppSpacing.minTapTarget,
+            AppSpacing.minTapTarget,
+          ),
           textStyle: textTheme.labelLarge,
         ),
       ),
@@ -217,11 +228,15 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          borderSide: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -232,7 +247,9 @@ class AppTheme {
           borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
         labelStyle: textTheme.bodyMedium,
-        hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        hintStyle: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
@@ -240,9 +257,10 @@ class AppTheme {
         // A solid brand pill, as the design sheet draws it — not the tonal
         // primaryContainer, which under a deep-blue seed comes out muddy
         // against white. The icon inside inverts to white.
-        indicatorColor: isDark
-            ? AppColors.primaryDark.withValues(alpha: 0.24)
-            : AppColors.primary,
+        indicatorColor:
+            isDark
+                ? AppColors.primaryDark.withValues(alpha: 0.24)
+                : AppColors.primary,
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         ),
@@ -252,9 +270,10 @@ class AppTheme {
           final selected = states.contains(WidgetState.selected);
           return textTheme.bodySmall?.copyWith(
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected
-                ? (isDark ? AppColors.primaryDark : AppColors.primary)
-                : colorScheme.onSurfaceVariant,
+            color:
+                selected
+                    ? (isDark ? AppColors.primaryDark : AppColors.primary)
+                    : colorScheme.onSurfaceVariant,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -263,9 +282,10 @@ class AppTheme {
             size: 24,
             // White on the filled pill in light mode; on dark the pill is only
             // a wash, so the icon keeps the brand blue and stays legible.
-            color: selected
-                ? (isDark ? AppColors.primaryDark : Colors.white)
-                : colorScheme.onSurfaceVariant,
+            color:
+                selected
+                    ? (isDark ? AppColors.primaryDark : Colors.white)
+                    : colorScheme.onSurfaceVariant,
           );
         }),
       ),

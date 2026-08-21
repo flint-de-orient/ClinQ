@@ -234,7 +234,22 @@ class _Header extends ConsumerWidget {
                           color: T.ink,
                         ),
                       ),
-                    const TextSpan(text: ' 👋'),
+                    // An icon, not the emoji it replaces. A system emoji is
+                    // whatever face the OS ships — it changes between
+                    // manufacturers, ignores the app's type and colour, and on
+                    // this phone rendered a flat yellow that belongs to no
+                    // part of the palette.
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: T.s2),
+                        child: Icon(
+                          Icons.waving_hand_rounded,
+                          size: 18,
+                          color: Color(0xFFE9A23B),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 maxLines: 1,
@@ -491,7 +506,7 @@ class _HeroCard extends ConsumerWidget {
                           Flexible(
                             child: _OnTrackNote(
                               title: "You're on track!",
-                              detail: 'Keep up the good work.',
+                              detail: 'Keep it up.',
                             ),
                           )
                         else
@@ -827,23 +842,31 @@ class _GlucoseSectionState extends ConsumerState<_GlucoseSection> {
     GlucoseRange.m6 => 'Last 6 months',
   };
 
+  /// The stats rail runs to the card's right wall, so a half-visible tile
+  /// shows there is more to swipe to. Everything else keeps the gutter.
+  static const _gutter = EdgeInsets.only(right: T.s5);
+
   @override
   Widget build(BuildContext context) {
     final unit = ref.watch(appPreferencesProvider).glucoseUnit;
     final async = ref.watch(glucoseTrendsRangeProvider(_range));
 
     return SectionCard(
+      padding: const EdgeInsets.fromLTRB(T.s5, T.s5, 0, T.s5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SectionHeader(
-            icon: Icons.monitor_heart_outlined,
-            title: 'Glucose',
-            subtitle: _windowLabel(_range),
-            trailing: ActionLink(
-              label: 'Add reading',
-              leadingIcon: Icons.add_rounded,
-              onTap: () => showLogGlucoseSheet(context),
+          Padding(
+            padding: _gutter,
+            child: SectionHeader(
+              icon: Icons.monitor_heart_outlined,
+              title: 'Glucose',
+              subtitle: _windowLabel(_range),
+              trailing: ActionLink(
+                label: 'Add reading',
+                leadingIcon: Icons.add_rounded,
+                onTap: () => showLogGlucoseSheet(context),
+              ),
             ),
           ),
           const SizedBox(height: T.s4),
@@ -862,7 +885,7 @@ class _GlucoseSectionState extends ConsumerState<_GlucoseSection> {
                         ),
                         const SizedBox(height: T.s3),
                         Text(
-                          'Loading ${_windowLabel(_range).toLowerCase()}…',
+                          'Loading ${_windowLabel(_range).toLowerCase()}...',
                           style: T.small.copyWith(color: T.inkMuted),
                         ),
                       ],
@@ -871,32 +894,36 @@ class _GlucoseSectionState extends ConsumerState<_GlucoseSection> {
                 ),
             error:
                 (_, _) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: T.s5),
+                  padding: const EdgeInsets.fromLTRB(0, T.s5, T.s5, T.s5),
                   child: Text(
                     'Could not load your readings.',
                     style: T.small.copyWith(color: T.inkMuted),
                   ),
                 ),
             data: (t) {
-              if (t.series.length < 2) return const _CheckInPrompt();
+              if (t.series.length < 2) {
+                return const Padding(padding: _gutter, child: _CheckInPrompt());
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _GlucoseStats(trends: t, unit: unit),
-                  if (widget.labHba1c != null) ...[
-                    const SizedBox(height: T.s3),
-                    _LabHba1cTile(result: widget.labHba1c!),
-                  ],
+                  _StatsRail(trends: t, unit: unit, labHba1c: widget.labHba1c),
                   const SizedBox(height: T.s5),
-                  HomeGlucoseChart(points: t.series, unit: unit),
+                  Padding(
+                    padding: _gutter,
+                    child: HomeGlucoseChart(points: t.series, unit: unit),
+                  ),
                 ],
               );
             },
           ),
           const SizedBox(height: T.s4),
-          _RangePicker(
-            value: _range,
-            onChanged: (r) => setState(() => _range = r),
+          Padding(
+            padding: _gutter,
+            child: _RangePicker(
+              value: _range,
+              onChanged: (r) => setState(() => _range = r),
+            ),
           ),
         ],
       ),
@@ -921,17 +948,29 @@ class _GlucoseSectionState extends ConsumerState<_GlucoseSection> {
   _ => (status: Status.neutral, label: 'No band set'),
 };
 
-/// The four figures, as a 2×2 grid.
+/// The window's figures, as one swipeable rail.
 ///
-/// The reference sets these four across one row. At a real phone's 360dp that
-/// leaves about 76dp per tile, which truncates every status word — and the
-/// status word is the clinical content; the number alone does not tell a
-/// patient whether to do anything. Two rows keeps both.
-class _GlucoseStats extends StatelessWidget {
-  const _GlucoseStats({required this.trends, required this.unit});
+/// This was a 2x2 grid, and with the lab result stacked underneath it the
+/// block ran to roughly 250dp — so the chart, which is the part worth looking
+/// at, started below the fold on every phone. Four across in a fixed row was
+/// the other thing tried, and at 360dp it left each tile about 76dp and
+/// truncated every status word; the status word is the clinical content, so
+/// that was the worse trade.
+///
+/// A rail keeps the tiles wide enough to read, puts the chart back above the
+/// fold, and gives the lab result somewhere to sit that shares the rhythm
+/// instead of interrupting it — same shape, same type, tinted to say it comes
+/// from a blood test rather than from the readings in this window.
+class _StatsRail extends StatelessWidget {
+  const _StatsRail({
+    required this.trends,
+    required this.unit,
+    required this.labHba1c,
+  });
 
   final GlucoseTrends trends;
   final GlucoseUnit unit;
+  final Hba1cResult? labHba1c;
 
   /// The reading that produced a stat, so its own server flag and timestamp
   /// can be shown rather than re-derived.
@@ -949,98 +988,85 @@ class _GlucoseStats extends StatelessWidget {
     final lowest = _pointFor(s.min);
     final highest = _pointFor(s.max);
 
-    // The average is not a reading, so it has no server flag. It is judged
-    // against the same general band the chart shades, and labelled with that
-    // in mind — "above target", not "high".
-    final avgVerdict =
+    // The average is not a reading, so it carries no server flag. It is judged
+    // against the same general band the chart shades, and worded with that in
+    // mind — "above target", not "high".
+    final avg =
         s.average == null
-            ? (status: Status.neutral, label: '—')
+            ? (status: Status.neutral, label: '-')
             : s.average! > kTargetHighMgdl
             ? (status: Status.watch, label: 'Above target')
             : s.average! < kTargetLowMgdl
             ? (status: Status.alert, label: 'Below target')
             : (status: Status.ok, label: 'Within range');
 
-    return Column(
-      children: [
-        // IntrinsicHeight, not a bare stretch. A Row asking its children to
-        // stretch needs a bounded height to stretch them *to*, and inside a
-        // ListView the vertical constraint is unbounded — so the Row laid out
-        // to a broken height and took every section below it off the page with
-        // it. IntrinsicHeight measures the taller tile and gives the Row that,
-        // which is the equal-height pair the layout was after.
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _StatTile(
-                  label: 'Average',
-                  value:
-                      s.average == null
-                          ? '—'
-                          : unit.format(s.average!, withUnit: false),
-                  unit: s.average == null ? null : unit.label,
-                  pill: s.average == null ? null : avgVerdict.label,
-                  status: avgVerdict.status,
-                ),
-              ),
-              const SizedBox(width: T.s3),
-              Expanded(
-                child: _StatTile(
-                  label: 'Lowest',
-                  value:
-                      s.min == null
-                          ? '—'
-                          : unit.format(s.min!, withUnit: false),
-                  unit: s.min == null ? null : unit.label,
-                  pill: s.min == null ? null : _flagVerdict(lowest?.flag).label,
-                  status: _flagVerdict(lowest?.flag).status,
-                  at: lowest?.at,
-                ),
-              ),
-            ],
-          ),
+    final tiles = <Widget>[
+      _StatTile(
+        label: 'Average',
+        value:
+            s.average == null ? '—' : unit.format(s.average!, withUnit: false),
+        unit: s.average == null ? null : unit.label,
+        pill: s.average == null ? null : avg.label,
+        status: avg.status,
+      ),
+      _StatTile(
+        label: 'Lowest',
+        value: s.min == null ? '—' : unit.format(s.min!, withUnit: false),
+        unit: s.min == null ? null : unit.label,
+        pill: s.min == null ? null : _flagVerdict(lowest?.flag).label,
+        status: _flagVerdict(lowest?.flag).status,
+        at: lowest?.at,
+      ),
+      _StatTile(
+        label: 'Highest',
+        value: s.max == null ? '—' : unit.format(s.max!, withUnit: false),
+        unit: s.max == null ? null : unit.label,
+        pill: s.max == null ? null : _flagVerdict(highest?.flag).label,
+        status: _flagVerdict(highest?.flag).status,
+        at: highest?.at,
+      ),
+      _StatTile(
+        label: 'Estimated HbA1c',
+        value:
+            s.estimatedHba1c == null
+                ? '—'
+                : '~${s.estimatedHba1c!.toStringAsFixed(1)}',
+        unit: s.estimatedHba1c == null ? null : '%',
+        footnote: 'From your readings',
+        status: Status.neutral,
+        info:
+            'Worked out from the readings you have logged, not from a blood '
+            'test. It moves as you log more.',
+      ),
+      // Two numbers both called HbA1c, points apart, with neither saying where
+      // it came from was the most alarming thing this screen could have done.
+      // Adjacent and differently tinted, the distinction is unmissable.
+      if (labHba1c != null)
+        _StatTile(
+          label: 'Lab HbA1c',
+          value: labHba1c!.percentage.toStringAsFixed(1),
+          unit: '%',
+          footnote:
+              labHba1c!.testedOn == null
+                  ? 'From a blood test'
+                  : 'Tested ${DateFormat('d MMM').format(labHba1c!.testedOn!)}',
+          status: labHba1c!.isHigh ? Status.alert : Status.neutral,
+          tone: T.primaryTint,
+          onTap: () => context.push('/profile/tests'),
         ),
-        const SizedBox(height: T.s3),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _StatTile(
-                  label: 'Highest',
-                  value:
-                      s.max == null
-                          ? '—'
-                          : unit.format(s.max!, withUnit: false),
-                  unit: s.max == null ? null : unit.label,
-                  pill:
-                      s.max == null ? null : _flagVerdict(highest?.flag).label,
-                  status: _flagVerdict(highest?.flag).status,
-                  at: highest?.at,
-                ),
-              ),
-              const SizedBox(width: T.s3),
-              Expanded(
-                child: _StatTile(
-                  label: 'Estimated HbA1c',
-                  value:
-                      s.estimatedHba1c == null
-                          ? '—'
-                          : '~${s.estimatedHba1c!.toStringAsFixed(1)}',
-                  unit: s.estimatedHba1c == null ? null : '%',
-                  footnote: 'From recent readings',
-                  status: Status.neutral,
-                  info:
-                      'Worked out from the readings you have logged, not from '
-                      'a blood test. It moves as you log more.',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    ];
+
+    return SizedBox(
+      // Scaled by the text factor: the tiles hold four short lines and would
+      // clip at the larger accessibility sizes.
+      height: MediaQuery.textScalerOf(context).scale(114),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(right: T.s5),
+        itemCount: tiles.length,
+        separatorBuilder: (_, _) => const SizedBox(width: T.s3),
+        itemBuilder: (_, i) => SizedBox(width: 148, child: tiles[i]),
+      ),
     );
   }
 }
@@ -1055,6 +1081,8 @@ class _StatTile extends StatelessWidget {
     this.footnote,
     this.at,
     this.info,
+    this.tone,
+    this.onTap,
   });
 
   final String label;
@@ -1068,14 +1096,17 @@ class _StatTile extends StatelessWidget {
   /// something quite different this morning than three weeks ago.
   final DateTime? at;
   final String? info;
+  final Color? tone;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InnerTile(
       padding: const EdgeInsets.all(T.s3),
+      tone: tone,
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -1102,6 +1133,8 @@ class _StatTile extends StatelessWidget {
                     color: T.inkFaint,
                   ),
                 ),
+              if (onTap != null)
+                Icon(Icons.chevron_right_rounded, size: 16, color: T.primary),
             ],
           ),
           const SizedBox(height: T.s1),
@@ -1111,8 +1144,8 @@ class _StatTile extends StatelessWidget {
             size: 24,
             color: status == Status.alert ? T.danger : null,
           ),
-          if (pill != null) ...[
-            const SizedBox(height: T.s2),
+          const Spacer(),
+          if (pill != null)
             StatusPill(
               label: pill!,
               status: status,
@@ -1123,7 +1156,6 @@ class _StatTile extends StatelessWidget {
                       ? Icons.check_rounded
                       : null,
             ),
-          ],
           if (at != null) ...[
             const SizedBox(height: T.s1),
             Text(
@@ -1138,8 +1170,7 @@ class _StatTile extends StatelessWidget {
               ),
             ),
           ],
-          if (footnote != null) ...[
-            const SizedBox(height: T.s2),
+          if (footnote != null)
             Text(
               footnote!,
               maxLines: 1,
@@ -1151,71 +1182,6 @@ class _StatTile extends StatelessWidget {
                 color: T.inkFaint,
               ),
             ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// The lab result, immediately below the estimate and deliberately unlike it.
-///
-/// Two numbers both called "HbA1c" that disagree by three points is the single
-/// most alarming thing this screen could do, and it did it — 5.6% in one card
-/// and ~9.2% in another, neither saying where it came from. They measure
-/// different things over different windows: one is blood drawn on a date, the
-/// other is arithmetic on whatever has been logged since. So they are labelled
-/// by their source, and the lab one carries the date it was taken.
-class _LabHba1cTile extends StatelessWidget {
-  const _LabHba1cTile({required this.result});
-
-  final Hba1cResult result;
-
-  @override
-  Widget build(BuildContext context) {
-    return InnerTile(
-      onTap: () => context.push('/profile/tests'),
-      child: Row(
-        children: [
-          Icon(Icons.biotech_outlined, size: 20, color: T.primary),
-          const SizedBox(width: T.s3),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Lab HbA1c',
-                  style: T.label.copyWith(
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0,
-                    color: T.inkMuted,
-                  ),
-                ),
-                Text(
-                  result.testedOn == null
-                      ? 'From a blood test'
-                      : 'Tested ${DateFormat('d MMM').format(result.testedOn!)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: T.label.copyWith(
-                    fontSize: 10,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w500,
-                    color: T.inkFaint,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          MetricValue(
-            value: result.percentage.toStringAsFixed(1),
-            unit: '%',
-            size: 22,
-            color: result.isHigh ? T.danger : null,
-          ),
-          const SizedBox(width: T.s2),
-          Icon(Icons.chevron_right_rounded, size: 18, color: T.inkFaint),
         ],
       ),
     );

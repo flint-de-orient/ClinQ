@@ -18,24 +18,99 @@ const double kTargetHighMgdl = 180;
 
 /// The patient's trend, drawn to be read at a glance rather than studied.
 ///
-/// Every choice here is a subtraction from what fl_chart does by default:
-/// five horizontal rules instead of one every 50, six date labels at even
-/// *time* intervals instead of one per reading, no vertical grid, no legend.
-/// The previous chart printed a label per point, so a fortnight of daily
-/// readings collided into an unreadable grey band along the bottom and the
-/// same date appeared three times in a row.
+/// Three things were wrong with the first version and all three were the same
+/// mistake — letting the chart library decide what to label.
+///
+///  * fl_chart draws a tick at the axis minimum and maximum *as well as* the
+///    ticks at your interval, so "450" and "400" ended up a few pixels apart
+///    on the left and "17 Aug" landed under "21 Aug" on the right. Both axes
+///    are now filtered to the positions this widget computed; anything else
+///    is dropped.
+///  * The dates are an ordinary Row underneath the plot rather than the
+///    chart's own labels, because a label centred on the last tick always
+///    half-overhangs the widget and gets clipped. Spaced along a row, the
+///    first and last sit inside the edges by construction.
+///  * The y scale snaps to a round step — 25, 50, 100 — so the gridlines read
+///    50 / 150 / 250 rather than whatever four equal slices of the data
+///    happened to come to.
+///
+/// A dot per reading was also too much ink over a month. Only the readings
+/// outside the band are marked now, plus the most recent one, so a mark means
+/// "look at this" rather than "here is a data point".
 class HomeGlucoseChart extends StatelessWidget {
   const HomeGlucoseChart({super.key, required this.points, required this.unit});
 
   final List<GlucoseTrendPoint> points;
   final GlucoseUnit unit;
 
-  /// Rounds [v] out to the next multiple of [step], away from zero.
-  static double _snap(double v, double step, {required bool up}) =>
-      up ? (v / step).ceilToDouble() * step : (v / step).floorToDouble() * step;
+  /// Width of the y-axis gutter. Shared by the chart and by the date row
+  /// below it, so the dates line up with the plot and not with the card.
+  static const double _gutter = 38;
+
+  /// A step the eye can count in. Chosen so the axis lands on 4 or 5 lines.
+  static double _niceStep(double range) {
+    const candidates = <double>[1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
+    for (final c in candidates) {
+      if (range / c <= 4.5) return c;
+    }
+    return 1000;
+  }
 
   String _tick(double v) =>
       unit == GlucoseUnit.mgdl ? v.round().toString() : v.toStringAsFixed(1);
+
+  /// At most this many points are ever drawn. Beyond it the line stops being
+  /// a trend and becomes texture.
+  static const int _maxPoints = 60;
+
+  /// Buckets [dated] by time when there are too many readings to draw, and
+  /// returns the mean line plus the low/high envelope of each bucket.
+  _Series _bucket(List<GlucoseTrendPoint> dated) {
+    double y(GlucoseTrendPoint p) => unit.fromMgdl(p.value);
+    double x(GlucoseTrendPoint p) => p.at!.millisecondsSinceEpoch.toDouble();
+
+    if (dated.length <= _maxPoints) {
+      return _Series(
+        mean: [for (final p in dated) FlSpot(x(p), y(p))],
+        low: const [],
+        high: const [],
+        label: null,
+      );
+    }
+
+    const day = 86400000.0;
+    final span = x(dated.last) - x(dated.first);
+    // Whole days, never a fraction: a bucket that straddles midnight is a
+    // bucket a patient cannot reason about.
+    final days = (span / _maxPoints / day).ceil().clamp(1, 30);
+    final width = days * day;
+    final origin = x(dated.first);
+
+    final groups = <int, List<GlucoseTrendPoint>>{};
+    for (final p in dated) {
+      groups.putIfAbsent(((x(p) - origin) / width).floor(), () => []).add(p);
+    }
+
+    final keys = groups.keys.toList()..sort();
+    final mean = <FlSpot>[];
+    final low = <FlSpot>[];
+    final high = <FlSpot>[];
+    for (final k in keys) {
+      final g = groups[k]!;
+      final at = origin + (k + 0.5) * width;
+      final vs = g.map(y).toList();
+      mean.add(FlSpot(at, vs.reduce((a, b) => a + b) / vs.length));
+      low.add(FlSpot(at, vs.reduce((a, b) => a < b ? a : b)));
+      high.add(FlSpot(at, vs.reduce((a, b) => a > b ? a : b)));
+    }
+
+    return _Series(
+      mean: mean,
+      low: low,
+      high: high,
+      label: days == 1 ? 'Daily average' : '$days-day average',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,49 +122,60 @@ class HomeGlucoseChart extends StatelessWidget {
           ..sort((a, b) => a.at!.compareTo(b.at!));
     if (dated.length < 2) return const SizedBox.shrink();
 
-    final spots = [
-      for (final p in dated)
-        FlSpot(p.at!.millisecondsSinceEpoch.toDouble(), unit.fromMgdl(p.value)),
-    ];
+    // Six months of raw readings is several hundred points: the line becomes
+    // a solid zigzag and every out-of-range dot lands on top of its
+    // neighbours. Past a threshold the readings are bucketed by time and the
+    // chart draws the average with the day's spread shaded behind it — which
+    // is more informative than the zigzag was, not less, and is labelled so
+    // nobody reads an average as a reading.
+    final agg = _bucket(dated);
+    final spots = agg.mean;
 
     final lowT = unit.fromMgdl(kTargetLowMgdl);
     final highT = unit.fromMgdl(kTargetHighMgdl);
 
-    // The band is always fully visible even when every reading sits above it:
-    // a target you cannot see is not a reference.
-    final ys = spots.map((s) => s.y);
-    final step = unit == GlucoseUnit.mgdl ? 50.0 : 2.0;
-    var lo = _snap(
-      [
-        ys.reduce((a, b) => a < b ? a : b),
-        lowT,
-      ].reduce((a, b) => a < b ? a : b),
-      step,
-      up: false,
-    );
-    var hi = _snap(
-      [
-        ys.reduce((a, b) => a > b ? a : b),
-        highT,
-      ].reduce((a, b) => a > b ? a : b),
-      step,
-      up: true,
-    );
-    if (lo < 0) lo = 0;
-    if (hi - lo < step * 4) hi = lo + step * 4;
+    // The band stays fully visible even when every reading sits above it: a
+    // target you cannot see is not a reference.
+    final ys = spots.map((s) => s.y).toList();
+    final dataLo = [...ys, lowT].reduce((a, b) => a < b ? a : b);
+    final dataHi = [...ys, highT].reduce((a, b) => a > b ? a : b);
 
-    final minX = spots.first.x;
-    final maxX = spots.last.x;
+    // Snapped to a fine granularity, not to the label step. Rounding a floor
+    // of 70 out to the nearest 100 gave the plot an empty 0–70 strip along the
+    // bottom — a seventh of the height spent on values nobody recorded.
+    final base = unit == GlucoseUnit.mgdl ? 50.0 : 2.0;
+    var lo = (dataLo / base).floorToDouble() * base;
+    var hi = (dataHi / base).ceilToDouble() * base;
+    if (lo < 0) lo = 0;
+    if (hi <= lo) hi = lo + base * 4;
+
+    // Gridlines are multiples of the step counted from zero — 100, 200, 300 —
+    // not from the axis floor. fl_chart generates its ticks that way, and the
+    // filter below has to agree with it or every label is discarded, which is
+    // exactly what happened: the axis came out bare except for its floor.
+    var step = _niceStep(hi - lo);
+    var guard = 0;
+    while (guard++ < 6) {
+      final count =
+          (hi / step).floorToDouble() - (lo / step).ceilToDouble() + 1;
+      if (count >= 3) break;
+      step /= 2;
+      if (step < 1) break;
+    }
+
+    // A dot centred exactly on the axis end is half outside it, and
+    // FlClipData cuts the half that matters — the newest reading. A little
+    // breathing room at each end keeps both end dots whole.
+    final firstX = spots.first.x;
+    final lastX = spots.last.x;
+    final pad = (lastX - firstX) * 0.03;
+    final minX = firstX - pad;
+    final maxX = lastX + pad;
     // Several readings logged inside the same minute collapse the domain to a
     // single instant. Dividing by that produced NaN intervals, and fl_chart
-    // given NaN draws a path with no bounds at all — which is how a stray blue
-    // line ended up above the card. There is no trend in a zero-length window
-    // to draw anyway.
-    if (maxX <= minX || hi <= lo) return const SizedBox.shrink();
-
-    // Six labels, evenly spaced in time — so the gaps between dates mean
-    // something, and no date can print twice.
-    final xInterval = (maxX - minX) / 5;
+    // handed NaN draws a path with no bounds at all. There is no trend in a
+    // zero-length window to draw anyway.
+    if (lastX <= firstX) return const SizedBox.shrink();
 
     final axisStyle = T.label.copyWith(
       fontSize: 11,
@@ -98,16 +184,53 @@ class HomeGlucoseChart extends StatelessWidget {
       color: T.inkFaint,
     );
 
+    // Five dates across the plot. Over half a year the day of the month is
+    // noise, so it drops to the month alone.
+    // Five ticks across the plot, formatted by whatever actually
+    // distinguishes them. A fixed 'd MMM' printed "21 Aug" five times on a
+    // 7-day window where every reading landed on one day — an axis that
+    // repeats itself is worse than no axis — so the format steps finer until
+    // the five labels differ.
+    final ticks = [
+      for (var i = 0; i < 5; i++)
+        DateTime.fromMillisecondsSinceEpoch(
+          (firstX + (lastX - firstX) * i / 4).round(),
+        ),
+    ];
+    final spanDays = (lastX - firstX) / 86400000;
+    final patterns = [
+      if (spanDays > 150) 'MMM',
+      'd MMM',
+      'd MMM, h a',
+      'h:mm a',
+    ];
+    var dates = <String>[];
+    for (final pattern in patterns) {
+      dates = [for (final t in ticks) DateFormat(pattern).format(t)];
+      if (dates.toSet().length == dates.length) break;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: T.s1),
-          child: Text(unit.label, style: axisStyle),
+        Row(
+          children: [
+            Text(
+              agg.label == null ? unit.label : '${unit.label}  ·  ${agg.label}',
+              style: axisStyle,
+            ),
+            const Spacer(),
+            // A legend. The chart carries a blue line, a green band and
+            // coloured dots, and nothing said which was which — an orange dot
+            // could as easily have meant "post-meal".
+            const _Key(color: Color(0x1A0B8A4E), label: 'Target', bar: true),
+            const SizedBox(width: T.s3),
+            const _Key(color: T.primaryDeep, label: 'Out of range'),
+          ],
         ),
-        const SizedBox(height: T.s1),
+        const SizedBox(height: T.s2),
         SizedBox(
-          height: 168,
+          height: 172,
           child: Stack(
             children: [
               LineChart(
@@ -119,7 +242,7 @@ class HomeGlucoseChart extends StatelessWidget {
                   clipData: const FlClipData.all(),
                   gridData: FlGridData(
                     drawVerticalLine: false,
-                    horizontalInterval: (hi - lo) / 4,
+                    horizontalInterval: step,
                     getDrawingHorizontalLine:
                         (_) => const FlLine(
                           color: Color(0xFFEDF1F7),
@@ -139,35 +262,26 @@ class HomeGlucoseChart extends StatelessWidget {
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(),
                     rightTitles: const AxisTitles(),
+                    // Drawn as a Row below instead — see the class comment.
+                    bottomTitles: const AxisTitles(),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 34,
-                        interval: (hi - lo) / 4,
-                        getTitlesWidget:
-                            (v, _) => Padding(
-                              padding: const EdgeInsets.only(right: T.s1),
-                              child: Text(
-                                _tick(v),
-                                textAlign: TextAlign.right,
-                                style: axisStyle,
-                              ),
-                            ),
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 24,
-                        interval: xInterval,
+                        reservedSize: _gutter,
+                        interval: step,
                         getTitlesWidget: (v, _) {
-                          final at = DateTime.fromMillisecondsSinceEpoch(
-                            v.round(),
-                          );
+                          // Drop anything not on the grid. This is what stops
+                          // the library's own min/max ticks colliding with the
+                          // stepped ones.
+                          final k = v / step;
+                          if ((k - k.roundToDouble()).abs() > 0.01) {
+                            return const SizedBox.shrink();
+                          }
                           return Padding(
-                            padding: const EdgeInsets.only(top: T.s2),
+                            padding: const EdgeInsets.only(right: T.s2),
                             child: Text(
-                              DateFormat('d MMM').format(at),
+                              _tick(v),
+                              textAlign: TextAlign.right,
                               style: axisStyle,
                             ),
                           );
@@ -178,6 +292,7 @@ class HomeGlucoseChart extends StatelessWidget {
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipColor: (_) => T.ink,
+                      tooltipRoundedRadius: T.rControl,
                       getTooltipItems:
                           (touched) => [
                             for (final t in touched)
@@ -194,30 +309,76 @@ class HomeGlucoseChart extends StatelessWidget {
                           ],
                     ),
                   ),
+                  betweenBarsData: [
+                    if (agg.low.isNotEmpty)
+                      BetweenBarsData(
+                        fromIndex: 0,
+                        toIndex: 1,
+                        color: T.primary.withValues(alpha: 0.13),
+                      ),
+                  ],
                   lineBarsData: [
+                    // The spread of each bucket, as an invisible pair with the
+                    // fill between them. Averaging a 438 away would be a lie by
+                    // omission on a glucose chart; the band keeps the extremes
+                    // on the page while the mean stays readable.
+                    if (agg.low.isNotEmpty) ...[
+                      LineChartBarData(
+                        spots: agg.high,
+                        isCurved: false,
+                        barWidth: 0,
+                        color: Colors.transparent,
+                        dotData: const FlDotData(show: false),
+                      ),
+                      LineChartBarData(
+                        spots: agg.low,
+                        isCurved: false,
+                        barWidth: 0,
+                        color: Colors.transparent,
+                        dotData: const FlDotData(show: false),
+                      ),
+                    ],
                     LineChartBarData(
                       spots: spots,
-                      isCurved: true,
-                      // Above ~0.2 an overshoot between two distant readings
-                      // can dip the curve below values never recorded, which
-                      // on a glucose chart would read as a hypo that did not
-                      // happen.
-                      curveSmoothness: 0.2,
-                      preventCurveOverShooting: true,
+                      // Straight segments. A spline through 200 → 438 → 300
+                      // invents a curve nobody measured, and on a glucose
+                      // chart the shape between two readings is exactly the
+                      // thing not to editorialise.
+                      isCurved: false,
                       color: T.primary,
-                      barWidth: 2.5,
+                      barWidth: 2.2,
                       dotData: FlDotData(
-                        show: spots.length <= 40,
-                        getDotPainter:
-                            (spot, _, _, _) => FlDotCirclePainter(
-                              radius: 3,
-                              color:
-                                  spot.y < lowT || spot.y > highT
-                                      ? T.primary
-                                      : Colors.white,
-                              strokeWidth: 2,
-                              strokeColor: T.primary,
-                            ),
+                        // Only what is worth looking at: readings outside the
+                        // band, and the latest one.
+                        // Marks earn their place. Over a long window every
+                        // second reading is out of band, and a dot on each
+                        // packed into a solid stripe that hid the line beneath
+                        // it — so past 40 points only the newest is marked and
+                        // the shaded band carries the rest.
+                        checkToShowDot:
+                            (spot, _) =>
+                                spot.x == spots.last.x ||
+                                // Once the line is an average the shaded band
+                                // already carries where the readings went, so
+                                // a dot per bucket is decoration — forty of
+                                // them buried the line underneath.
+                                (agg.label == null &&
+                                    spots.length <= 40 &&
+                                    (spot.y < lowT || spot.y > highT)),
+                        getDotPainter: (spot, _, _, _) {
+                          final out = spot.y < lowT || spot.y > highT;
+                          // Filled deep navy for a reading outside the band,
+                          // hollow for the latest one in it. The white ring is
+                          // what separates the mark from the line it sits on —
+                          // without it a same-family dot just thickens the
+                          // stroke.
+                          return FlDotCirclePainter(
+                            radius: out ? 4 : 4.5,
+                            color: out ? T.primaryDeep : Colors.white,
+                            strokeWidth: 2,
+                            strokeColor: out ? Colors.white : T.primary,
+                          );
+                        },
                       ),
                       belowBarData: BarAreaData(
                         show: true,
@@ -225,7 +386,7 @@ class HomeGlucoseChart extends StatelessWidget {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            T.primary.withValues(alpha: 0.14),
+                            T.primary.withValues(alpha: 0.13),
                             T.primary.withValues(alpha: 0),
                           ],
                         ),
@@ -234,41 +395,77 @@ class HomeGlucoseChart extends StatelessWidget {
                   ],
                 ),
               ),
-              // Sits inside the shaded band at the right-hand edge, which is
-              // the only spot on the plot the line reliably does not reach.
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 24,
-                child: IgnorePointer(
-                  child: Align(
-                    alignment: Alignment(
-                      1,
-                      // Convert the middle of the band into the -1..1 the
-                      // Alignment axis wants, flipped because y grows upward
-                      // on the chart and downward on the screen. Clamped: the
-                      // band can sit outside the drawn range, and an unclamped
-                      // Alignment puts the label off the widget entirely.
-                      (1 - 2 * (((lowT + highT) / 2) - lo) / (hi - lo)).clamp(
-                        -1.0,
-                        1.0,
-                      ),
-                    ),
-                    child: Text(
-                      'Target range',
-                      style: T.label.copyWith(
-                        fontSize: 10,
-                        letterSpacing: 0,
-                        color: T.success,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
+          ),
+        ),
+        const SizedBox(height: T.s2),
+        Padding(
+          // Aligned to the plot, not to the card, so the dates sit under the
+          // line rather than under the axis numbers.
+          padding: const EdgeInsets.only(left: _gutter),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [for (final d in dates) Text(d, style: axisStyle)],
           ),
         ),
       ],
     );
   }
+}
+
+/// What the chart draws: a mean line, and — when the readings were bucketed —
+/// the low and high of each bucket to shade between.
+class _Series {
+  const _Series({
+    required this.mean,
+    required this.low,
+    required this.high,
+    required this.label,
+  });
+
+  final List<FlSpot> mean;
+  final List<FlSpot> low;
+  final List<FlSpot> high;
+
+  /// "Daily average", "3-day average", or null when nothing was aggregated and
+  /// every point on the line is a real reading.
+  final String? label;
+}
+
+/// One legend entry: a swatch and a word.
+class _Key extends StatelessWidget {
+  const _Key({required this.color, required this.label, this.bar = false});
+
+  final Color color;
+  final String label;
+
+  /// A bar for a shaded region, a dot for a marked reading.
+  final bool bar;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: bar ? 12 : 7,
+        height: 7,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(bar ? 2 : 4),
+          border:
+              bar ? Border.all(color: T.success.withValues(alpha: 0.35)) : null,
+        ),
+      ),
+      const SizedBox(width: 4),
+      Text(
+        label,
+        style: T.label.copyWith(
+          fontSize: 10,
+          letterSpacing: 0,
+          fontWeight: FontWeight.w500,
+          color: T.inkFaint,
+        ),
+      ),
+    ],
+  );
 }

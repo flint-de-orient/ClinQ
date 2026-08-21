@@ -76,19 +76,27 @@ class AppColors {
   /// The brand green, legible on whichever surface it is drawn on. The deep
   /// forest green disappears into a dark background; [primaryDark] is its
   /// counterpart, and this picks between them.
-  static Color accentOn(BuildContext context) => isDark(context) ? primaryDark : primary;
+  static Color accentOn(BuildContext context) =>
+      isDark(context) ? primaryDark : primary;
 
   static Color accentSoftOn(BuildContext context) =>
       isDark(context) ? accentSoftDark : accentSoft;
 
-  static Color dangerOn(BuildContext context) => isDark(context) ? dangerLight : danger;
-  static Color warningOn(BuildContext context) => isDark(context) ? warningLight : warning;
-  static Color successOn(BuildContext context) => isDark(context) ? successLight : success;
+  static Color dangerOn(BuildContext context) =>
+      isDark(context) ? dangerLight : danger;
+  static Color warningOn(BuildContext context) =>
+      isDark(context) ? warningLight : warning;
+  static Color successOn(BuildContext context) =>
+      isDark(context) ? successLight : success;
 
-  static Color dangerBgOn(BuildContext context) => isDark(context) ? dangerBgDark : dangerBg;
-  static Color warningBgOn(BuildContext context) => isDark(context) ? warningBgDark : warningBg;
-  static Color successBgOn(BuildContext context) => isDark(context) ? successBgDark : successBg;
-  static Color infoBgOn(BuildContext context) => isDark(context) ? infoBgDark : infoBg;
+  static Color dangerBgOn(BuildContext context) =>
+      isDark(context) ? dangerBgDark : dangerBg;
+  static Color warningBgOn(BuildContext context) =>
+      isDark(context) ? warningBgDark : warningBg;
+  static Color successBgOn(BuildContext context) =>
+      isDark(context) ? successBgDark : successBg;
+  static Color infoBgOn(BuildContext context) =>
+      isDark(context) ? infoBgDark : infoBg;
 
   /// Glucose flag and triage urgency, in the current brightness. The plain
   /// [forGlucoseFlag] / [forUrgency] stay for the theme and for places that
@@ -109,9 +117,10 @@ class AppColors {
   /// carry more weight than the assistant's. The light-mode 10% wash of a
   /// near-black green is invisible on a dark surface, so dark tints with the
   /// bright green instead.
-  static Color bubbleClinician(BuildContext context) => isDark(context)
-      ? primaryDark.withValues(alpha: 0.18)
-      : primary.withValues(alpha: 0.10);
+  static Color bubbleClinician(BuildContext context) =>
+      isDark(context)
+          ? primaryDark.withValues(alpha: 0.18)
+          : primary.withValues(alpha: 0.10);
 
   /// Maps a light-mode brand or status colour to its dark-mode counterpart.
   ///
