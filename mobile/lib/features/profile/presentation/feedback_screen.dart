@@ -153,6 +153,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                   _about == 'clinic'
                       ? 'Tell Dr. Dey what went well, or what did not…'
                       : 'Tell us what is broken or confusing…',
+              // Darker than the theme's default hint, which sits at 38% opacity
+              // and falls under the AA contrast floor on white. A placeholder
+              // nobody can read is a field with no guidance at all, and this
+              // clinic's patients are largely elderly.
+              hintStyle: TextStyle(
+                color: scheme.onSurfaceVariant,
+                fontSize: 15,
+                height: 1.4,
+              ),
               alignLabelWithHint: true,
             ),
           ),

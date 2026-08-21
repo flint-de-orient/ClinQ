@@ -872,7 +872,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get notifDeliveryNote =>
-      'इस फ़ोन पर पुश डिलीवरी सेट की जा रही है। चालू होने पर ये प्राथमिकताएँ लागू होंगी; आपकी उठाई हर चेतावनी डॉक्टर अभी देखते हैं।';
+      'आपकी नोटिफ़िकेशन सेटिंग्स सहेज ली गई हैं और इस फ़ोन पर अलर्ट आते ही लागू हो जाएँगी। आप जो भी बताते हैं, आपके डॉक्टर उसे अभी देख पाते हैं।';
 
   @override
   String get healthHeight => 'कद (सेमी)';

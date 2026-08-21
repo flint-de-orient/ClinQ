@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// No description provided for @notifDeliveryNote.
   ///
   /// In en, this message translates to:
-  /// **'Push delivery to this phone is being set up. These preferences will apply once it is live; your doctor already sees every alert you raise.'**
+  /// **'Your notification settings are saved and will apply as soon as alerts start arriving on this phone. Your doctor already sees everything you raise.'**
   String get notifDeliveryNote;
 
   /// No description provided for @healthHeight.

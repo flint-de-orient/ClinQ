@@ -221,12 +221,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       size: 18,
                       color: scheme.outline,
                     ),
-                    child: Text(
-                      user?.phone ?? '',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.phone ?? '',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        // Here, under the field, not at the foot of the form.
+                        // A patient tapping this expects to edit it, and the
+                        // answer has to be where the question is asked — a note
+                        // three fields further down is read after the confusion,
+                        // which is too late to prevent it.
+                        Text(
+                          l10n.profilePhoneLocked,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            height: 1.35,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   _Divider(scheme: scheme),
@@ -328,15 +347,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.profilePhoneLocked,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: scheme.onSurfaceVariant,
               ),
             ),
           ],

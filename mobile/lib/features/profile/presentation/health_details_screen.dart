@@ -296,6 +296,12 @@ class _HealthDetailsScreenState extends ConsumerState<HealthDetailsScreen> {
         labelText: label,
         hintText: hint,
         alignLabelWithHint: maxLines > 1,
+        // The label floats from the start so the hint under it is visible while
+        // the field is still empty. By default Material parks the label inside
+        // the box and hides the hint until focus — which is exactly backwards:
+        // the guidance is needed BEFORE tapping, and an empty box with no
+        // example reads as broken rather than optional.
+        floatingLabelBehavior: FloatingLabelBehavior.always,
       ),
     );
   }

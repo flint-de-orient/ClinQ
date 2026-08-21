@@ -871,7 +871,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifDeliveryNote =>
-      'Push delivery to this phone is being set up. These preferences will apply once it is live; your doctor already sees every alert you raise.';
+      'Your notification settings are saved and will apply as soon as alerts start arriving on this phone. Your doctor already sees everything you raise.';
 
   @override
   String get healthHeight => 'Height (cm)';

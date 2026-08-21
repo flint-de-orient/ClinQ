@@ -140,15 +140,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 for (final unit in GlucoseUnit.values)
+                  // A tall row, and the whole row is the target. These
+                  // patients are largely elderly and many have diabetic
+                  // retinopathy; a default-height ListTile asks for a more
+                  // accurate tap than that deserves.
                   ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    minVerticalPadding: AppSpacing.sm,
                     title: Text(
                       unit.label,
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 17),
                     ),
                     trailing:
                         unit == current
                             ? Icon(
-                              Icons.check_rounded,
+                              Icons.check_circle_rounded,
                               color: Theme.of(ctx).colorScheme.primary,
                             )
                             : null,
@@ -161,6 +170,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (chosen != null && chosen != current) {
       await ref.read(appPreferencesProvider.notifier).setGlucoseUnit(chosen);
     }
+  }
+
+  /// About, as a dialog we control.
+  ///
+  /// Flutter's showAboutDialog splits its buttons to opposite corners. Material
+  /// groups actions together on the trailing side so the eye finds them in one
+  /// place, and so the quieter of the two reads as the alternative rather than
+  /// as a separate feature.
+  Future<void> _showAbout(BuildContext context) async {
+    final scheme = Theme.of(context).colorScheme;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppConfig.appName),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Version ${AppConfig.appVersion}',
+              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Your care, on your phone.',
+              style: const TextStyle(fontSize: 15, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              showLicensePage(
+                context: context,
+                applicationName: AppConfig.appName,
+                applicationVersion: 'v${AppConfig.appVersion}',
+              );
+            },
+            child: const Text('View licenses'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context).commonClose),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _toggleAppLock(bool enable) async {
@@ -275,30 +332,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                 // ---- Language --------------------------------------------------
                 _SectionLabel(l10n.profileLanguage),
+                // Driven from a list, not three hand-written chips. A Wrap
+                // already stops them overflowing; this stops a fourth language
+                // meaning a fourth block of copied code, and keeps every option
+                // in its own script so a Hindi speaker can find "हिन्दी" while
+                // the app is still in English.
                 Wrap(
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: [
-                    // Each option always renders in its own script, so a Hindi
-                    // speaker can find "हिन्दी" while the app is still in English.
-                    _LangChip(
-                      label: l10n.languageEnglish,
-                      selected: currentLocale?.languageCode == 'en',
-                      accent: accent,
-                      onTap: () => _changeLanguage('en'),
-                    ),
-                    _LangChip(
-                      label: l10n.languageBengali,
-                      selected: currentLocale?.languageCode == 'bn',
-                      accent: accent,
-                      onTap: () => _changeLanguage('bn'),
-                    ),
-                    _LangChip(
-                      label: l10n.languageHindi,
-                      selected: currentLocale?.languageCode == 'hi',
-                      accent: accent,
-                      onTap: () => _changeLanguage('hi'),
-                    ),
+                    for (final (code, label) in <(String, String)>[
+                      ('en', l10n.languageEnglish),
+                      ('bn', l10n.languageBengali),
+                      ('hi', l10n.languageHindi),
+                    ])
+                      _LangChip(
+                        label: label,
+                        selected: currentLocale?.languageCode == code,
+                        accent: accent,
+                        onTap: () => _changeLanguage(code),
+                      ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -311,15 +364,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       icon: Icons.water_drop_outlined,
                       title: l10n.profileGlucoseUnit,
                       value: glucoseUnit.label,
-                      showDivider: false,
                       onTap: _pickGlucoseUnit,
+                    ),
+                    // Here rather than under "your information": this is how the
+                    // app behaves, not something the clinic holds about you.
+                    ProfileRow(
+                      icon: Icons.notifications_none_rounded,
+                      title: l10n.profileNotifications,
+                      showDivider: false,
+                      onTap: () => context.push('/profile/notifications'),
                     ),
                   ],
                 ),
 
-                // ---- Account ---------------------------------------------------
+                // ---- Your information ------------------------------------------
+                //
+                // Five unrelated destinations used to share one card: personal
+                // details, health record, lab reports, notification switches and
+                // a feedback form, separated only by hairlines. A list that long
+                // is scanned rather than read, and the thing being looked for is
+                // found by luck. Split by what each one is ABOUT — what the
+                // clinic holds on you, how the app behaves, and how to reach a
+                // person — so a heading answers the question before the rows do.
                 ProfileSection(
-                  label: l10n.profileAccount,
+                  label: 'Your information',
                   children: [
                     ProfileRow(
                       icon: Icons.person_outline_rounded,
@@ -334,22 +402,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ProfileRow(
                       icon: Icons.biotech_outlined,
                       title: 'My tests & reports',
-                      onTap: () => context.push('/profile/tests'),
-                    ),
-                    ProfileRow(
-                      icon: Icons.notifications_none_rounded,
-                      title: l10n.profileNotifications,
-                      onTap: () => context.push('/profile/notifications'),
-                    ),
-                    // In Account rather than a section of its own: a patient looking
-                    // for "where do I tell them this went wrong" looks where their
-                    // own details live, not under settings.
-                    ProfileRow(
-                      icon: Icons.rate_review_outlined,
-                      title: l10n.profileFeedback,
-                      subtitle: l10n.profileFeedbackSub,
                       showDivider: false,
-                      onTap: () => context.push('/profile/feedback'),
+                      onTap: () => context.push('/profile/tests'),
                     ),
                   ],
                 ),
@@ -394,17 +448,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       trailingIcon: Icons.open_in_new_rounded,
                       onTap: _callClinic,
                     ),
+                    // Beside the clinic's number, because both are the same
+                    // question: how do I reach a person about this.
+                    ProfileRow(
+                      icon: Icons.rate_review_outlined,
+                      title: l10n.profileFeedback,
+                      subtitle: l10n.profileFeedbackSub,
+                      onTap: () => context.push('/profile/feedback'),
+                    ),
                     ProfileRow(
                       icon: Icons.info_outline_rounded,
                       title: l10n.profileAbout,
                       value: 'v${AppConfig.appVersion}',
                       showDivider: false,
                       onTap:
-                          () => showAboutDialog(
-                            context: context,
-                            applicationName: AppConfig.appName,
-                            applicationVersion: 'v${AppConfig.appVersion}',
-                          ),
+                          () => _showAbout(context),
                     ),
                   ],
                 ),
