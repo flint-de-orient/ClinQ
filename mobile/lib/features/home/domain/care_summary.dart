@@ -1,3 +1,5 @@
+import '../../medications/domain/strength.dart';
+
 /// The patient's own view of their care, from `GET /dashboard`.
 ///
 /// Deliberately a read-only picture: what the clinic has decided about them,
@@ -259,7 +261,10 @@ class CareMedication {
   final String instructions;
   final List<String> times;
 
-  String get title => strength.isEmpty ? name : '$name $strength';
+  String get title {
+    final s = formatStrength(strength);
+    return s.isEmpty ? name : '$name $s';
+  }
 
   /// "Twice daily with meals" from the schedule the doctor set, rather than a
   /// raw list of clock times.

@@ -22,6 +22,7 @@ import '../data/dietician_repository.dart';
 import 'dietician_patients_screen.dart' show dietRiskColor;
 import 'dietician_providers.dart';
 import 'widgets/plan_history_sheet.dart';
+import '../../medications/domain/strength.dart';
 
 /// What the dietician needs to recommend food safely: the patient's medical
 /// status and the doctor's current medicine list. Food advice is given in the
@@ -358,7 +359,7 @@ class _MedRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final sub = [
-      if (med.strength.isNotEmpty) med.strength,
+      if (med.strength.isNotEmpty) formatStrength(med.strength),
       if (med.dose.isNotEmpty) med.dose,
       if (med.times.isNotEmpty) med.times.join(', '),
     ].join(' · ');

@@ -23,6 +23,8 @@ import '../domain/patient_summary.dart';
 import 'clinician_providers.dart';
 import 'widgets/panel_ui.dart';
 import 'patient_detail_screen.dart' show PatientRecordSections;
+import '../../medications/domain/strength.dart';
+import '../../../shared/widgets/strength_field.dart';
 
 /// The doctor's working screen for one patient: who they are at the top, and
 /// everything the doctor might do about it underneath.
@@ -1588,7 +1590,7 @@ class _CurrentMedicines extends ConsumerWidget {
                               Text(
                                 [
                                   med.name,
-                                  med.strength,
+                                  formatStrength(med.strength),
                                 ].where((s) => s.isNotEmpty).join(' '),
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -1936,13 +1938,7 @@ class _MedFields extends StatelessWidget {
                   children: [
                     const _FieldLabel('Dosage'),
                     const SizedBox(height: 4),
-                    TextField(
-                      controller: draft.dosage,
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. 500mg',
-                        isDense: true,
-                      ),
-                    ),
+                    StrengthField(controller: draft.dosage, label: ''),
                   ],
                 ),
               ),

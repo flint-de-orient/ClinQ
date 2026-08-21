@@ -22,6 +22,7 @@ import 'reminder_setup_sheet.dart';
 import 'widgets/scan_prescription_sheet.dart';
 import 'widgets/mark_dose_sheet.dart';
 import 'widgets/medication_slot_tile.dart';
+import '../domain/strength.dart';
 
 /// The patient's medicines: the windows their reminders fire in, what they are
 /// currently prescribed, and today's outstanding doses.
@@ -574,6 +575,9 @@ class _PrescriptionCard extends StatelessWidget {
   /// the unit, so the card rendered "500 /50", which reads as a count of
   /// tablets remaining rather than as a strength.
   static (String, String) _splitStrength(String raw) {
+    // Through the formatter first, so a bare "500/50" arrives as "500/50 mg"
+    // and the unit half of this split is no longer empty.
+    raw = formatStrength(raw);
     final match = RegExp(
       r'^\s*([\d.]+(?:\s*/\s*[\d.]+)*)\s*(.*)$',
     ).firstMatch(raw);

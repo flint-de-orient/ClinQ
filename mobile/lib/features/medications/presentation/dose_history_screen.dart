@@ -9,6 +9,7 @@ import '../../../shared/widgets/surfaces.dart';
 import '../data/medications_repository.dart';
 import '../domain/medication.dart';
 import 'medications_providers.dart';
+import '../domain/strength.dart';
 
 /// The patient's medicine-taking history: every past scheduled dose over the
 /// chosen window, marked taken / skipped / missed, grouped by day, so they can
@@ -269,7 +270,8 @@ class _DoseRowState extends ConsumerState<_DoseRow> {
             ? DateFormat('h:mm a').format(dose.scheduledFor!)
             : dose.time;
     final sub = [
-      if (dose.strength != null && dose.strength!.isNotEmpty) dose.strength,
+      if (dose.strength != null && dose.strength!.isNotEmpty)
+        formatStrength(dose.strength),
       time,
       if (dose.status == 'taken' && dose.takenAt != null)
         'took ${DateFormat('h:mm a').format(dose.takenAt!)}',

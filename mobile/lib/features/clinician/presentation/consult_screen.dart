@@ -19,6 +19,8 @@ import '../domain/clinician_models.dart';
 import '../domain/diagnosis_catalog.dart';
 import '../domain/lab_catalog.dart';
 import 'clinician_providers.dart';
+import '../../medications/domain/strength.dart';
+import '../../../shared/widgets/strength_field.dart';
 
 /// The consultation flow: Vitals → Diagnosis → Clinical advice, ending in a
 /// generated prescription. Vitals are recorded to the patient's history and the
@@ -724,7 +726,7 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                   avatar: const Icon(Icons.add, size: 15),
                   label: Text(
                     (it.strength != null && it.strength!.isNotEmpty)
-                        ? '${it.name} · ${it.strength}'
+                        ? '${it.name} · ${formatStrength(it.strength)}'
                         : it.name,
                     style: const TextStyle(fontSize: 12),
                   ),
@@ -1324,14 +1326,8 @@ class _MedCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  controller: draft.strength,
-                  decoration: const InputDecoration(
-                    labelText: 'Strength',
-                    hintText: '500 mg',
-                    isDense: true,
-                  ),
-                ),
+                flex: 2,
+                child: StrengthField(controller: draft.strength),
               ),
               const SizedBox(width: 8),
               Expanded(
