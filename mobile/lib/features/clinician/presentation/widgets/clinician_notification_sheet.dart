@@ -81,7 +81,8 @@ class _SheetState extends ConsumerState<_ClinicianNotificationSheet> {
       failed: view == null && async.hasError,
       onRefresh: () => ref.invalidate(clinicianNotificationsProvider),
       onOpen: _open,
-      emptyBody: 'No open alerts, no unread messages, nothing flagged for review.',
+      emptyBody:
+          'No open alerts, no unread messages, nothing flagged for review.',
     );
   }
 }

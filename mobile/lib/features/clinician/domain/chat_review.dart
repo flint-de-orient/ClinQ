@@ -45,27 +45,28 @@ class ChatReviewSession {
   /// `care` (assistant + doctor) or `nutrition` (the dietician's thread).
   final String kind;
 
-  factory ChatReviewSession.fromJson(Map<String, dynamic> j) =>
-      ChatReviewSession(
-        id: j['id']?.toString() ?? '',
-        title: j['title']?.toString() ?? '',
-        highestUrgency: j['highestUrgency']?.toString() ?? 'routine',
-        patientId: j['patientId']?.toString(),
-        patientName: j['patientName']?.toString(),
-        avatarUrl: j['avatarUrl']?.toString(),
-        language: j['language']?.toString(),
-        messageCount: (j['messageCount'] as num?)?.toInt() ?? 0,
-        flaggedForReview: j['flaggedForReview'] == true,
-        reviewedAt:
-            DateTime.tryParse(j['reviewedAt']?.toString() ?? '')?.toLocal(),
-        lastMessageAt:
-            DateTime.tryParse(j['lastMessageAt']?.toString() ?? '')?.toLocal(),
-        lastMessage: j['lastMessage'] is Map<String, dynamic>
+  factory ChatReviewSession.fromJson(
+    Map<String, dynamic> j,
+  ) => ChatReviewSession(
+    id: j['id']?.toString() ?? '',
+    title: j['title']?.toString() ?? '',
+    highestUrgency: j['highestUrgency']?.toString() ?? 'routine',
+    patientId: j['patientId']?.toString(),
+    patientName: j['patientName']?.toString(),
+    avatarUrl: j['avatarUrl']?.toString(),
+    language: j['language']?.toString(),
+    messageCount: (j['messageCount'] as num?)?.toInt() ?? 0,
+    flaggedForReview: j['flaggedForReview'] == true,
+    reviewedAt: DateTime.tryParse(j['reviewedAt']?.toString() ?? '')?.toLocal(),
+    lastMessageAt:
+        DateTime.tryParse(j['lastMessageAt']?.toString() ?? '')?.toLocal(),
+    lastMessage:
+        j['lastMessage'] is Map<String, dynamic>
             ? MessagePreview.fromJson(j['lastMessage'] as Map<String, dynamic>)
             : null,
-        unreadCount: (j['unreadCount'] as num?)?.toInt() ?? 0,
-        kind: j['kind']?.toString() ?? 'care',
-      );
+    unreadCount: (j['unreadCount'] as num?)?.toInt() ?? 0,
+    kind: j['kind']?.toString() ?? 'care',
+  );
 }
 
 /// One message in a reviewed conversation, with the audit trail (triage rules,
@@ -170,9 +171,10 @@ class ChatReviewMessage {
         pinned: j['pinned'] == true,
         deletedForEveryone: j['deletedForEveryone'] == true,
         replyToId: j['replyToId']?.toString(),
-        replyPreviewContent: j['replyPreview'] is Map
-            ? (j['replyPreview'] as Map)['content']?.toString()
-            : null,
+        replyPreviewContent:
+            j['replyPreview'] is Map
+                ? (j['replyPreview'] as Map)['content']?.toString()
+                : null,
         imagePaths:
             _attachments(j)
                 .where(isImageAttachment)

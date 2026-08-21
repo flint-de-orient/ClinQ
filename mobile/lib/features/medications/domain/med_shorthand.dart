@@ -62,7 +62,9 @@ extension DoseFrequencyX on DoseFrequency {
 
   /// Parse a stored `apiFrequency` string back to the enum (for reuse). Falls
   /// back to once-daily for anything unrecognised (e.g. an old "1-0-1").
-  static DoseFrequency fromApi(String? v) => switch ((v ?? '').trim().toUpperCase()) {
+  static DoseFrequency fromApi(String? v) => switch ((v ?? '')
+      .trim()
+      .toUpperCase()) {
     'BD' => DoseFrequency.bd,
     'TDS' => DoseFrequency.tds,
     'QID' => DoseFrequency.qid,
@@ -134,8 +136,10 @@ extension MedRouteX on MedRoute {
     MedRoute.inhaled => 'inhaled',
   };
 
-  static MedRoute fromApi(String? v) =>
-      MedRoute.values.firstWhere((r) => r.name == v, orElse: () => MedRoute.oral);
+  static MedRoute fromApi(String? v) => MedRoute.values.firstWhere(
+    (r) => r.name == v,
+    orElse: () => MedRoute.oral,
+  );
 }
 
 /// The doctor's composed shorthand, e.g. "BDPC", "TDS AC", "HS", "PRN", "OD PO".
@@ -160,7 +164,8 @@ String expandToPlain({
   MedRoute route = MedRoute.oral,
 }) {
   final parts = <String>[frequency.plain];
-  if (frequency.takesMealRelation && relation.plain.isNotEmpty) parts.add(relation.plain);
+  if (frequency.takesMealRelation && relation.plain.isNotEmpty)
+    parts.add(relation.plain);
   if (route != MedRoute.oral) parts.add(route.plain);
   return parts.join(', ');
 }

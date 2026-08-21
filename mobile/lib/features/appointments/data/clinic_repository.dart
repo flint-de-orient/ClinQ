@@ -15,7 +15,10 @@ class ClinicRepository {
   Future<List<Clinic>> list() async {
     final json = await _client.getJson('/clinics');
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(Clinic.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(Clinic.fromJson)
+        .toList();
   }
 
   Future<Clinic> get(String id) async {
@@ -24,7 +27,10 @@ class ClinicRepository {
   }
 
   Future<SlotDay> slots(String clinicId, String date) async {
-    final json = await _client.getJson('/clinics/$clinicId/slots', query: {'date': date});
+    final json = await _client.getJson(
+      '/clinics/$clinicId/slots',
+      query: {'date': date},
+    );
     return SlotDay.fromJson(json);
   }
 
@@ -45,9 +51,10 @@ class ClinicRepository {
   }
 }
 
-final Provider<ClinicRepository> clinicRepositoryProvider = Provider<ClinicRepository>((ref) {
-  return ClinicRepository(ref.watch(apiClientProvider));
-});
+final Provider<ClinicRepository> clinicRepositoryProvider =
+    Provider<ClinicRepository>((ref) {
+      return ClinicRepository(ref.watch(apiClientProvider));
+    });
 
 /// The clinic's public phone number that every "Call clinic" action dials,
 /// sourced from the clinic the doctor manages (Profile → Clinics & hours).
@@ -56,7 +63,9 @@ final Provider<ClinicRepository> clinicRepositoryProvider = Provider<ClinicRepos
 /// error, or until a clinic actually has a number — so the emergency "Call
 /// clinic" button is never left without something to dial. Invalidate it after
 /// editing a clinic so the new number takes effect immediately.
-final FutureProvider<String> clinicPhoneProvider = FutureProvider<String>((ref) async {
+final FutureProvider<String> clinicPhoneProvider = FutureProvider<String>((
+  ref,
+) async {
   try {
     final clinics = await ref.watch(clinicRepositoryProvider).list();
     for (final c in clinics) {

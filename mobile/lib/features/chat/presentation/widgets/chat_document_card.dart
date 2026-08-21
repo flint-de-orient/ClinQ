@@ -47,7 +47,9 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
       final res = await OpenFilex.open(cached.path);
       if (res.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No app on this phone can open that file')),
+          const SnackBar(
+            content: Text('No app on this phone can open that file'),
+          ),
         );
       }
     } catch (_) {
@@ -75,11 +77,17 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
         constraints: const BoxConstraints(maxWidth: 260),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: widget.onDark ? Colors.white.withValues(alpha: 0.15) : scheme.surface,
+          color:
+              widget.onDark
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : scheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: widget.onDark
-              ? null
-              : Border.all(color: scheme.outlineVariant.withValues(alpha: 0.4)),
+          border:
+              widget.onDark
+                  ? null
+                  : Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.4),
+                  ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -92,13 +100,17 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
                 color: tint.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: _busy
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2.2, color: tint),
-                    )
-                  : Icon(_icon(widget.doc.mimeType), color: tint, size: 23),
+              child:
+                  _busy
+                      ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: tint,
+                        ),
+                      )
+                      : Icon(_icon(widget.doc.mimeType), color: tint, size: 23),
             ),
             const SizedBox(width: 12),
             Flexible(
@@ -110,10 +122,17 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
                     widget.doc.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: fg),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: fg,
+                    ),
                   ),
                   const SizedBox(height: 0),
-                  Text(_meta(widget.doc), style: TextStyle(fontSize: 12, color: sub)),
+                  Text(
+                    _meta(widget.doc),
+                    style: TextStyle(fontSize: 12, color: sub),
+                  ),
                 ],
               ),
             ),
@@ -127,8 +146,10 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
     m ??= '';
     if (m == 'application/pdf') return Icons.picture_as_pdf_rounded;
     if (m.contains('word')) return Icons.description_rounded;
-    if (m.contains('sheet') || m.contains('excel') || m == 'text/csv') return Icons.table_chart_rounded;
-    if (m.contains('presentation') || m.contains('powerpoint')) return Icons.slideshow_rounded;
+    if (m.contains('sheet') || m.contains('excel') || m == 'text/csv')
+      return Icons.table_chart_rounded;
+    if (m.contains('presentation') || m.contains('powerpoint'))
+      return Icons.slideshow_rounded;
     if (m.startsWith('text/')) return Icons.article_rounded;
     return Icons.insert_drive_file_rounded;
   }
@@ -137,8 +158,10 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
     m ??= '';
     if (m == 'application/pdf') return AppColors.danger;
     if (m.contains('word')) return const Color(0xFF2563EB);
-    if (m.contains('sheet') || m.contains('excel') || m == 'text/csv') return AppColors.success;
-    if (m.contains('presentation') || m.contains('powerpoint')) return const Color(0xFFEA580C);
+    if (m.contains('sheet') || m.contains('excel') || m == 'text/csv')
+      return AppColors.success;
+    if (m.contains('presentation') || m.contains('powerpoint'))
+      return const Color(0xFFEA580C);
     return AppColors.primary;
   }
 
@@ -154,7 +177,8 @@ class _ChatDocumentCardState extends ConsumerState<ChatDocumentCard> {
     if (m.contains('word')) return 'Word';
     if (m.contains('sheet') || m.contains('excel')) return 'Excel';
     if (m == 'text/csv') return 'CSV';
-    if (m.contains('presentation') || m.contains('powerpoint')) return 'PowerPoint';
+    if (m.contains('presentation') || m.contains('powerpoint'))
+      return 'PowerPoint';
     if (m.startsWith('text/')) return 'Text';
     return 'File';
   }

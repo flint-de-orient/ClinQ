@@ -24,12 +24,22 @@ class ClinicianDashboardScreen extends ConsumerWidget {
     final bounds = todayBounds();
     // Upcoming (today onward) rather than today-only, so a just-booked future
     // appointment shows here immediately.
-    final AppointmentQuery upcomingQuery = (from: bounds.from, to: null, status: null, clinicId: null);
+    final AppointmentQuery upcomingQuery = (
+      from: bounds.from,
+      to: null,
+      status: null,
+      clinicId: null,
+    );
     final todays = ref.watch(appointmentDiaryProvider(upcomingQuery));
-    final openAlerts = ref.watch(alertsProvider((status: 'open', severity: null)));
+    final openAlerts = ref.watch(
+      alertsProvider((status: 'open', severity: null)),
+    );
 
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
+    final greeting =
+        hour < 12
+            ? 'Good morning'
+            : (hour < 17 ? 'Good afternoon' : 'Good evening');
     final roleLabel = user?.role == 'doctor' ? 'Doctor' : 'Clinic staff';
 
     return Scaffold(
@@ -40,8 +50,17 @@ class ClinicianDashboardScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('$greeting,', style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-            Text(user?.name ?? roleLabel, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(
+              '$greeting,',
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            Text(
+              user?.name ?? roleLabel,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            ),
           ],
         ),
         actions: [
@@ -68,7 +87,12 @@ class ClinicianDashboardScreen extends ConsumerWidget {
             ref.invalidate(alertsProvider((status: 'open', severity: null)));
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xl),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.xl,
+            ),
             children: [
               overview.when(
                 loading: () => const _StatsSkeleton(),
@@ -83,24 +107,37 @@ class ClinicianDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               todays.when(
-                loading: () => const Padding(padding: EdgeInsets.all(AppSpacing.lg), child: Center(child: CircularProgressIndicator())),
+                loading:
+                    () => const Padding(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                 error: (_, _) => const Text('Could not load appointments'),
                 data: (paged) {
-                  final items = paged.items.where((a) => !a.isCancelled).toList()
-                    ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+                  final items =
+                      paged.items.where((a) => !a.isCancelled).toList()..sort(
+                        (a, b) => a.scheduledFor.compareTo(b.scheduledFor),
+                      );
                   if (items.isEmpty) {
-                    return const _EmptyCard(icon: Icons.event_available_outlined, text: 'No upcoming appointments');
+                    return const _EmptyCard(
+                      icon: Icons.event_available_outlined,
+                      text: 'No upcoming appointments',
+                    );
                   }
                   return Column(
                     children: [
                       for (final a in items.take(4))
                         Padding(
                           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                          child: AppointmentCard(appointment: a, clinicianView: true),
+                          child: AppointmentCard(
+                            appointment: a,
+                            clinicianView: true,
+                          ),
                         ),
                       if (items.length > 4)
                         TextButton(
-                          onPressed: () => context.go('/clinician/appointments'),
+                          onPressed:
+                              () => context.go('/clinician/appointments'),
                           child: Text('+${items.length - 4} more'),
                         ),
                     ],
@@ -115,16 +152,26 @@ class ClinicianDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               openAlerts.when(
-                loading: () => const Padding(padding: EdgeInsets.all(AppSpacing.lg), child: Center(child: CircularProgressIndicator())),
+                loading:
+                    () => const Padding(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                 error: (_, _) => const Text('Could not load alerts'),
                 data: (paged) {
                   if (paged.items.isEmpty) {
-                    return const _EmptyCard(icon: Icons.verified_outlined, text: 'No open alerts — all clear');
+                    return const _EmptyCard(
+                      icon: Icons.verified_outlined,
+                      text: 'No open alerts — all clear',
+                    );
                   }
                   return Column(
                     children: [
                       for (final a in paged.items.take(4))
-                        _AlertRow(alert: a, onTap: () => context.push('/clinician/alerts')),
+                        _AlertRow(
+                          alert: a,
+                          onTap: () => context.push('/clinician/alerts'),
+                        ),
                     ],
                   );
                 },
@@ -148,20 +195,44 @@ class _OverviewSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: _StatTile(icon: Icons.groups_rounded, color: AppColors.accentOn(context), value: '${o.patientCount}', label: 'Patients')),
+            Expanded(
+              child: _StatTile(
+                icon: Icons.groups_rounded,
+                color: AppColors.accentOn(context),
+                value: '${o.patientCount}',
+                label: 'Patients',
+              ),
+            ),
             const SizedBox(width: AppSpacing.sm),
-            Expanded(child: _StatTile(icon: Icons.today_rounded, color: AppColors.successOn(context), value: '${o.appointmentsToday}', label: 'Appts today')),
+            Expanded(
+              child: _StatTile(
+                icon: Icons.today_rounded,
+                color: AppColors.successOn(context),
+                value: '${o.appointmentsToday}',
+                label: 'Appts today',
+              ),
+            ),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
           children: [
-            Expanded(child: _StatTile(icon: Icons.monitor_heart_rounded, color: const Color(0xFF7C3AED), value: '${o.activeToday}', label: 'Active today')),
+            Expanded(
+              child: _StatTile(
+                icon: Icons.monitor_heart_rounded,
+                color: const Color(0xFF7C3AED),
+                value: '${o.activeToday}',
+                label: 'Active today',
+              ),
+            ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: _StatTile(
                 icon: Icons.warning_amber_rounded,
-                color: o.totalOpenAlerts > 0 ? AppColors.danger : AppColors.success,
+                color:
+                    o.totalOpenAlerts > 0
+                        ? AppColors.danger
+                        : AppColors.success,
                 value: '${o.totalOpenAlerts}',
                 label: 'Open alerts',
               ),
@@ -176,7 +247,12 @@ class _OverviewSection extends StatelessWidget {
 }
 
 class _StatTile extends StatelessWidget {
-  const _StatTile({required this.icon, required this.color, required this.value, required this.label});
+  const _StatTile({
+    required this.icon,
+    required this.color,
+    required this.value,
+    required this.label,
+  });
 
   final IconData icon;
   final Color color;
@@ -198,7 +274,10 @@ class _StatTile extends StatelessWidget {
           Container(
             width: 42,
             height: 42,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -206,8 +285,20 @@ class _StatTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -225,7 +316,8 @@ class _RiskDistribution extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final o = overview;
-    final total = (o.riskLow + o.riskModerate + o.riskHigh + o.riskCritical).clamp(1, 1 << 30);
+    final total = (o.riskLow + o.riskModerate + o.riskHigh + o.riskCritical)
+        .clamp(1, 1 << 30);
     final segments = [
       ('Low', o.riskLow, riskBandColor('low')),
       ('Moderate', o.riskModerate, riskBandColor('moderate')),
@@ -243,7 +335,14 @@ class _RiskDistribution extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Risk distribution', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant)),
+          Text(
+            'Risk distribution',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
@@ -267,14 +366,27 @@ class _RiskDistribution extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(width: 10, height: 10, decoration: BoxDecoration(color: s.$3, shape: BoxShape.circle)),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: s.$3,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
                     const SizedBox(width: 4),
-                    Text('${s.$1} ${s.$2}', style: const TextStyle(fontSize: 12)),
+                    Text(
+                      '${s.$1} ${s.$2}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ],
                 ),
             ],
           ),
-          Text('of $total patients', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          Text(
+            'of $total patients',
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -304,15 +416,33 @@ class _AlertRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.notification_important_rounded, color: color, size: 20),
+              Icon(
+                Icons.notification_important_rounded,
+                color: color,
+                size: 20,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(alert.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(
+                      alert.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     if (alert.patientName != null)
-                      Text(alert.patientName!, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Text(
+                        alert.patientName!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -335,9 +465,13 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         const Spacer(),
-        if (actionLabel != null) TextButton(onPressed: onAction, child: Text(actionLabel!)),
+        if (actionLabel != null)
+          TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
     );
   }

@@ -52,18 +52,28 @@ class GlucoseReadingTile extends ConsumerWidget {
 
     return Dismissible(
       key: ValueKey(reading.id),
-      direction: onDelete == null ? DismissDirection.none : DismissDirection.endToStart,
+      direction:
+          onDelete == null
+              ? DismissDirection.none
+              : DismissDirection.endToStart,
       confirmDismiss: (_) async {
         if (onDelete == null) return false;
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            content: Text(l10n.glucoseDeleteConfirm),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonCancel)),
-              TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.commonDelete)),
-            ],
-          ),
+          builder:
+              (ctx) => AlertDialog(
+                content: Text(l10n.glucoseDeleteConfirm),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: Text(l10n.commonCancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: Text(l10n.commonDelete),
+                  ),
+                ],
+              ),
         );
         return confirmed ?? false;
       },
@@ -75,7 +85,10 @@ class GlucoseReadingTile extends ConsumerWidget {
           color: AppColors.dangerBgOn(context),
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         ),
-        child: Icon(Icons.delete_outline_rounded, color: AppColors.dangerOn(context)),
+        child: Icon(
+          Icons.delete_outline_rounded,
+          color: AppColors.dangerOn(context),
+        ),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -97,12 +110,16 @@ class GlucoseReadingTile extends ConsumerWidget {
                     children: [
                       Text(
                         unit.format(reading.valueMgDl, withUnit: false),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleLarge?.copyWith(color: color, fontWeight: FontWeight.w800),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: color,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(width: 4),
-                      Text(unit.label, style: Theme.of(context).textTheme.bodySmall),
+                      Text(
+                        unit.label,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 0),
@@ -112,7 +129,9 @@ class GlucoseReadingTile extends ConsumerWidget {
                   ),
                   if (reading.measuredAt != null)
                     Text(
-                      DateFormat('d MMM, h:mm a').format(reading.measuredAt!.toLocal()),
+                      DateFormat(
+                        'd MMM, h:mm a',
+                      ).format(reading.measuredAt!.toLocal()),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -128,7 +147,11 @@ class GlucoseReadingTile extends ConsumerWidget {
               ),
               child: Text(
                 _flagLabel(l10n, reading.flag),
-                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 14),
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
               ),
             ),
           ],

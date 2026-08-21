@@ -57,14 +57,20 @@ class Appointment {
 
   /// Whether the patient can still act on it (cancel / reschedule).
   bool get isActive =>
-      status == 'requested' || status == 'confirmed' || status == 'checked_in' || status == 'in_consultation';
+      status == 'requested' ||
+      status == 'confirmed' ||
+      status == 'checked_in' ||
+      status == 'in_consultation';
 
   factory Appointment.fromJson(Map<String, dynamic> j) {
     final clinic = j['clinic'];
-    final clinicMap = clinic is Map<String, dynamic> ? clinic : const <String, dynamic>{};
+    final clinicMap =
+        clinic is Map<String, dynamic> ? clinic : const <String, dynamic>{};
     return Appointment(
       id: j['id']?.toString() ?? '',
-      scheduledFor: DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal() ?? DateTime.now(),
+      scheduledFor:
+          DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal() ??
+          DateTime.now(),
       status: j['status']?.toString() ?? 'requested',
       mode: j['mode']?.toString() ?? 'in_clinic',
       durationMinutes: (j['durationMinutes'] as num?)?.toInt() ?? 15,

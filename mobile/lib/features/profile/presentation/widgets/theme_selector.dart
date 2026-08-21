@@ -26,9 +26,21 @@ class ThemeSelector extends ConsumerWidget {
     final activeColor = isDark ? AppColors.primaryDark : AppColors.primary;
 
     final segments = <({ThemeMode mode, IconData icon, String label})>[
-      (mode: ThemeMode.light, icon: Icons.light_mode_outlined, label: l10n.profileThemeLight),
-      (mode: ThemeMode.dark, icon: Icons.dark_mode_outlined, label: l10n.profileThemeDark),
-      (mode: ThemeMode.system, icon: Icons.contrast_rounded, label: l10n.profileThemeSystem),
+      (
+        mode: ThemeMode.light,
+        icon: Icons.light_mode_outlined,
+        label: l10n.profileThemeLight,
+      ),
+      (
+        mode: ThemeMode.dark,
+        icon: Icons.dark_mode_outlined,
+        label: l10n.profileThemeDark,
+      ),
+      (
+        mode: ThemeMode.system,
+        icon: Icons.contrast_rounded,
+        label: l10n.profileThemeSystem,
+      ),
     ];
 
     return Container(
@@ -53,13 +65,18 @@ class ThemeSelector extends ConsumerWidget {
           for (var i = 0; i < segments.length; i++)
             Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: i == segments.length - 1 ? 0 : 3),
+                padding: EdgeInsets.only(
+                  right: i == segments.length - 1 ? 0 : 3,
+                ),
                 child: _Segment(
                   icon: segments[i].icon,
                   label: segments[i].label,
                   selected: current == segments[i].mode,
                   activeColor: activeColor,
-                  onTap: () => ref.read(themeControllerProvider.notifier).setMode(segments[i].mode),
+                  onTap:
+                      () => ref
+                          .read(themeControllerProvider.notifier)
+                          .setMode(segments[i].mode),
                 ),
               ),
             ),

@@ -20,7 +20,10 @@ class GlucoseSummaryCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final unit = ref.watch(glucoseUnitProvider);
     final latest = glucose.latest;
-    final color = latest == null ? AppColors.primary : AppColors.forGlucoseFlagOn(context, latest.flag);
+    final color =
+        latest == null
+            ? AppColors.primary
+            : AppColors.forGlucoseFlagOn(context, latest.flag);
 
     return AppCard(
       onTap: () => context.go('/track'),
@@ -31,17 +34,20 @@ class GlucoseSummaryCard extends ConsumerWidget {
             children: [
               Icon(Icons.bloodtype_rounded, color: color, size: 22),
               const SizedBox(width: AppSpacing.sm),
-              Text(l10n.dashboardGlucoseLatest, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                l10n.dashboardGlucoseLatest,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const Spacer(),
-              Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.outline),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           if (latest == null)
-            Text(
-              '—',
-              style: Theme.of(context).textTheme.headlineMedium,
-            )
+            Text('—', style: Theme.of(context).textTheme.headlineMedium)
           else
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -49,9 +55,10 @@ class GlucoseSummaryCard extends ConsumerWidget {
               children: [
                 Text(
                   unit.format(latest.value, withUnit: false),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.headlineLarge?.copyWith(color: color, fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(width: 4),
                 Text(unit.label, style: Theme.of(context).textTheme.bodyMedium),
@@ -71,13 +78,19 @@ class GlucoseSummaryCard extends ConsumerWidget {
                     LineChartBarData(
                       spots: [
                         for (var i = 0; i < glucose.sparkline.length; i++)
-                          FlSpot(i.toDouble(), glucose.sparkline[i].value.toDouble()),
+                          FlSpot(
+                            i.toDouble(),
+                            glucose.sparkline[i].value.toDouble(),
+                          ),
                       ],
                       isCurved: true,
                       color: color,
                       barWidth: 2.5,
                       dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: true, color: color.withValues(alpha: 0.12)),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: color.withValues(alpha: 0.12),
+                      ),
                     ),
                   ],
                 ),
@@ -89,18 +102,20 @@ class GlucoseSummaryCard extends ConsumerWidget {
               Expanded(
                 child: _StatChip(
                   label: l10n.dashboardGlucoseAverage,
-                  value: glucose.sevenDayAverage == null
-                      ? '—'
-                      : unit.format(glucose.sevenDayAverage!),
+                  value:
+                      glucose.sevenDayAverage == null
+                          ? '—'
+                          : unit.format(glucose.sevenDayAverage!),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: _StatChip(
                   label: l10n.dashboardTimeInRange,
-                  value: glucose.timeInRangePercent == null
-                      ? '—'
-                      : '${glucose.timeInRangePercent}%',
+                  value:
+                      glucose.timeInRangePercent == null
+                          ? '—'
+                          : '${glucose.timeInRangePercent}%',
                 ),
               ),
             ],
@@ -124,9 +139,9 @@ class _StatChip extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         Text(value, style: Theme.of(context).textTheme.titleSmall),
       ],

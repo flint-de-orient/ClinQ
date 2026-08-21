@@ -17,10 +17,12 @@ class AppointmentsAdminScreen extends ConsumerStatefulWidget {
   const AppointmentsAdminScreen({super.key});
 
   @override
-  ConsumerState<AppointmentsAdminScreen> createState() => _AppointmentsAdminScreenState();
+  ConsumerState<AppointmentsAdminScreen> createState() =>
+      _AppointmentsAdminScreenState();
 }
 
-class _AppointmentsAdminScreenState extends ConsumerState<AppointmentsAdminScreen> {
+class _AppointmentsAdminScreenState
+    extends ConsumerState<AppointmentsAdminScreen> {
   // Default to Upcoming so a freshly-booked (future) appointment is visible
   // straight away, not hidden behind a "today only" filter.
   String _scope = 'upcoming'; // today | upcoming | all
@@ -42,7 +44,12 @@ class _AppointmentsAdminScreenState extends ConsumerState<AppointmentsAdminScree
         final b = todayBounds();
         return (from: b.from, to: b.to, status: _status, clinicId: null);
       case 'upcoming':
-        return (from: todayBounds().from, to: null, status: _status, clinicId: null);
+        return (
+          from: todayBounds().from,
+          to: null,
+          status: _status,
+          clinicId: null,
+        );
       default:
         return (from: null, to: null, status: _status, clinicId: null);
     }
@@ -79,9 +86,12 @@ class _AppointmentsAdminScreenState extends ConsumerState<AppointmentsAdminScree
                 height: 40,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
                   itemCount: _statuses.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                  separatorBuilder:
+                      (_, _) => const SizedBox(width: AppSpacing.sm),
                   itemBuilder: (context, i) {
                     final (value, label) = _statuses[i];
                     final sel = _status == value;
@@ -101,50 +111,78 @@ class _AppointmentsAdminScreenState extends ConsumerState<AppointmentsAdminScree
       body: AutoRefresh(
         onTick: (r) => r.invalidate(appointmentDiaryProvider(_query)),
         child: RefreshIndicator(
-          onRefresh: () async => ref.invalidate(appointmentDiaryProvider(_query)),
+          onRefresh:
+              () async => ref.invalidate(appointmentDiaryProvider(_query)),
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Could not load appointments'),
-                  const SizedBox(height: AppSpacing.sm),
-                  OutlinedButton(onPressed: () => ref.invalidate(appointmentDiaryProvider(_query)), child: const Text('Retry')),
-                ],
-              ),
-            ),
+            error:
+                (_, _) => Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Could not load appointments'),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton(
+                        onPressed:
+                            () => ref.invalidate(
+                              appointmentDiaryProvider(_query),
+                            ),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
             data: (paged) {
-              final items = [...paged.items]..sort((a, b) => _ascending
-                  ? a.scheduledFor.compareTo(b.scheduledFor)
-                  : b.scheduledFor.compareTo(a.scheduledFor));
+              final items = [...paged.items]..sort(
+                (a, b) =>
+                    _ascending
+                        ? a.scheduledFor.compareTo(b.scheduledFor)
+                        : b.scheduledFor.compareTo(a.scheduledFor),
+              );
               if (items.isEmpty) {
                 return ListView(
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                    Icon(Icons.event_busy_outlined, size: 56, color: scheme.outlineVariant),
+                    Icon(
+                      Icons.event_busy_outlined,
+                      size: 56,
+                      color: scheme.outlineVariant,
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    const Center(child: Text('No appointments', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                    const Center(
+                      child: Text(
+                        'No appointments',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }
               return ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+                separatorBuilder:
+                    (_, _) => const SizedBox(height: AppSpacing.sm),
                 itemBuilder: (context, i) {
                   final a = items[i];
                   return AppointmentCard(
                     appointment: a,
                     clinicianView: true,
                     onTap: () => _manage(a),
-                    trailing: a.isActive
-                        ? IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: const Icon(Icons.more_vert_rounded, size: 20),
-                            onPressed: () => _manage(a),
-                          )
-                        : null,
+                    trailing:
+                        a.isActive
+                            ? IconButton(
+                              visualDensity: VisualDensity.compact,
+                              icon: const Icon(
+                                Icons.more_vert_rounded,
+                                size: 20,
+                              ),
+                              onPressed: () => _manage(a),
+                            )
+                            : null,
                   );
                 },
               );
@@ -159,28 +197,42 @@ class _AppointmentsAdminScreenState extends ConsumerState<AppointmentsAdminScree
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (_) => _ManageSheet(
-        appointment: a,
-        onAction: (targetStatus, {String? notes, bool cancel = false}) async {
-          final messenger = ScaffoldMessenger.of(context);
-          Navigator.pop(context);
-          try {
-            if (cancel) {
-              await ref.read(appointmentRepositoryProvider).cancel(a.id, reason: notes);
-            } else {
-              await ref.read(appointmentRepositoryProvider).setStatus(a.id, targetStatus!, consultationNotes: notes);
-            }
-            ref.invalidate(appointmentDiaryProvider(_query));
-          } on ApiException {
-            messenger.showSnackBar(const SnackBar(content: Text('Could not update. Please try again.')));
-          }
-        },
-      ),
+      builder:
+          (_) => _ManageSheet(
+            appointment: a,
+            onAction: (
+              targetStatus, {
+              String? notes,
+              bool cancel = false,
+            }) async {
+              final messenger = ScaffoldMessenger.of(context);
+              Navigator.pop(context);
+              try {
+                if (cancel) {
+                  await ref
+                      .read(appointmentRepositoryProvider)
+                      .cancel(a.id, reason: notes);
+                } else {
+                  await ref
+                      .read(appointmentRepositoryProvider)
+                      .setStatus(a.id, targetStatus!, consultationNotes: notes);
+                }
+                ref.invalidate(appointmentDiaryProvider(_query));
+              } on ApiException {
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Could not update. Please try again.'),
+                  ),
+                );
+              }
+            },
+          ),
     );
   }
 }
 
-typedef _ActionCallback = Future<void> Function(String? targetStatus, {String? notes, bool cancel});
+typedef _ActionCallback =
+    Future<void> Function(String? targetStatus, {String? notes, bool cancel});
 
 class _ManageSheet extends StatelessWidget {
   const _ManageSheet({required this.appointment, required this.onAction});
@@ -197,27 +249,85 @@ class _ManageSheet extends StatelessWidget {
     final actions = <_Action>[];
     switch (a.status) {
       case 'requested':
-        actions.add(_Action('Confirm', Icons.check_circle_outline_rounded, AppColors.success, status: 'confirmed'));
-        actions.add(_Action('Mark no-show', Icons.person_off_outlined, AppColors.warning, status: 'no_show'));
+        actions.add(
+          _Action(
+            'Confirm',
+            Icons.check_circle_outline_rounded,
+            AppColors.success,
+            status: 'confirmed',
+          ),
+        );
+        actions.add(
+          _Action(
+            'Mark no-show',
+            Icons.person_off_outlined,
+            AppColors.warning,
+            status: 'no_show',
+          ),
+        );
       case 'confirmed':
-        actions.add(_Action('Check in', Icons.login_rounded, AppColors.primary, status: 'checked_in'));
-        actions.add(_Action('Start consultation', Icons.play_circle_outline_rounded, AppColors.primary, status: 'in_consultation'));
-        actions.add(_Action('Mark no-show', Icons.person_off_outlined, AppColors.warning, status: 'no_show'));
+        actions.add(
+          _Action(
+            'Check in',
+            Icons.login_rounded,
+            AppColors.primary,
+            status: 'checked_in',
+          ),
+        );
+        actions.add(
+          _Action(
+            'Start consultation',
+            Icons.play_circle_outline_rounded,
+            AppColors.primary,
+            status: 'in_consultation',
+          ),
+        );
+        actions.add(
+          _Action(
+            'Mark no-show',
+            Icons.person_off_outlined,
+            AppColors.warning,
+            status: 'no_show',
+          ),
+        );
       case 'checked_in':
-        actions.add(_Action('Start consultation', Icons.play_circle_outline_rounded, AppColors.primary, status: 'in_consultation'));
+        actions.add(
+          _Action(
+            'Start consultation',
+            Icons.play_circle_outline_rounded,
+            AppColors.primary,
+            status: 'in_consultation',
+          ),
+        );
       case 'in_consultation':
-        actions.add(_Action('Complete', Icons.task_alt_rounded, AppColors.success, status: 'completed', notes: true));
+        actions.add(
+          _Action(
+            'Complete',
+            Icons.task_alt_rounded,
+            AppColors.success,
+            status: 'completed',
+            notes: true,
+          ),
+        );
     }
     final canCancel = a.isActive;
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.md,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(a.patientName ?? 'Patient', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(
+              a.patientName ?? 'Patient',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
             Text(
               '${DateFormat('EEE, d MMM · h:mm a').format(a.scheduledFor)}  ·  ${a.clinicName ?? ''}',
               style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
@@ -239,15 +349,23 @@ class _ManageSheet extends StatelessWidget {
             if (canCancel)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.cancel_outlined, color: AppColors.dangerOn(context)),
-                title: Text('Cancel appointment', style: TextStyle(color: AppColors.dangerOn(context))),
+                leading: Icon(
+                  Icons.cancel_outlined,
+                  color: AppColors.dangerOn(context),
+                ),
+                title: Text(
+                  'Cancel appointment',
+                  style: TextStyle(color: AppColors.dangerOn(context)),
+                ),
                 onTap: () => onAction(null, cancel: true),
               ),
             if (actions.isEmpty && !canCancel)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                child: Text('No actions available for a ${a.status} appointment.',
-                    style: TextStyle(color: scheme.onSurfaceVariant)),
+                child: Text(
+                  'No actions available for a ${a.status} appointment.',
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
               ),
           ],
         ),
@@ -259,18 +377,27 @@ class _ManageSheet extends StatelessWidget {
     final controller = TextEditingController();
     final notes = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Consultation notes'),
-        content: TextField(
-          controller: controller,
-          maxLines: 4,
-          decoration: const InputDecoration(hintText: 'Optional notes for the record'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Skip')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Complete')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Consultation notes'),
+            content: TextField(
+              controller: controller,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Optional notes for the record',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Skip'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                child: const Text('Complete'),
+              ),
+            ],
+          ),
     );
     // Dialog dismissed entirely (back button) → do nothing; otherwise complete.
     if (context.mounted && notes != null) {
@@ -282,7 +409,13 @@ class _ManageSheet extends StatelessWidget {
 }
 
 class _Action {
-  const _Action(this.label, this.icon, this.color, {this.status, this.notes = false});
+  const _Action(
+    this.label,
+    this.icon,
+    this.color, {
+    this.status,
+    this.notes = false,
+  });
   final String label;
   final IconData icon;
   final Color color;

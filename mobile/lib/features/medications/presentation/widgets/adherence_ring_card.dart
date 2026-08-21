@@ -30,9 +30,15 @@ class AdherenceRingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.medsAdherence, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.medsAdherence,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: 4),
-                Text(l10n.medsLast30Days, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  l10n.medsLast30Days,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   '${adherence.taken} / ${adherence.expected}',

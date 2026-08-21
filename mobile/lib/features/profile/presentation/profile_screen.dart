@@ -234,6 +234,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final lockEnabled = ref.watch(appLockProvider).enabled;
 
     return Scaffold(
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           l10n.profileTitle,

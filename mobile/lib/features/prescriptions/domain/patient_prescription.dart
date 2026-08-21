@@ -32,20 +32,27 @@ class PatientPrescription {
   final String? generalAdvice;
   final DateTime? followUpOn;
 
-  factory PatientPrescription.fromJson(Map<String, dynamic> j) => PatientPrescription(
+  factory PatientPrescription.fromJson(
+    Map<String, dynamic> j,
+  ) => PatientPrescription(
     id: j['id']?.toString() ?? '',
     referenceNo: j['referenceNo']?.toString() ?? '',
     pdfUrl: j['pdfUrl']?.toString() ?? '',
     issuedOn: DateTime.tryParse(j['issuedOn']?.toString() ?? '')?.toLocal(),
     doctorName: j['doctorName']?.toString(),
     complaint: j['complaint']?.toString(),
-    diagnosis: (j['diagnosis'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-    items: (j['items'] as List?)
+    diagnosis:
+        (j['diagnosis'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
+    items:
+        (j['items'] as List?)
             ?.whereType<Map<String, dynamic>>()
             .map(PrescribedItem.fromJson)
             .toList() ??
         const [],
-    labTestsAdvised: (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+    labTestsAdvised:
+        (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
     generalAdvice: j['generalAdvice']?.toString(),
     followUpOn: DateTime.tryParse(j['followUpOn']?.toString() ?? '')?.toLocal(),
   );
@@ -74,13 +81,15 @@ class PrescribedItem {
   final String? instructions;
 
   /// "Metformin 500mg" — name with strength when present.
-  String get title => (strength == null || strength!.isEmpty) ? name : '$name $strength';
+  String get title =>
+      (strength == null || strength!.isEmpty) ? name : '$name $strength';
 
   /// The plain-English dosing line under the name.
   String get detail {
     final parts = <String>[
       if (frequency != null && frequency!.isNotEmpty) frequency!,
-      if (relationToMeal != null && relationToMeal != 'any') _mealPhrase(relationToMeal!),
+      if (relationToMeal != null && relationToMeal != 'any')
+        _mealPhrase(relationToMeal!),
       if (durationDays != null) 'for $durationDays days',
     ];
     final line = parts.join(', ');

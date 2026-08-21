@@ -21,7 +21,12 @@ import 'triage.dart';
 /// skimmable, and so a deaf patient or a doctor in a noisy clinic is not shut
 /// out of the conversation.
 class VoiceNote {
-  const VoiceNote({required this.url, this.transcript, this.mimeType, this.localPath});
+  const VoiceNote({
+    required this.url,
+    this.transcript,
+    this.mimeType,
+    this.localPath,
+  });
 
   /// Relative `/api/v1/uploads/:id/raw` path. Auth header is attached at play
   /// time, the same as protected images.
@@ -45,7 +50,12 @@ class VoiceNote {
 /// named file card, not a thumbnail — tapping downloads and opens it with the
 /// phone's own viewer.
 class DocumentAttachment {
-  const DocumentAttachment({required this.url, required this.name, this.mimeType, this.sizeBytes});
+  const DocumentAttachment({
+    required this.url,
+    required this.name,
+    this.mimeType,
+    this.sizeBytes,
+  });
 
   /// Relative `/api/v1/uploads/:id/raw` path; auth header is added on download.
   final String url;
@@ -62,7 +72,8 @@ class DocumentAttachment {
 /// photo and every recording as a document. Media type comes from [mimeType];
 /// `kind` is only consulted for `voice_note`, where it is authoritative.
 bool isAudioAttachment(Map a) =>
-    a['kind'] == 'voice_note' || (a['mimeType']?.toString().startsWith('audio/') ?? false);
+    a['kind'] == 'voice_note' ||
+    (a['mimeType']?.toString().startsWith('audio/') ?? false);
 
 /// A document — a PDF, Office file, text or CSV. Not an image, not audio.
 bool isDocumentAttachment(Map a) {
@@ -72,7 +83,8 @@ bool isDocumentAttachment(Map a) {
 }
 
 /// Anything left over is a picture.
-bool isImageAttachment(Map a) => !isAudioAttachment(a) && !isDocumentAttachment(a);
+bool isImageAttachment(Map a) =>
+    !isAudioAttachment(a) && !isDocumentAttachment(a);
 
 class ChatMessage {
   const ChatMessage({
@@ -179,18 +191,23 @@ class ChatMessage {
       language: json['language']?.toString() ?? 'en',
       urgency: json['urgency']?.toString() ?? 'routine',
       isFallback: json['isFallback'] as bool?,
-      createdAt: json['createdAt'] == null ? null : DateTime.tryParse(json['createdAt'].toString()),
+      createdAt:
+          json['createdAt'] == null
+              ? null
+              : DateTime.tryParse(json['createdAt'].toString()),
       senderName: json['senderName']?.toString(),
       senderAvatarUrl: json['senderAvatarUrl']?.toString(),
       pinned: json['pinned'] == true,
       deletedForEveryone: json['deletedForEveryone'] == true,
       replyToId: json['replyToId']?.toString(),
-      replyPreviewContent: json['replyPreview'] is Map
-          ? (json['replyPreview'] as Map)['content']?.toString()
-          : null,
-      seenByClinicAt: json['seenByClinicAt'] == null
-          ? null
-          : DateTime.tryParse(json['seenByClinicAt'].toString()),
+      replyPreviewContent:
+          json['replyPreview'] is Map
+              ? (json['replyPreview'] as Map)['content']?.toString()
+              : null,
+      seenByClinicAt:
+          json['seenByClinicAt'] == null
+              ? null
+              : DateTime.tryParse(json['seenByClinicAt'].toString()),
       attachmentPaths: _parseAttachments(json['attachments']),
       voiceNotes: _parseVoiceNotes(json['attachments']),
       documents: _parseDocuments(json['attachments']),
@@ -220,7 +237,10 @@ class ChatMessage {
         .map(
           (a) => DocumentAttachment(
             url: a['url']?.toString() ?? '',
-            name: (a['name']?.toString().trim().isNotEmpty ?? false) ? a['name'].toString() : 'Document',
+            name:
+                (a['name']?.toString().trim().isNotEmpty ?? false)
+                    ? a['name'].toString()
+                    : 'Document',
             mimeType: a['mimeType']?.toString(),
             sizeBytes: (a['sizeBytes'] as num?)?.toInt(),
           ),
@@ -337,8 +357,8 @@ class ChatMessage {
       senderName: senderName,
       senderAvatarUrl: senderAvatarUrl,
       attachmentPaths: attachmentPaths,
-    voiceNotes: voiceNotes,
-    documents: documents,
+      voiceNotes: voiceNotes,
+      documents: documents,
     );
   }
 }

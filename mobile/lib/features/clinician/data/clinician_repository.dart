@@ -15,17 +15,17 @@ import '../../../shared/widgets/notification_list_sheet.dart';
 /// Talks to `/doctor/*` — the clinician (doctor + staff) API: dashboard
 /// overview, the patient directory, and clinical-alert triage.
 class ClinicianRepository {
-
   /// Everything waiting for the doctor: open alerts, unread patient messages
   /// across both threads, and conversations flagged for review.
   Future<({int unread, List<PanelNotification> items})> notifications() async {
     final json = await _client.getJson('/doctor/notifications');
     return (
       unread: (json['unread'] as num?)?.toInt() ?? 0,
-      items: (json['items'] as List? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .map(PanelNotification.fromJson)
-          .toList(),
+      items:
+          (json['items'] as List? ?? const [])
+              .whereType<Map<String, dynamic>>()
+              .map(PanelNotification.fromJson)
+              .toList(),
     );
   }
 
@@ -35,6 +35,7 @@ class ClinicianRepository {
   Future<void> markNotificationsSeen() async {
     await _client.postJson('/doctor/notifications/seen');
   }
+
   ClinicianRepository(this._client);
 
   final ApiClient _client;
@@ -83,7 +84,8 @@ class ClinicianRepository {
         if (age != null) 'age': age,
         if (gender != null) 'gender': gender,
         if (address != null && address.isNotEmpty) 'address': address,
-        if (complaints != null && complaints.isNotEmpty) 'complaints': complaints,
+        if (complaints != null && complaints.isNotEmpty)
+          'complaints': complaints,
         if (heightCm != null) 'heightCm': heightCm,
         if (weightKg != null) 'weightKg': weightKg,
         if (systolic != null) 'systolic': systolic,
@@ -242,16 +244,29 @@ class ClinicianRepository {
 
   /// Medication adherence over a window (days) — for the profile's adherence
   /// sheet week/month/year filter.
-  Future<AdherenceReport> patientAdherence(String patientId, {int days = 30}) async {
-    final json = await _client.getJson('/doctor/patients/$patientId/adherence', query: {'days': days});
+  Future<AdherenceReport> patientAdherence(
+    String patientId, {
+    int days = 30,
+  }) async {
+    final json = await _client.getJson(
+      '/doctor/patients/$patientId/adherence',
+      query: {'days': days},
+    );
     return AdherenceReport.fromJson(json);
   }
 
   /// The patient's past prescriptions/consultations, latest first.
-  Future<List<PrescriptionSummary>> patientPrescriptions(String patientId) async {
-    final json = await _client.getJson('/patients/$patientId/prescriptions?limit=20');
+  Future<List<PrescriptionSummary>> patientPrescriptions(
+    String patientId,
+  ) async {
+    final json = await _client.getJson(
+      '/patients/$patientId/prescriptions?limit=20',
+    );
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(PrescriptionSummary.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(PrescriptionSummary.fromJson)
+        .toList();
   }
 
   /// Dieticians the doctor can assign a patient to.
@@ -367,8 +382,12 @@ class ClinicianRepository {
   /// or prescribed against something already there.
   Future<List<Medication>> patientMedications(String patientId) async {
     final json = await _client.getJson('/patients/$patientId/medications');
-    final items = (json['items'] as List?) ?? (json['medications'] as List?) ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(Medication.fromJson).toList();
+    final items =
+        (json['items'] as List?) ?? (json['medications'] as List?) ?? const [];
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(Medication.fromJson)
+        .toList();
   }
 
   /// Stops a medicine. A soft stop on the server — it keeps `isActive: false`

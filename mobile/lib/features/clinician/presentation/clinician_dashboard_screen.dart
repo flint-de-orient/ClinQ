@@ -68,7 +68,6 @@ class _ClinicianDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     // valueOrNull, not .when: on a timer refresh the provider briefly re-enters
     // loading, and reading the last value keeps the screen from flashing a
     // spinner every twenty seconds.
@@ -82,7 +81,10 @@ class _ClinicianDashboardScreenState
     final loading = overview == null && ref.watch(overviewProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(

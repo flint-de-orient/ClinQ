@@ -49,13 +49,21 @@ class ChatEmptyState extends StatelessWidget {
         Text(
           l10n.chatEmptyTitle,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w700, height: 1.3),
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           l10n.chatEmptyBody,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, height: 1.5, color: scheme.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: 16,
+            height: 1.5,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: AppSpacing.xl),
         for (final s in suggestions) ...[
@@ -73,7 +81,11 @@ class ChatEmptyState extends StatelessWidget {
 }
 
 class _SuggestionCard extends StatelessWidget {
-  const _SuggestionCard({required this.icon, required this.text, required this.onTap});
+  const _SuggestionCard({
+    required this.icon,
+    required this.text,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String text;
@@ -90,7 +102,10 @@ class _SuggestionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         child: Container(
           constraints: const BoxConstraints(minHeight: 64),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 12,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
             border: Border.all(color: scheme.outlineVariant),
@@ -100,10 +115,17 @@ class _SuggestionCard extends StatelessWidget {
               Icon(icon, size: 22, color: AppColors.accentOn(context)),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(text, style: const TextStyle(fontSize: 16, height: 1.4)),
+                child: Text(
+                  text,
+                  style: const TextStyle(fontSize: 16, height: 1.4),
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Icon(Icons.chevron_right_rounded, size: 22, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: scheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),

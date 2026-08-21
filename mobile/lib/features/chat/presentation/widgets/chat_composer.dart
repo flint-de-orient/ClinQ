@@ -83,12 +83,15 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
   }
 
   void _syncFocus() {
-    if (_focusNode.hasFocus != _focused) setState(() => _focused = _focusNode.hasFocus);
+    if (_focusNode.hasFocus != _focused)
+      setState(() => _focused = _focusNode.hasFocus);
   }
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   bool get _canSend => _hasText || _attachments.isNotEmpty;
@@ -120,32 +123,46 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
 
     final choice = await showModalBottomSheet<_AttachChoice>(
       context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: Text(l10n.chatAttachCamera, style: const TextStyle(fontSize: 16)),
-              minTileHeight: AppSpacing.minTapTarget + 8,
-              onTap: () => Navigator.of(sheetContext).pop(_AttachChoice.camera),
+      builder:
+          (sheetContext) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: Text(
+                    l10n.chatAttachCamera,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  minTileHeight: AppSpacing.minTapTarget + 8,
+                  onTap:
+                      () =>
+                          Navigator.of(sheetContext).pop(_AttachChoice.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: Text(
+                    l10n.chatAttachGallery,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  minTileHeight: AppSpacing.minTapTarget + 8,
+                  onTap:
+                      () =>
+                          Navigator.of(sheetContext).pop(_AttachChoice.gallery),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('Document', style: TextStyle(fontSize: 16)),
+                  subtitle: const Text('PDF, Word, Excel, text…'),
+                  minTileHeight: AppSpacing.minTapTarget + 8,
+                  onTap:
+                      () => Navigator.of(
+                        sheetContext,
+                      ).pop(_AttachChoice.document),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.chatAttachGallery, style: const TextStyle(fontSize: 16)),
-              minTileHeight: AppSpacing.minTapTarget + 8,
-              onTap: () => Navigator.of(sheetContext).pop(_AttachChoice.gallery),
-            ),
-            ListTile(
-              leading: const Icon(Icons.description_outlined),
-              title: const Text('Document', style: TextStyle(fontSize: 16)),
-              subtitle: const Text('PDF, Word, Excel, text…'),
-              minTileHeight: AppSpacing.minTapTarget + 8,
-              onTap: () => Navigator.of(sheetContext).pop(_AttachChoice.document),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (choice == null || !mounted) return;
 
@@ -157,11 +174,18 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
     // Gallery allows selecting several photos at once; the camera takes one.
     // Downscale before upload: a modern phone camera produces 8-12 MB files
     // that would trip the server's 12 MB cap over mobile data.
-    final source = choice == _AttachChoice.camera ? ImageSource.camera : ImageSource.gallery;
+    final source =
+        choice == _AttachChoice.camera
+            ? ImageSource.camera
+            : ImageSource.gallery;
     final List<XFile> files;
     try {
       if (source == ImageSource.gallery) {
-        files = await _picker.pickMultiImage(maxWidth: 2000, maxHeight: 2000, imageQuality: 85);
+        files = await _picker.pickMultiImage(
+          maxWidth: 2000,
+          maxHeight: 2000,
+          imageQuality: 85,
+        );
       } else {
         final one = await _picker.pickImage(
           source: ImageSource.camera,
@@ -196,13 +220,23 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
           .read(uploadRepositoryProvider)
           .uploadImage(path: picked.path, filename: picked.name);
       if (!mounted) return;
-      if (index < _attachments.length && _attachments[index].localPath == picked.path) {
-        setState(() => _attachments[index] = _attachments[index].copyWith(assetId: asset.id));
+      if (index < _attachments.length &&
+          _attachments[index].localPath == picked.path) {
+        setState(
+          () =>
+              _attachments[index] = _attachments[index].copyWith(
+                assetId: asset.id,
+              ),
+        );
       }
     } on ApiException {
       if (!mounted) return;
-      if (index < _attachments.length && _attachments[index].localPath == picked.path) {
-        setState(() => _attachments[index] = _attachments[index].copyWith(failed: true));
+      if (index < _attachments.length &&
+          _attachments[index].localPath == picked.path) {
+        setState(
+          () =>
+              _attachments[index] = _attachments[index].copyWith(failed: true),
+        );
       }
       _snack(l10n.chatAttachFailed);
     }
@@ -216,7 +250,17 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
       result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
-        allowedExtensions: const ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'],
+        allowedExtensions: const [
+          'pdf',
+          'doc',
+          'docx',
+          'xls',
+          'xlsx',
+          'ppt',
+          'pptx',
+          'txt',
+          'csv',
+        ],
       );
     } catch (_) {
       if (mounted) _snack(l10n.chatAttachFailed);
@@ -235,19 +279,39 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
     }
   }
 
-  Future<void> _uploadDocument(String path, String name, AppLocalizations l10n) async {
+  Future<void> _uploadDocument(
+    String path,
+    String name,
+    AppLocalizations l10n,
+  ) async {
     final index = _attachments.length;
-    setState(() => _attachments.add(PendingAttachment(localPath: path, documentName: name)));
+    setState(
+      () => _attachments.add(
+        PendingAttachment(localPath: path, documentName: name),
+      ),
+    );
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(path: path, filename: name);
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(path: path, filename: name);
       if (!mounted) return;
-      if (index < _attachments.length && _attachments[index].localPath == path) {
-        setState(() => _attachments[index] = _attachments[index].copyWith(assetId: asset.id));
+      if (index < _attachments.length &&
+          _attachments[index].localPath == path) {
+        setState(
+          () =>
+              _attachments[index] = _attachments[index].copyWith(
+                assetId: asset.id,
+              ),
+        );
       }
     } on ApiException {
       if (!mounted) return;
-      if (index < _attachments.length && _attachments[index].localPath == path) {
-        setState(() => _attachments[index] = _attachments[index].copyWith(failed: true));
+      if (index < _attachments.length &&
+          _attachments[index].localPath == path) {
+        setState(
+          () =>
+              _attachments[index] = _attachments[index].copyWith(failed: true),
+        );
       }
       _snack(l10n.chatAttachFailed);
     }
@@ -310,7 +374,9 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
                           // Filled, not outlined. A stroke round the composer
                           // reads as a form field on a wallpapered thread, and
                           // it lit up on focus every time the keyboard opened.
-                          color: scheme.surfaceContainerHigh.withValues(alpha: 0.55),
+                          color: scheme.surfaceContainerHigh.withValues(
+                            alpha: 0.55,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -318,12 +384,16 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
                           children: [
                             IconButton(
                               tooltip: l10n.chatAttach,
-                              onPressed: widget.isSending ? null : _pickAttachment,
+                              onPressed:
+                                  widget.isSending ? null : _pickAttachment,
                               constraints: const BoxConstraints(
                                 minWidth: AppSpacing.minTapTarget,
                                 minHeight: AppSpacing.minTapTarget,
                               ),
-                              icon: Icon(Icons.attach_file_rounded, color: scheme.onSurfaceVariant),
+                              icon: Icon(
+                                Icons.attach_file_rounded,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                             Expanded(
                               child: TextField(
@@ -331,7 +401,8 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
                                 focusNode: _focusNode,
                                 minLines: 1,
                                 maxLines: 5,
-                                textCapitalization: TextCapitalization.sentences,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
                                 style: const TextStyle(fontSize: 16),
                                 decoration: InputDecoration(
                                   hintText: l10n.chatComposerHint,
@@ -351,14 +422,19 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
                                   disabledBorder: InputBorder.none,
                                   filled: false,
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                 ),
                                 onSubmitted: (_) => _submit(),
                               ),
                             ),
                             const SizedBox(width: 0),
                             Padding(
-                              padding: const EdgeInsets.only(right: 4, bottom: 4),
+                              padding: const EdgeInsets.only(
+                                right: 4,
+                                bottom: 4,
+                              ),
                               // The mic now records a voice note rather than
                               // dictating into the field. Speaking is the
                               // point for patients who find typing Bengali on
@@ -369,16 +445,21 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
                               // the assistant read them exactly as before.
                               child: IconButton(
                                 tooltip: l10n.chatRecordVoice,
-                                onPressed: widget.isSending
-                                    ? null
-                                    : () => setState(() => _recording = true),
-                                icon: Icon(Icons.mic_none_rounded, color: scheme.onSurfaceVariant),
+                                onPressed:
+                                    widget.isSending
+                                        ? null
+                                        : () =>
+                                            setState(() => _recording = true),
+                                icon: Icon(
+                                  Icons.mic_none_rounded,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        ),
                       ),
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   _SendButton(
@@ -399,7 +480,11 @@ class _ChatComposerState extends ConsumerState<ChatComposer> {
 /// Circular brand-primary send button. Dim when there is nothing to send,
 /// a spinner while sending.
 class _SendButton extends StatelessWidget {
-  const _SendButton({required this.enabled, required this.isSending, required this.onSend});
+  const _SendButton({
+    required this.enabled,
+    required this.isSending,
+    required this.onSend,
+  });
 
   final bool enabled;
   final bool isSending;
@@ -425,13 +510,21 @@ class _SendButton extends StatelessWidget {
             width: 52,
             height: 52,
             child: Center(
-              child: isSending
-                  ? const SizedBox(
-                      width: 20,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                    )
-                  : const Icon(Icons.send_rounded, color: Colors.white, size: 24),
+              child:
+                  isSending
+                      ? const SizedBox(
+                        width: 20,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
             ),
           ),
         ),

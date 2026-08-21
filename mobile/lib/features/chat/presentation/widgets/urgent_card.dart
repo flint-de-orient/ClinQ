@@ -20,7 +20,9 @@ class UrgentCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // The clinic's own number once the doctor has set one; the built-in number
     // until then, so this button always has something to dial.
-    final clinicPhone = ref.watch(clinicPhoneProvider).valueOrNull ?? AppConfig.clinicPhoneNumber;
+    final clinicPhone =
+        ref.watch(clinicPhoneProvider).valueOrNull ??
+        AppConfig.clinicPhoneNumber;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -35,7 +37,11 @@ class UrgentCard extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.warning_amber_rounded, color: AppColors.warningOn(context), size: 24),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: AppColors.warningOn(context),
+                size: 24,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
@@ -53,7 +59,11 @@ class UrgentCard extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       content,
-                      style: const TextStyle(fontSize: 16, height: 1.45, color: Color(0xFF1F2937)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        height: 1.45,
+                        color: Color(0xFF1F2937),
+                      ),
                     ),
                   ],
                 ),
@@ -68,7 +78,10 @@ class UrgentCard extends ConsumerWidget {
               onPressed: () => launchUrl(Uri(scheme: 'tel', path: clinicPhone)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.warning,
-                side: BorderSide(color: AppColors.warningOn(context), width: 1.5),
+                side: BorderSide(
+                  color: AppColors.warningOn(context),
+                  width: 1.5,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                 ),
@@ -76,7 +89,10 @@ class UrgentCard extends ConsumerWidget {
               icon: const Icon(Icons.call_rounded, size: 20),
               label: Text(
                 l10n.chatCallClinic,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

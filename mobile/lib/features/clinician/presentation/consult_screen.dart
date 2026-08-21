@@ -79,8 +79,18 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
   @override
   void dispose() {
     for (final c in [
-      _height, _weight, _waist, _systolic, _diastolic, _pulse, _sugar, _spo2, _complaint,
-      _customDx, _customTest, _advice,
+      _height,
+      _weight,
+      _waist,
+      _systolic,
+      _diastolic,
+      _pulse,
+      _sugar,
+      _spo2,
+      _complaint,
+      _customDx,
+      _customTest,
+      _advice,
     ]) {
       c.dispose();
     }
@@ -120,23 +130,24 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     if (!_hasMedicine) {
       final proceed = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('No medicines added'),
-          content: const Text(
-            'You are about to generate a prescription without any medicine. '
-            'Please confirm to continue.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Go back'),
+        builder:
+            (ctx) => AlertDialog(
+              title: const Text('No medicines added'),
+              content: const Text(
+                'You are about to generate a prescription without any medicine. '
+                'Please confirm to continue.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Go back'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Confirm'),
+                ),
+              ],
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Confirm'),
-            ),
-          ],
-        ),
       );
       if (proceed != true) {
         // Back to the medicines step, since that is what they came back for.
@@ -157,12 +168,14 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       if (name.isEmpty) continue;
       items.add({
         'name': name,
-        if (m.strength.text.trim().isNotEmpty) 'strength': m.strength.text.trim(),
+        if (m.strength.text.trim().isNotEmpty)
+          'strength': m.strength.text.trim(),
         'frequency': m.frequency.apiFrequency,
         'relationToMeal': m.relation.api,
         'route': m.route.api,
         if (_int(m.duration) != null) 'durationDays': _int(m.duration),
-        if (m.instructions.text.trim().isNotEmpty) 'instructions': m.instructions.text.trim(),
+        if (m.instructions.text.trim().isNotEmpty)
+          'instructions': m.instructions.text.trim(),
       });
     }
 
@@ -191,7 +204,8 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
         items: items,
         // Recorded to the profile above regardless; only printed on the Rx when
         // the doctor left the checkbox ticked.
-        complaint: (complaint.isEmpty || !_showComplaintOnRx) ? null : complaint,
+        complaint:
+            (complaint.isEmpty || !_showComplaintOnRx) ? null : complaint,
         diagnosis: _diagnoses.toList(),
         labTestsAdvised: labs.toList(),
         generalAdvice: _advice.text.trim(),
@@ -202,11 +216,14 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       ref.invalidate(patientSummaryProvider(widget.patientId));
       ref.invalidate(patientMedicationsProvider(widget.patientId));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Prescription created')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Prescription created')));
       // Land on the prescription list so the doctor can download the PDF.
-      context.pushReplacement('/clinician/patients/${widget.patientId}/prescriptions', extra: widget.patientName);
+      context.pushReplacement(
+        '/clinician/patients/${widget.patientId}/prescriptions',
+        extra: widget.patientName,
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = ErrorView.messageFor(context, e));
@@ -220,18 +237,22 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Consult'),
-        bottom: widget.patientName == null
-            ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(20),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    widget.patientName!,
-                    style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        bottom:
+            widget.patientName == null
+                ? null
+                : PreferredSize(
+                  preferredSize: const Size.fromHeight(20),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      widget.patientName!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
-              ),
       ),
       // The nav bar lives here (not in the body Column) so Flutter always keeps
       // it pinned above the system bar and lifts it above the keyboard — the
@@ -262,33 +283,76 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
         children: [
           const _StepTitle('Vitals', 'Measured at this visit — all optional'),
           const SizedBox(height: AppSpacing.md),
-          Row(children: [
-            Expanded(child: _num(_height, 'Height', 'cm', VitalsValidators.height)),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: _num(_weight, 'Weight', 'kg', VitalsValidators.weight)),
-          ]),
-          const SizedBox(height: AppSpacing.md),
-          Row(children: [
-            Expanded(child: _num(_systolic, 'BP systolic', 'mmHg', VitalsValidators.systolic, integer: true)),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _num(
-                _diastolic,
-                'BP diastolic',
-                'mmHg',
-                (v) => VitalsValidators.diastolic(v, systolicText: _systolic.text),
-                integer: true,
+          Row(
+            children: [
+              Expanded(
+                child: _num(_height, 'Height', 'cm', VitalsValidators.height),
               ),
-            ),
-          ]),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _num(_weight, 'Weight', 'kg', VitalsValidators.weight),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.md),
-          Row(children: [
-            Expanded(child: _num(_pulse, 'Heart rate', 'bpm', VitalsValidators.pulse, integer: true)),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(child: _num(_spo2, 'SpO₂', '%', VitalsValidators.spo2, integer: true)),
-          ]),
+          Row(
+            children: [
+              Expanded(
+                child: _num(
+                  _systolic,
+                  'BP systolic',
+                  'mmHg',
+                  VitalsValidators.systolic,
+                  integer: true,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _num(
+                  _diastolic,
+                  'BP diastolic',
+                  'mmHg',
+                  (v) => VitalsValidators.diastolic(
+                    v,
+                    systolicText: _systolic.text,
+                  ),
+                  integer: true,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.md),
-          _num(_sugar, 'Blood sugar', 'mg/dL', VitalsValidators.sugar, integer: true),
+          Row(
+            children: [
+              Expanded(
+                child: _num(
+                  _pulse,
+                  'Heart rate',
+                  'bpm',
+                  VitalsValidators.pulse,
+                  integer: true,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: _num(
+                  _spo2,
+                  'SpO₂',
+                  '%',
+                  VitalsValidators.spo2,
+                  integer: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _num(
+            _sugar,
+            'Blood sugar',
+            'mg/dL',
+            VitalsValidators.sugar,
+            integer: true,
+          ),
           const SizedBox(height: AppSpacing.lg),
           const _StepTitle('Complaint', 'Add the reason for this visit'),
           const SizedBox(height: AppSpacing.sm),
@@ -309,7 +373,10 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
             activeColor: AppColors.primary,
-            title: const Text('Show this complaint on the prescription', style: TextStyle(fontSize: 14)),
+            title: const Text(
+              'Show this complaint on the prescription',
+              style: TextStyle(fontSize: 14),
+            ),
           ),
         ],
       ),
@@ -319,7 +386,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
   /// The diagnosis from the patient's last prescription, as tap-to-reuse chips —
   /// so continuing the same diagnosis is one tap, not a re-hunt through the list.
   Widget _previousDiagnosisSection() {
-    final list = ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ?? const [];
+    final list =
+        ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ??
+        const [];
     final prev = list.where((rx) => rx.diagnosis.isNotEmpty).toList();
     if (prev.isEmpty) return const SizedBox.shrink();
     final diagnoses = prev.first.diagnosis;
@@ -336,9 +405,12 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
               _SelectChip(
                 label: d,
                 selected: _diagnoses.contains(d),
-                onTap: () => setState(() {
-                  _diagnoses.contains(d) ? _diagnoses.remove(d) : _diagnoses.add(d);
-                }),
+                onTap:
+                    () => setState(() {
+                      _diagnoses.contains(d)
+                          ? _diagnoses.remove(d)
+                          : _diagnoses.add(d);
+                    }),
               ),
           ],
         ),
@@ -354,74 +426,92 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       key: _diagFormKey,
       autovalidateMode: _diagAutovalidate,
       child: ListView(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      children: [
-        const _StepTitle('Examination', 'Waist circumference (belly), optional'),
-        const SizedBox(height: AppSpacing.sm),
-        _num(_waist, 'Waist circumference', 'cm', VitalsValidators.waist),
-        const SizedBox(height: AppSpacing.lg),
-        _previousDiagnosisSection(),
-        const _StepTitle('Diagnosis', 'Tap to select — printed on the prescription'),
-        const SizedBox(height: AppSpacing.sm),
-        for (final entry in groups.entries) ...[
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: 4),
-            child: Text(
-              entry.key,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+        padding: const EdgeInsets.all(AppSpacing.md),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        children: [
+          const _StepTitle(
+            'Examination',
+            'Waist circumference (belly), optional',
           ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final d in entry.value)
-                _SelectChip(
-                  label: d.code,
-                  selected: _diagnoses.contains(d.label),
-                  onTap: () => setState(() {
-                    _diagnoses.contains(d.label) ? _diagnoses.remove(d.label) : _diagnoses.add(d.label);
-                  }),
-                ),
-            ],
-          ),
-        ],
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _customDx,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Add another diagnosis'),
-                onSubmitted: (_) => _addCustomDx(),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            IconButton.filledTonal(onPressed: _addCustomDx, icon: const Icon(Icons.add)),
-          ],
-        ),
-        if (_diagnoses.any((d) => kDiagnosisCatalog.every((o) => o.label != d))) ...[
           const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final d in _diagnoses.where((d) => kDiagnosisCatalog.every((o) => o.label != d)))
-                Chip(
-                  label: Text(d),
-                  onDeleted: () => setState(() => _diagnoses.remove(d)),
+          _num(_waist, 'Waist circumference', 'cm', VitalsValidators.waist),
+          const SizedBox(height: AppSpacing.lg),
+          _previousDiagnosisSection(),
+          const _StepTitle(
+            'Diagnosis',
+            'Tap to select — printed on the prescription',
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          for (final entry in groups.entries) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: 4),
+              child: Text(
+                entry.key,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
+              ),
+            ),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final d in entry.value)
+                  _SelectChip(
+                    label: d.code,
+                    selected: _diagnoses.contains(d.label),
+                    onTap:
+                        () => setState(() {
+                          _diagnoses.contains(d.label)
+                              ? _diagnoses.remove(d.label)
+                              : _diagnoses.add(d.label);
+                        }),
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _customDx,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Add another diagnosis',
+                  ),
+                  onSubmitted: (_) => _addCustomDx(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              IconButton.filledTonal(
+                onPressed: _addCustomDx,
+                icon: const Icon(Icons.add),
+              ),
             ],
           ),
+          if (_diagnoses.any(
+            (d) => kDiagnosisCatalog.every((o) => o.label != d),
+          )) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final d in _diagnoses.where(
+                  (d) => kDiagnosisCatalog.every((o) => o.label != d),
+                ))
+                  Chip(
+                    label: Text(d),
+                    onDeleted: () => setState(() => _diagnoses.remove(d)),
+                  ),
+              ],
+            ),
+          ],
         ],
-      ],
       ),
     );
   }
@@ -438,11 +528,16 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
   /// The patient's most recent prescription, collapsed — diagnosis, medicines,
   /// tests and advice — so the doctor can see what was last given.
   Widget _previousRxCard() {
-    final list = ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ?? const [];
+    final list =
+        ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ??
+        const [];
     if (list.isEmpty) return const SizedBox.shrink();
     final rx = list.first;
     final scheme = Theme.of(context).colorScheme;
-    final date = rx.issuedOn != null ? DateFormat('d MMM yyyy').format(rx.issuedOn!) : '';
+    final date =
+        rx.issuedOn != null
+            ? DateFormat('d MMM yyyy').format(rx.issuedOn!)
+            : '';
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       decoration: BoxDecoration(
@@ -454,17 +549,35 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 0),
-          childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 0,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md,
+          ),
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
           leading: Icon(Icons.history_rounded, color: scheme.onSurfaceVariant),
-          title: const Text('Last prescription', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-          subtitle: Text(date, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          title: const Text(
+            'Last prescription',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          subtitle: Text(
+            date,
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
           children: [
-            if (rx.diagnosis.isNotEmpty) _refRow('Diagnosis', rx.diagnosis.join(', ')),
-            if (rx.medicines.isNotEmpty) _refRow('Medicines', rx.medicines.join('\n')),
-            if (rx.labTestsAdvised.isNotEmpty) _refRow('Tests advised', rx.labTestsAdvised.join(', ')),
-            if (rx.generalAdvice != null && rx.generalAdvice!.isNotEmpty) _refRow('Advice', rx.generalAdvice!),
+            if (rx.diagnosis.isNotEmpty)
+              _refRow('Diagnosis', rx.diagnosis.join(', ')),
+            if (rx.medicines.isNotEmpty)
+              _refRow('Medicines', rx.medicines.join('\n')),
+            if (rx.labTestsAdvised.isNotEmpty)
+              _refRow('Tests advised', rx.labTestsAdvised.join(', ')),
+            if (rx.generalAdvice != null && rx.generalAdvice!.isNotEmpty)
+              _refRow('Advice', rx.generalAdvice!),
           ],
         ),
       ),
@@ -478,8 +591,15 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(k.toUpperCase(),
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: scheme.onSurfaceVariant)),
+          Text(
+            k.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 0),
           Text(v, style: const TextStyle(fontSize: 14, height: 1.3)),
         ],
@@ -489,7 +609,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
 
   /// The patient's most recent prescription, or null.
   PrescriptionSummary? _mostRecentRx() {
-    final list = ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ?? const [];
+    final list =
+        ref.watch(patientPrescriptionsProvider(widget.patientId)).valueOrNull ??
+        const [];
     return list.isEmpty ? null : list.first;
   }
 
@@ -517,8 +639,12 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
   void _reuseAdvice(String text) {
     setState(() {
       final lines = _adviceLines;
-      for (final line in text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty)) {
-        if (!lines.any((e) => e.toLowerCase() == line.toLowerCase())) lines.add(line);
+      for (final line in text
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)) {
+        if (!lines.any((e) => e.toLowerCase() == line.toLowerCase()))
+          lines.add(line);
       }
       _advice.text = lines.join('\n');
     });
@@ -526,16 +652,25 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
 
   /// A small "From last prescription" label above a reuse row.
   Widget _reuseLabel() => Padding(
-        padding: const EdgeInsets.only(top: 4, bottom: 4),
-        child: Row(
-          children: [
-            Icon(Icons.history_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
-            const SizedBox(width: 4),
-            Text('From last prescription — tap to reuse',
-                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ],
+    padding: const EdgeInsets.only(top: 4, bottom: 4),
+    child: Row(
+      children: [
+        Icon(
+          Icons.history_rounded,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-      );
+        const SizedBox(width: 4),
+        Text(
+          'From last prescription — tap to reuse',
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    ),
+  );
 
   // ---- Step 3: Clinical advice ----------------------------------------
   Widget _adviceStep() {
@@ -548,10 +683,20 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
         _previousRxCard(),
         // A recap of what was diagnosed in step 2, so the doctor writes the
         // prescription with the diagnosis in view. Editable back in that step.
-        _StepTitle('Diagnosis', _diagnoses.isEmpty ? 'None selected — add it in the Diagnosis step' : 'From the Diagnosis step'),
+        _StepTitle(
+          'Diagnosis',
+          _diagnoses.isEmpty
+              ? 'None selected — add it in the Diagnosis step'
+              : 'From the Diagnosis step',
+        ),
         const SizedBox(height: AppSpacing.sm),
         if (_diagnoses.isEmpty)
-          Text('—', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant))
+          Text(
+            '—',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          )
         else
           Wrap(
             spacing: 8,
@@ -578,7 +723,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                 ActionChip(
                   avatar: const Icon(Icons.add, size: 15),
                   label: Text(
-                    (it.strength != null && it.strength!.isNotEmpty) ? '${it.name} · ${it.strength}' : it.name,
+                    (it.strength != null && it.strength!.isNotEmpty)
+                        ? '${it.name} · ${it.strength}'
+                        : it.name,
                     style: const TextStyle(fontSize: 12),
                   ),
                   visualDensity: VisualDensity.compact,
@@ -594,7 +741,10 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
             draft: _meds[i],
             index: i,
             onChanged: () => setState(() {}),
-            onRemove: _meds.length == 1 ? null : () => setState(() => _meds.removeAt(i)),
+            onRemove:
+                _meds.length == 1
+                    ? null
+                    : () => setState(() => _meds.removeAt(i)),
           ),
         Align(
           alignment: Alignment.centerLeft,
@@ -628,9 +778,12 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                 _SelectChip(
                   label: p.name,
                   selected: _labs.contains(p.name),
-                  onTap: () => setState(() {
-                    _labs.contains(p.name) ? _labs.remove(p.name) : _labs.add(p.name);
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _labs.contains(p.name)
+                            ? _labs.remove(p.name)
+                            : _labs.add(p.name);
+                      }),
                 ),
             ],
           ),
@@ -645,9 +798,10 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                 _SelectChip(
                   label: t,
                   selected: _labs.contains(t),
-                  onTap: () => setState(() {
-                    _labs.contains(t) ? _labs.remove(t) : _labs.add(t);
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _labs.contains(t) ? _labs.remove(t) : _labs.add(t);
+                      }),
                 ),
             ],
           ),
@@ -659,19 +813,28 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
             Expanded(
               child: TextField(
                 controller: _customTest,
-                decoration: const InputDecoration(labelText: 'Add another test'),
+                decoration: const InputDecoration(
+                  labelText: 'Add another test',
+                ),
                 onSubmitted: (_) => _addCustomTest(),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
-            IconButton.filledTonal(onPressed: _addCustomTest, icon: const Icon(Icons.add)),
+            IconButton.filledTonal(
+              onPressed: _addCustomTest,
+              icon: const Icon(Icons.add),
+            ),
           ],
         ),
 
         const SizedBox(height: AppSpacing.lg),
-        const _StepTitle('General advice', 'Tap a common one, or type your own'),
+        const _StepTitle(
+          'General advice',
+          'Tap a common one, or type your own',
+        ),
         const SizedBox(height: AppSpacing.sm),
-        if (lastRx != null && (lastRx.generalAdvice ?? '').trim().isNotEmpty) ...[
+        if (lastRx != null &&
+            (lastRx.generalAdvice ?? '').trim().isNotEmpty) ...[
           Align(
             alignment: Alignment.centerLeft,
             child: OutlinedButton.icon(
@@ -688,7 +851,11 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
             padding: const EdgeInsets.only(top: 4, bottom: 4),
             child: Text(
               entry.key,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           Wrap(
@@ -727,17 +894,27 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
               labelText: 'Follow-up date',
               prefixIcon: Icon(Icons.event_outlined),
             ),
-            child: Text(_followUp == null ? 'Not set' : DateFormat('d MMM yyyy').format(_followUp!)),
+            child: Text(
+              _followUp == null
+                  ? 'Not set'
+                  : DateFormat('d MMM yyyy').format(_followUp!),
+            ),
           ),
         ),
         if (_followUp != null)
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton(onPressed: () => setState(() => _followUp = null), child: const Text('Clear')),
+            child: TextButton(
+              onPressed: () => setState(() => _followUp = null),
+              child: const Text('Clear'),
+            ),
           ),
 
         const SizedBox(height: AppSpacing.lg),
-        const _StepTitle('Digital signature', 'Signs the generated prescription'),
+        const _StepTitle(
+          'Digital signature',
+          'Signs the generated prescription',
+        ),
         const SizedBox(height: AppSpacing.sm),
         _signatureRow(),
 
@@ -751,9 +928,18 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.error_outline, color: AppColors.dangerOn(context), size: 20),
+                Icon(
+                  Icons.error_outline,
+                  color: AppColors.dangerOn(context),
+                  size: 20,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                Expanded(child: Text(_error!, style: TextStyle(color: AppColors.dangerOn(context)))),
+                Expanded(
+                  child: Text(
+                    _error!,
+                    style: TextStyle(color: AppColors.dangerOn(context)),
+                  ),
+                ),
               ],
             ),
           ),
@@ -774,9 +960,14 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
   /// Advice snippets are one-per-line; a chip is "selected" when its line is
   /// already present, and tapping it adds or removes that line.
   List<String> get _adviceLines =>
-      _advice.text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+      _advice.text
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .toList();
 
-  bool _adviceHas(String text) => _adviceLines.any((l) => l.toLowerCase() == text.toLowerCase());
+  bool _adviceHas(String text) =>
+      _adviceLines.any((l) => l.toLowerCase() == text.toLowerCase());
 
   void _toggleAdvice(String text) {
     final lines = _adviceLines;
@@ -817,30 +1008,41 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       ),
       child: Column(
         children: [
-      Row(
-        children: [
-          Icon(
-            hasSig ? Icons.verified_rounded : Icons.draw_outlined,
-            size: 22,
-            color: hasSig ? AppColors.primary : scheme.onSurfaceVariant,
+          Row(
+            children: [
+              Icon(
+                hasSig ? Icons.verified_rounded : Icons.draw_outlined,
+                size: 22,
+                color: hasSig ? AppColors.primary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  hasSig
+                      ? 'Signature added — it signs this prescription'
+                      : 'No signature yet — a signature line is printed instead',
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.3,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+              _uploadingSignature
+                  ? const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: SizedBox(
+                      width: 16,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                  : TextButton(
+                    onPressed: _changeSignature,
+                    child: Text(hasSig ? 'Change' : 'Upload'),
+                  ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              hasSig
-                  ? 'Signature added — it signs this prescription'
-                  : 'No signature yet — a signature line is printed instead',
-              style: TextStyle(fontSize: 14, height: 1.3, color: scheme.onSurface),
-            ),
-          ),
-          _uploadingSignature
-              ? const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: SizedBox(width: 16, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-                )
-              : TextButton(onPressed: _changeSignature, child: Text(hasSig ? 'Change' : 'Upload')),
-        ],
-      ),
           // The signature itself, immediately before it is committed to a
           // prescription. "Signature added" states that a file exists; it does
           // not say whether the right one is about to be printed under the
@@ -857,7 +1059,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                 // never looks like.
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.6),
+                ),
               ),
               child: AuthedImage(
                 path: signatureUrl,
@@ -879,39 +1083,52 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Camera'),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Camera'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Gallery'),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Gallery'),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (source == null) return;
-    final file = await ImagePicker().pickImage(source: source, maxWidth: 1200, maxHeight: 600, imageQuality: 90);
+    final file = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1200,
+      maxHeight: 600,
+      imageQuality: 90,
+    );
     if (file == null) return;
     setState(() => _uploadingSignature = true);
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(
             path: file.path,
             filename: file.name,
             kind: UploadKind.signature,
           );
-      final user = await ref.read(authRepositoryProvider).updateMe(signatureAssetId: asset.id);
+      final user = await ref
+          .read(authRepositoryProvider)
+          .updateMe(signatureAssetId: asset.id);
       ref.read(authControllerProvider.notifier).replaceUser(user);
       messenger.showSnackBar(const SnackBar(content: Text('Signature saved')));
     } catch (_) {
-      if (mounted) messenger.showSnackBar(const SnackBar(content: Text('Could not upload the signature')));
+      if (mounted)
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Could not upload the signature')),
+        );
     } finally {
       if (mounted) setState(() => _uploadingSignature = false);
     }
@@ -940,14 +1157,26 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       elevation: 12,
       child: SafeArea(
         top: false,
-        minimum: const EdgeInsets.fromLTRB(AppSpacing.md, 10, AppSpacing.md, 12),
+        minimum: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          10,
+          AppSpacing.md,
+          12,
+        ),
         child: Row(
           children: [
             if (_step > 0) ...[
               OutlinedButton(
-                onPressed: _submitting ? null : () => setState(() => _step -= 1),
-                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52), padding: const EdgeInsets.symmetric(horizontal: 24)),
-                child: const Text('Back', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                onPressed:
+                    _submitting ? null : () => setState(() => _step -= 1),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 52),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                ),
+                child: const Text(
+                  'Back',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
               ),
               const SizedBox(width: 12),
             ],
@@ -960,14 +1189,27 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
                   foregroundColor: Colors.white,
                   minimumSize: const Size.fromHeight(52),
                 ),
-                icon: last
-                    ? (_submitting
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.check_rounded))
-                    : const Icon(Icons.arrow_forward_rounded, size: 18),
+                icon:
+                    last
+                        ? (_submitting
+                            ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Icon(Icons.check_rounded))
+                        : const Icon(Icons.arrow_forward_rounded, size: 18),
                 label: Text(
-                  last ? (_submitting ? 'Generating…' : 'Generate prescription') : 'Next',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  last
+                      ? (_submitting ? 'Generating…' : 'Generate prescription')
+                      : 'Next',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -988,7 +1230,9 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       controller: c,
       keyboardType: TextInputType.numberWithOptions(decimal: !integer),
       inputFormatters: [
-        integer ? FilteringTextInputFormatter.digitsOnly : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+        integer
+            ? FilteringTextInputFormatter.digitsOnly
+            : FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
         LengthLimitingTextInputFormatter(6),
       ],
       decoration: InputDecoration(labelText: label, suffixText: unit),
@@ -1016,7 +1260,13 @@ class _MedDraft {
 }
 
 class _MedCard extends StatelessWidget {
-  const _MedCard({super.key, required this.draft, required this.index, required this.onChanged, this.onRemove});
+  const _MedCard({
+    super.key,
+    required this.draft,
+    required this.index,
+    required this.onChanged,
+    this.onRemove,
+  });
 
   final _MedDraft draft;
   final int index;
@@ -1026,8 +1276,16 @@ class _MedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final shorthand = composeShorthand(frequency: draft.frequency, relation: draft.relation, route: draft.route);
-    final plain = expandToPlain(frequency: draft.frequency, relation: draft.relation, route: draft.route);
+    final shorthand = composeShorthand(
+      frequency: draft.frequency,
+      relation: draft.relation,
+      route: draft.route,
+    );
+    final plain = expandToPlain(
+      frequency: draft.frequency,
+      relation: draft.relation,
+      route: draft.route,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -1045,13 +1303,19 @@ class _MedCard extends StatelessWidget {
                 child: TextField(
                   controller: draft.name,
                   textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(labelText: 'Medicine ${index + 1}', isDense: true),
+                  decoration: InputDecoration(
+                    labelText: 'Medicine ${index + 1}',
+                    isDense: true,
+                  ),
                 ),
               ),
               if (onRemove != null)
                 IconButton(
                   onPressed: onRemove,
-                  icon: Icon(Icons.close_rounded, color: scheme.onSurfaceVariant),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   tooltip: 'Remove',
                 ),
             ],
@@ -1062,7 +1326,11 @@ class _MedCard extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: draft.strength,
-                  decoration: const InputDecoration(labelText: 'Strength', hintText: '500 mg', isDense: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Strength',
+                    hintText: '500 mg',
+                    isDense: true,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1070,8 +1338,14 @@ class _MedCard extends StatelessWidget {
                 child: TextField(
                   controller: draft.duration,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-                  decoration: const InputDecoration(labelText: 'Days', isDense: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(3),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Days',
+                    isDense: true,
+                  ),
                 ),
               ),
             ],
@@ -1083,10 +1357,19 @@ class _MedCard extends StatelessWidget {
                 child: DropdownButtonFormField<DoseFrequency>(
                   initialValue: draft.frequency,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Frequency', isDense: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Frequency',
+                    isDense: true,
+                  ),
                   items: [
                     for (final f in DoseFrequency.values)
-                      DropdownMenuItem(value: f, child: Text('${f.code} · ${f.plain}', overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(
+                        value: f,
+                        child: Text(
+                          '${f.code} · ${f.plain}',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                   ],
                   onChanged: (v) {
                     if (v != null) {
@@ -1101,10 +1384,16 @@ class _MedCard extends StatelessWidget {
                 child: DropdownButtonFormField<MedRoute>(
                   initialValue: draft.route,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Route', isDense: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Route',
+                    isDense: true,
+                  ),
                   items: [
                     for (final r in MedRoute.values)
-                      DropdownMenuItem(value: r, child: Text(r.code, overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(
+                        value: r,
+                        child: Text(r.code, overflow: TextOverflow.ellipsis),
+                      ),
                   ],
                   onChanged: (v) {
                     if (v != null) {
@@ -1121,12 +1410,27 @@ class _MedCard extends StatelessWidget {
             DropdownButtonFormField<MealRelation>(
               initialValue: draft.relation,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Meal relation', isDense: true),
+              decoration: const InputDecoration(
+                labelText: 'Meal relation',
+                isDense: true,
+              ),
               items: const [
-                DropdownMenuItem(value: MealRelation.after, child: Text('After food (PC)')),
-                DropdownMenuItem(value: MealRelation.before, child: Text('Before food (AC)')),
-                DropdownMenuItem(value: MealRelation.withFood, child: Text('With food')),
-                DropdownMenuItem(value: MealRelation.anytime, child: Text('Anytime')),
+                DropdownMenuItem(
+                  value: MealRelation.after,
+                  child: Text('After food (PC)'),
+                ),
+                DropdownMenuItem(
+                  value: MealRelation.before,
+                  child: Text('Before food (AC)'),
+                ),
+                DropdownMenuItem(
+                  value: MealRelation.withFood,
+                  child: Text('With food'),
+                ),
+                DropdownMenuItem(
+                  value: MealRelation.anytime,
+                  child: Text('Anytime'),
+                ),
               ],
               onChanged: (v) {
                 if (v != null) {
@@ -1141,7 +1445,11 @@ class _MedCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               '$shorthand  ·  $plain',
-              style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -1160,7 +1468,12 @@ class _StepBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       child: Row(
         children: [
           for (var i = 0; i < labels.length; i++) ...[
@@ -1183,7 +1496,8 @@ class _StepBar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final done = i < step;
     final active = i == step;
-    final color = (done || active) ? AppColors.primary : scheme.surfaceContainerHighest;
+    final color =
+        (done || active) ? AppColors.primary : scheme.surfaceContainerHighest;
     return Row(
       children: [
         Container(
@@ -1191,16 +1505,17 @@ class _StepBar extends StatelessWidget {
           height: 26,
           alignment: Alignment.center,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          child: done
-              ? const Icon(Icons.check, size: 15, color: Colors.white)
-              : Text(
-                  '${i + 1}',
-                  style: TextStyle(
-                    color: active ? Colors.white : scheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
+          child:
+              done
+                  ? const Icon(Icons.check, size: 15, color: Colors.white)
+                  : Text(
+                    '${i + 1}',
+                    style: TextStyle(
+                      color: active ? Colors.white : scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
         ),
         const SizedBox(width: 4),
         Text(
@@ -1227,16 +1542,29 @@ class _StepTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         const SizedBox(height: 0),
-        Text(subtitle, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
 }
 
 class _SelectChip extends StatelessWidget {
-  const _SelectChip({required this.label, required this.selected, required this.onTap});
+  const _SelectChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -1252,9 +1580,17 @@ class _SelectChip extends StatelessWidget {
         duration: const Duration(milliseconds: 120),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color:
+              selected
+                  ? AppColors.primary
+                  : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.primary : scheme.outlineVariant.withValues(alpha: 0.5)),
+          border: Border.all(
+            color:
+                selected
+                    ? AppColors.primary
+                    : scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -4,7 +4,11 @@ import '../domain/user.dart';
 
 /// Result of a successful login/register call.
 class AuthResult {
-  const AuthResult({required this.user, required this.accessToken, required this.refreshToken});
+  const AuthResult({
+    required this.user,
+    required this.accessToken,
+    required this.refreshToken,
+  });
 
   final AppUser user;
   final String accessToken;
@@ -57,15 +61,20 @@ class AuthRepository {
         if (pulse != null) 'pulse': pulse,
         if (spo2 != null) 'spo2': spo2,
         if (glucoseMgDl != null) 'glucoseMgDl': glucoseMgDl,
-        if (complaints != null && complaints.isNotEmpty) 'complaints': complaints,
+        if (complaints != null && complaints.isNotEmpty)
+          'complaints': complaints,
         if (diabetesType != null) 'diabetesType': diabetesType,
-        if (inviteCode != null && inviteCode.isNotEmpty) 'inviteCode': inviteCode,
+        if (inviteCode != null && inviteCode.isNotEmpty)
+          'inviteCode': inviteCode,
       },
     );
     return _resultFromJson(json);
   }
 
-  Future<AuthResult> login({required String phone, required String password}) async {
+  Future<AuthResult> login({
+    required String phone,
+    required String password,
+  }) async {
     final json = await _client.postJson(
       '/auth/login',
       body: {'phone': phone, 'password': password},
@@ -88,14 +97,20 @@ class AuthRepository {
     final profile = json['profile'];
     return (
       user: AppUser.fromJson(json['user'] as Map<String, dynamic>),
-      diabetesType: profile is Map<String, dynamic> ? profile['diabetesType']?.toString() : null,
+      diabetesType:
+          profile is Map<String, dynamic>
+              ? profile['diabetesType']?.toString()
+              : null,
     );
   }
 
   /// Diabetes type lives on `PatientProfile`, not `User`, so it has its own
   /// endpoint — `PATCH /auth/me` would silently ignore it.
   Future<void> updateDiabetesType(String diabetesType) async {
-    await _client.patchJson('/auth/me/profile', body: {'diabetesType': diabetesType});
+    await _client.patchJson(
+      '/auth/me/profile',
+      body: {'diabetesType': diabetesType},
+    );
   }
 
   /// The full `PatientProfile` from `GET /auth/me` — height, diagnosis date,
@@ -165,7 +180,14 @@ class AuthRepository {
     final user = AppUser.fromJson(json['user'] as Map<String, dynamic>);
     final accessToken = json['accessToken'] as String;
     final refreshToken = json['refreshToken'] as String;
-    await _secureStore.saveTokens(accessToken: accessToken, refreshToken: refreshToken);
-    return AuthResult(user: user, accessToken: accessToken, refreshToken: refreshToken);
+    await _secureStore.saveTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+    return AuthResult(
+      user: user,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
   }
 }

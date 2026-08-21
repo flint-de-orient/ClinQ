@@ -42,7 +42,8 @@ class ChatState {
 /// while awaiting the reply, switching between sessions, and starting a fresh
 /// one.
 class ChatController extends StateNotifier<ChatState> {
-  ChatController(this._repository, this._uploadRepository) : super(const ChatState());
+  ChatController(this._repository, this._uploadRepository)
+    : super(const ChatState());
 
   final ChatRepository _repository;
   final UploadRepository _uploadRepository;
@@ -56,7 +57,9 @@ class ChatController extends StateNotifier<ChatState> {
     final trimmed = text.trim();
     // A photo-only message (empty text) is allowed as long as something is
     // attached; block only when there is nothing at all to send.
-    if ((trimmed.isEmpty && (attachments == null || attachments.isEmpty)) || state.isSending) return;
+    if ((trimmed.isEmpty && (attachments == null || attachments.isEmpty)) ||
+        state.isSending)
+      return;
 
     // Echo the patient's message instantly so tapping send feels immediate; the
     // server's saved copy replaces it once the reply returns.
@@ -88,7 +91,8 @@ class ChatController extends StateNotifier<ChatState> {
         attachments: attachments,
         replyToId: replyToId,
       );
-      final withoutTemp = state.messages.where((m) => m.id != tempUserId).toList();
+      final withoutTemp =
+          state.messages.where((m) => m.id != tempUserId).toList();
       state = state.copyWith(
         sessionId: result.sessionId,
         messages: [...withoutTemp, result.userMessage, result.reply],
@@ -111,7 +115,10 @@ class ChatController extends StateNotifier<ChatState> {
   /// replaces the optimistic one. Two bugs this fixes: the clip used to appear
   /// only after the upload finished, and briefly as the transcript TEXT (because
   /// the old path fed the transcript through the text-only optimistic bubble).
-  Future<void> sendVoiceNote({required String localPath, required String language}) async {
+  Future<void> sendVoiceNote({
+    required String localPath,
+    required String language,
+  }) async {
     if (state.isSending) return;
 
     const tempId = '__temp_voice__';
@@ -213,7 +220,10 @@ class ChatController extends StateNotifier<ChatState> {
   /// different count, a changed id/content, or a differing attachment/voice-note
   /// count on any turn. Kept coarse so an unchanged poll never rebuilds the list
   /// (and never fights the patient's scrolling).
-  static bool _messagesDiffer(List<ChatMessage> next, List<ChatMessage> current) {
+  static bool _messagesDiffer(
+    List<ChatMessage> next,
+    List<ChatMessage> current,
+  ) {
     if (next.length != current.length) return true;
     for (var i = 0; i < next.length; i++) {
       final a = next[i];

@@ -31,11 +31,13 @@ class ChatSession {
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString(),
       lastMessagePreview:
-          (json['lastMessagePreview'] ?? json['preview'] ?? json['lastMessage'])?.toString(),
+          (json['lastMessagePreview'] ?? json['preview'] ?? json['lastMessage'])
+              ?.toString(),
       lastMessageAt: _date(json['lastMessageAt'] ?? json['updatedAt']),
       createdAt: _date(json['createdAt'] ?? json['startedAt']),
       messageCount: (json['messageCount'] as num?)?.toInt(),
-      isArchived: json['isArchived'] as bool? ?? json['archived'] as bool? ?? false,
+      isArchived:
+          json['isArchived'] as bool? ?? json['archived'] as bool? ?? false,
       language: json['language']?.toString(),
     );
   }

@@ -17,12 +17,12 @@ class DashboardRepository {
   }
 }
 
-final Provider<DashboardRepository> dashboardRepositoryProvider = Provider<DashboardRepository>((
-  ref,
-) {
-  return DashboardRepository(ref.watch(apiClientProvider));
-});
+final Provider<DashboardRepository> dashboardRepositoryProvider =
+    Provider<DashboardRepository>((ref) {
+      return DashboardRepository(ref.watch(apiClientProvider));
+    });
 
-final FutureProvider<DashboardData> dashboardProvider = FutureProvider<DashboardData>((ref) {
-  return ref.watch(dashboardRepositoryProvider).getDashboard();
-});
+final FutureProvider<DashboardData> dashboardProvider =
+    FutureProvider<DashboardData>((ref) {
+      return ref.watch(dashboardRepositoryProvider).getDashboard();
+    });

@@ -450,7 +450,9 @@ class _PatientThreadScreenState extends ConsumerState<PatientThreadScreen> {
     try {
       await ref.read(chatRepositoryProvider).hideMessage(m.id);
       if (mounted) {
-        setState(() => _messages = _messages.where((x) => x.id != m.id).toList());
+        setState(
+          () => _messages = _messages.where((x) => x.id != m.id).toList(),
+        );
       }
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));

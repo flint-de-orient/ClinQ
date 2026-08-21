@@ -114,25 +114,30 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
   Future<void> _saveDraft() async {
     final messenger = ScaffoldMessenger.of(context);
     final draft = <String, dynamic>{
-      'meds': _meds
-          .where((m) => m.name.text.trim().isNotEmpty)
-          .map((m) => {
-                'name': m.name.text.trim(),
-                'dosage': m.dosage.text.trim(),
-                // Stored by enum name, not by index: an index would
-                // silently remap every saved draft the day a new frequency is
-                // added to the middle of the enum.
-                'frequency': m.frequency.name,
-                'duration': m.duration.text.trim(),
-              })
-          .toList(),
+      'meds':
+          _meds
+              .where((m) => m.name.text.trim().isNotEmpty)
+              .map(
+                (m) => {
+                  'name': m.name.text.trim(),
+                  'dosage': m.dosage.text.trim(),
+                  // Stored by enum name, not by index: an index would
+                  // silently remap every saved draft the day a new frequency is
+                  // added to the middle of the enum.
+                  'frequency': m.frequency.name,
+                  'duration': m.duration.text.trim(),
+                },
+              )
+              .toList(),
       'advice': _advice.text.trim(),
       'tests': _selectedTests.toList(),
       'customTests': _customTests,
       'followUp': _followUp?.toIso8601String(),
       'savedAt': DateTime.now().toIso8601String(),
     };
-    await ref.read(sharedPreferencesProvider).setString(_draftKey, jsonEncode(draft));
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_draftKey, jsonEncode(draft));
     if (!mounted) return;
     messenger.showSnackBar(
       const SnackBar(content: Text('Draft saved on this device')),
@@ -145,7 +150,9 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
     if (raw == null) return;
     try {
       final d = jsonDecode(raw) as Map<String, dynamic>;
-      final meds = (d['meds'] as List?)?.whereType<Map<String, dynamic>>().toList() ?? const [];
+      final meds =
+          (d['meds'] as List?)?.whereType<Map<String, dynamic>>().toList() ??
+          const [];
       if (meds.isEmpty && (d['advice'] as String?)?.isEmpty != false) return;
 
       setState(() {
@@ -155,20 +162,22 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           }
           _meds
             ..clear()
-            ..addAll(meds.map((m) {
-              final draft = _MedDraft();
-              draft.name.text = m['name']?.toString() ?? '';
-              draft.dosage.text = m['dosage']?.toString() ?? '';
-              draft.duration.text = m['duration']?.toString() ?? '';
-              final freq = m['frequency']?.toString();
-              if (freq != null) {
-                draft.frequency = DoseFrequency.values.firstWhere(
-                  (f) => f.name == freq,
-                  orElse: () => draft.frequency,
-                );
-              }
-              return draft;
-            }));
+            ..addAll(
+              meds.map((m) {
+                final draft = _MedDraft();
+                draft.name.text = m['name']?.toString() ?? '';
+                draft.dosage.text = m['dosage']?.toString() ?? '';
+                draft.duration.text = m['duration']?.toString() ?? '';
+                final freq = m['frequency']?.toString();
+                if (freq != null) {
+                  draft.frequency = DoseFrequency.values.firstWhere(
+                    (f) => f.name == freq,
+                    orElse: () => draft.frequency,
+                  );
+                }
+                return draft;
+              }),
+            );
         }
         _advice.text = d['advice']?.toString() ?? '';
         _selectedTests
@@ -176,7 +185,9 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           ..addAll((d['tests'] as List?)?.map((e) => e.toString()) ?? const []);
         _customTests
           ..clear()
-          ..addAll((d['customTests'] as List?)?.map((e) => e.toString()) ?? const []);
+          ..addAll(
+            (d['customTests'] as List?)?.map((e) => e.toString()) ?? const [],
+          );
         _followUp = DateTime.tryParse(d['followUp']?.toString() ?? '');
       });
     } catch (_) {
@@ -290,423 +301,441 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
           ref.invalidate(patientMedicationsProvider(widget.patientId));
         },
         child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (_, _) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Could not load patient'),
-                  const SizedBox(height: AppSpacing.sm),
-                  OutlinedButton(
-                    onPressed:
-                        () => ref.invalidate(
-                          patientSummaryProvider(widget.patientId),
-                        ),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-        data:
-            (p) => ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.md,
-                AppSpacing.xl,
-              ),
-              children: [
-                _ProfileHeader(patient: p),
-                const SizedBox(height: AppSpacing.lg),
-
-                // The read side of the record — health metrics, the trend graph,
-                // HbA1c history, uploaded reports, alerts and the dietician
-                // assignment — above the actions so the doctor sees the patient's
-                // status before prescribing. (This whole block was orphaned by an
-                // earlier refactor; the data was fetched but never shown.)
-                PatientRecordSections(summary: p, patientId: widget.patientId),
-                const SizedBox(height: AppSpacing.lg),
-
-                // The one filled surface on the record. Everything above it is
-                // read-only — who this patient is and how they are doing — and
-                // everything below it is the doctor writing. The colour marks
-                // that boundary, so the eye lands on the point of the visit
-                // rather than on another grey heading among grey headings.
-                PanelFeatureCard(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                    AppSpacing.md,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.edit_document,
-                          size: 21,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Clinical Actions',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            SizedBox(height: 0),
-                            Text(
-                              'Draft and send a new prescription.',
-                              style: TextStyle(
-                                color: Color(0xCCFFFFFF),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                _ActionCard(
-                  icon: Icons.assignment_outlined,
-                  title: 'Medication',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // What the patient is already on, before the box for what to
-                      // add. Prescribing without it is prescribing blind — a repeat
-                      // or an interaction is invisible until the patient reports it.
-                      _CurrentMedicines(patientId: widget.patientId),
-                      _Collapsible(
-                        title: 'Add medication',
-                        subtitle: 'Prescribe a new medicine',
-                        icon: Icons.add_circle_outline_rounded,
-                        children: [
-                          for (var i = 0; i < _meds.length; i++)
-                            _MedFields(
-                              draft: _meds[i],
-                              onChanged: () => setState(() {}),
-                              onRemove:
-                                  _meds.length > 1
-                                      ? () => setState(
-                                        () => _meds.removeAt(i).dispose(),
-                                      )
-                                      : null,
-                            ),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                foregroundColor: AppColors.primary,
-                              ),
-                              onPressed:
-                                  () => setState(() => _meds.add(_MedDraft())),
-                              icon: const Icon(
-                                Icons.add_circle_outline_rounded,
-                                size: 20,
-                              ),
-                              label: const Text(
-                                'Add another medication',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                _ActionCard(
-                  icon: Icons.biotech_outlined,
-                  title: 'Lab Tests',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Already ordered, and already come back. Without these the
-                      // doctor re-ordered tests that were outstanding and could not
-                      // see the report the patient had already uploaded.
-                      _TestHistory(summary: p),
-                      _Collapsible(
-                        title: 'Add tests',
-                        subtitle: 'Order from the catalog or type your own',
-                        icon: Icons.add_circle_outline_rounded,
-                        children: [
-                          // An add control, not a search: what is typed here becomes a
-                          // new chip. The leading + says so; a magnifier would promise
-                          // a lookup that does not exist.
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _PlainField(
-                                  controller: _labSearch,
-                                  hint: 'Add another test',
-                                  icon: Icons.add_rounded,
-                                  textInputAction: TextInputAction.done,
-                                  onSubmitted: (_) => _addCustomTest(),
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
-                              IconButton.filledTonal(
-                                onPressed: _addCustomTest,
-                                icon: const Icon(Icons.add_rounded),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          // The diabetes lab catalog, grouped by category. The doctor
-                          // orders at the PANEL level; each panel's sub-tests are shown
-                          // beneath the selection so "what the report includes" is clear.
-                          for (final entry
-                              in labCatalogByCategory().entries) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(top: 0, bottom: 4),
-                              child: Text(
-                                entry.key.toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            Wrap(
-                              spacing: AppSpacing.sm,
-                              runSpacing: AppSpacing.sm,
-                              children: [
-                                for (final panel in entry.value)
-                                  _TestChip(
-                                    label: panel.name,
-                                    selected: _selectedTests.contains(
-                                      panel.name,
-                                    ),
-                                    onTap:
-                                        () => setState(() {
-                                          if (!_selectedTests.remove(
-                                            panel.name,
-                                          ))
-                                            _selectedTests.add(panel.name);
-                                        }),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                          ],
-                          if (_customTests.isNotEmpty)
-                            Wrap(
-                              spacing: AppSpacing.sm,
-                              runSpacing: AppSpacing.sm,
-                              children: [
-                                for (final test in _customTests)
-                                  _TestChip(
-                                    label: test,
-                                    selected: _selectedTests.contains(test),
-                                    onTap:
-                                        () => setState(() {
-                                          if (!_selectedTests.remove(test))
-                                            _selectedTests.add(test);
-                                        }),
-                                  ),
-                              ],
-                            ),
-                          // Sub-tests under each selected panel.
-                          for (final t in _selectedTests)
-                            if ((labPanelFor(t)?.analytes ?? const [])
-                                .isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Icon(
-                                      Icons.subdirectory_arrow_right_rounded,
-                                      size: 15,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).colorScheme.onSurfaceVariant,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        '$t: ${labPanelFor(t)!.analytes.join(' · ')}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          height: 1.3,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                _ActionCard(
-                  icon: Icons.edit_note_rounded,
-                  title: 'Clinical Advice',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Previous diagnoses + advice for this patient, tap to reuse —
-                      // the reference the Clinical Advice card was missing (Medication
-                      // has "currently on", Lab Tests has its history; this is the
-                      // equivalent for advice).
-                      _PreviousAdvice(
-                        patientId: widget.patientId,
-                        onReuseDiagnosis:
-                            (t) => setState(() => _diagnosis.text = t),
-                        onReuseAdvice: (t) => setState(() => _advice.text = t),
-                      ),
-                      const _FieldLabel('Diagnosis'),
-                      const SizedBox(height: 4),
-                      TextField(
-                        controller: _diagnosis,
-                        minLines: 1,
-                        maxLines: 4,
-                        maxLength: 600,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'e.g. Type 2 DM, Hypertension (one per line)',
-                          counterText: '',
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      const _FieldLabel('General advice'),
-                      const SizedBox(height: 4),
-                      TextField(
-                        controller: _advice,
-                        minLines: 3,
-                        maxLines: 8,
-                        maxLength: 2000,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(
-                          hintText:
-                              'Diet, lifestyle and general instructions...',
-                          counterText: '',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-
-                _ActionCard(
-                  icon: Icons.calendar_month_outlined,
-                  title: 'Follow-up',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _FieldLabel('Next Visit'),
-                      const SizedBox(height: 4),
-                      _DateField(
-                        date: _followUp,
-                        onTap: _pickFollowUp,
-                        onClear: () => setState(() => _followUp = null),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-
-                // Two actions, one line. Draft is the quieter of the pair — a
-                // tonal fill against the brand one — because sending is what a
-                // consultation is for and saving is the escape hatch when the
-                // doctor is interrupted mid-form.
-                Row(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error:
+              (_, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: AppSpacing.minTapTarget + 12,
-                        child: FilledButton.tonalIcon(
-                          onPressed: _saving ? null : _saveDraft,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.accentSoftOn(context),
-                            foregroundColor: AppColors.accentOn(context),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    const Text('Could not load patient'),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton(
+                      onPressed:
+                          () => ref.invalidate(
+                            patientSummaryProvider(widget.patientId),
                           ),
-                          icon: const Icon(Icons.bookmark_outline_rounded, size: 20),
-                          label: const Text(
-                            'Save draft',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: SizedBox(
-                        height: AppSpacing.minTapTarget + 12,
-                        child: FilledButton.icon(
-                          onPressed: _saving ? null : _send,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon:
-                              _saving
-                                  ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.4,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                  : const Icon(Icons.send_rounded, size: 20),
-                          label: const Text(
-                            'Send',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
-              ],
-            ),
-      ),
+              ),
+          data:
+              (p) => ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.xl,
+                ),
+                children: [
+                  _ProfileHeader(patient: p),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // The read side of the record — health metrics, the trend graph,
+                  // HbA1c history, uploaded reports, alerts and the dietician
+                  // assignment — above the actions so the doctor sees the patient's
+                  // status before prescribing. (This whole block was orphaned by an
+                  // earlier refactor; the data was fetched but never shown.)
+                  PatientRecordSections(
+                    summary: p,
+                    patientId: widget.patientId,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // The one filled surface on the record. Everything above it is
+                  // read-only — who this patient is and how they are doing — and
+                  // everything below it is the doctor writing. The colour marks
+                  // that boundary, so the eye lands on the point of the visit
+                  // rather than on another grey heading among grey headings.
+                  PanelFeatureCard(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.edit_document,
+                            size: 21,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Clinical Actions',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              SizedBox(height: 0),
+                              Text(
+                                'Draft and send a new prescription.',
+                                style: TextStyle(
+                                  color: Color(0xCCFFFFFF),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  _ActionCard(
+                    icon: Icons.assignment_outlined,
+                    title: 'Medication',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // What the patient is already on, before the box for what to
+                        // add. Prescribing without it is prescribing blind — a repeat
+                        // or an interaction is invisible until the patient reports it.
+                        _CurrentMedicines(patientId: widget.patientId),
+                        _Collapsible(
+                          title: 'Add medication',
+                          subtitle: 'Prescribe a new medicine',
+                          icon: Icons.add_circle_outline_rounded,
+                          children: [
+                            for (var i = 0; i < _meds.length; i++)
+                              _MedFields(
+                                draft: _meds[i],
+                                onChanged: () => setState(() {}),
+                                onRemove:
+                                    _meds.length > 1
+                                        ? () => setState(
+                                          () => _meds.removeAt(i).dispose(),
+                                        )
+                                        : null,
+                              ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  foregroundColor: AppColors.primary,
+                                ),
+                                onPressed:
+                                    () =>
+                                        setState(() => _meds.add(_MedDraft())),
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  size: 20,
+                                ),
+                                label: const Text(
+                                  'Add another medication',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  _ActionCard(
+                    icon: Icons.biotech_outlined,
+                    title: 'Lab Tests',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Already ordered, and already come back. Without these the
+                        // doctor re-ordered tests that were outstanding and could not
+                        // see the report the patient had already uploaded.
+                        _TestHistory(summary: p),
+                        _Collapsible(
+                          title: 'Add tests',
+                          subtitle: 'Order from the catalog or type your own',
+                          icon: Icons.add_circle_outline_rounded,
+                          children: [
+                            // An add control, not a search: what is typed here becomes a
+                            // new chip. The leading + says so; a magnifier would promise
+                            // a lookup that does not exist.
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _PlainField(
+                                    controller: _labSearch,
+                                    hint: 'Add another test',
+                                    icon: Icons.add_rounded,
+                                    textInputAction: TextInputAction.done,
+                                    onSubmitted: (_) => _addCustomTest(),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                IconButton.filledTonal(
+                                  onPressed: _addCustomTest,
+                                  icon: const Icon(Icons.add_rounded),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            // The diabetes lab catalog, grouped by category. The doctor
+                            // orders at the PANEL level; each panel's sub-tests are shown
+                            // beneath the selection so "what the report includes" is clear.
+                            for (final entry
+                                in labCatalogByCategory().entries) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 0,
+                                  bottom: 4,
+                                ),
+                                child: Text(
+                                  entry.key.toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.sm,
+                                children: [
+                                  for (final panel in entry.value)
+                                    _TestChip(
+                                      label: panel.name,
+                                      selected: _selectedTests.contains(
+                                        panel.name,
+                                      ),
+                                      onTap:
+                                          () => setState(() {
+                                            if (!_selectedTests.remove(
+                                              panel.name,
+                                            ))
+                                              _selectedTests.add(panel.name);
+                                          }),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                            ],
+                            if (_customTests.isNotEmpty)
+                              Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.sm,
+                                children: [
+                                  for (final test in _customTests)
+                                    _TestChip(
+                                      label: test,
+                                      selected: _selectedTests.contains(test),
+                                      onTap:
+                                          () => setState(() {
+                                            if (!_selectedTests.remove(test))
+                                              _selectedTests.add(test);
+                                          }),
+                                    ),
+                                ],
+                              ),
+                            // Sub-tests under each selected panel.
+                            for (final t in _selectedTests)
+                              if ((labPanelFor(t)?.analytes ?? const [])
+                                  .isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Icons.subdirectory_arrow_right_rounded,
+                                        size: 15,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          '$t: ${labPanelFor(t)!.analytes.join(' · ')}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            height: 1.3,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  _ActionCard(
+                    icon: Icons.edit_note_rounded,
+                    title: 'Clinical Advice',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Previous diagnoses + advice for this patient, tap to reuse —
+                        // the reference the Clinical Advice card was missing (Medication
+                        // has "currently on", Lab Tests has its history; this is the
+                        // equivalent for advice).
+                        _PreviousAdvice(
+                          patientId: widget.patientId,
+                          onReuseDiagnosis:
+                              (t) => setState(() => _diagnosis.text = t),
+                          onReuseAdvice:
+                              (t) => setState(() => _advice.text = t),
+                        ),
+                        const _FieldLabel('Diagnosis'),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: _diagnosis,
+                          minLines: 1,
+                          maxLines: 4,
+                          maxLength: 600,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: const InputDecoration(
+                            hintText:
+                                'e.g. Type 2 DM, Hypertension (one per line)',
+                            counterText: '',
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        const _FieldLabel('General advice'),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: _advice,
+                          minLines: 3,
+                          maxLines: 8,
+                          maxLength: 2000,
+                          textCapitalization: TextCapitalization.sentences,
+                          decoration: const InputDecoration(
+                            hintText:
+                                'Diet, lifestyle and general instructions...',
+                            counterText: '',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  _ActionCard(
+                    icon: Icons.calendar_month_outlined,
+                    title: 'Follow-up',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _FieldLabel('Next Visit'),
+                        const SizedBox(height: 4),
+                        _DateField(
+                          date: _followUp,
+                          onTap: _pickFollowUp,
+                          onClear: () => setState(() => _followUp = null),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Two actions, one line. Draft is the quieter of the pair — a
+                  // tonal fill against the brand one — because sending is what a
+                  // consultation is for and saving is the escape hatch when the
+                  // doctor is interrupted mid-form.
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: AppSpacing.minTapTarget + 12,
+                          child: FilledButton.tonalIcon(
+                            onPressed: _saving ? null : _saveDraft,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.accentSoftOn(context),
+                              foregroundColor: AppColors.accentOn(context),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: const Icon(
+                              Icons.bookmark_outline_rounded,
+                              size: 20,
+                            ),
+                            label: const Text(
+                              'Save draft',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: SizedBox(
+                          height: AppSpacing.minTapTarget + 12,
+                          child: FilledButton.icon(
+                            onPressed: _saving ? null : _send,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon:
+                                _saving
+                                    ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.4,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                    : const Icon(Icons.send_rounded, size: 20),
+                            label: const Text(
+                              'Send',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+        ),
       ),
     );
   }
@@ -757,16 +786,19 @@ class _ProfileHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
-        boxShadow: Theme.of(context).brightness == Brightness.dark
-            ? null
-            : [
-                BoxShadow(
-                  color: const Color(0xFF0B1B33).withValues(alpha: 0.06),
-                  blurRadius: 16,
-                  offset: const Offset(0, 5),
-                ),
-              ],
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.55),
+        ),
+        boxShadow:
+            Theme.of(context).brightness == Brightness.dark
+                ? null
+                : [
+                  BoxShadow(
+                    color: const Color(0xFF0B1B33).withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
       ),
       child: Column(
         children: [
@@ -907,19 +939,21 @@ class _ProfileHeader extends StatelessWidget {
               _QuietAction(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Message',
-                onTap: () => context.push(
-                  '/clinician/patients/${p.id}/thread',
-                  extra: p.name,
-                ),
+                onTap:
+                    () => context.push(
+                      '/clinician/patients/${p.id}/thread',
+                      extra: p.name,
+                    ),
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuietAction(
                 icon: Icons.receipt_long_outlined,
                 label: 'History',
-                onTap: () => context.push(
-                  '/clinician/patients/${p.id}/prescriptions',
-                  extra: p.name,
-                ),
+                onTap:
+                    () => context.push(
+                      '/clinician/patients/${p.id}/prescriptions',
+                      extra: p.name,
+                    ),
               ),
             ],
           ),
@@ -927,10 +961,11 @@ class _ProfileHeader extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: () => context.push(
-                '/clinician/patients/${p.id}/consult',
-                extra: p.name,
-              ),
+              onPressed:
+                  () => context.push(
+                    '/clinician/patients/${p.id}/consult',
+                    extra: p.name,
+                  ),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -1005,6 +1040,7 @@ class _ProfileHeader extends StatelessWidget {
     );
   }
 }
+
 void _showComplaintSheet(BuildContext context, String text) {
   showModalBottomSheet<void>(
     context: context,
@@ -1045,7 +1081,11 @@ void _showComplaintSheet(BuildContext context, String text) {
 }
 
 class _QuietAction extends StatelessWidget {
-  const _QuietAction({required this.icon, required this.label, required this.onTap});
+  const _QuietAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String label;
@@ -1107,7 +1147,9 @@ class _HeaderPill extends StatelessWidget {
       // Never wider than the screen it sits on. A pill carrying a value nobody
       // predicted — a long condition name, a hyphenated allergy — used to grow
       // until it ran off the edge.
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 64),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width - 64,
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

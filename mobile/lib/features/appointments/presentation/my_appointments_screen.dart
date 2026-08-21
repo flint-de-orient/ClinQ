@@ -29,7 +29,9 @@ class MyAppointmentsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.apptTitle),
-          bottom: TabBar(tabs: [Tab(text: l10n.apptUpcoming), Tab(text: l10n.apptPast)]),
+          bottom: TabBar(
+            tabs: [Tab(text: l10n.apptUpcoming), Tab(text: l10n.apptPast)],
+          ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => context.push('/care/appointments/book'),
@@ -40,15 +42,36 @@ class MyAppointmentsScreen extends ConsumerWidget {
           onTick: (r) => r.invalidate(myAppointmentsProvider),
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => _Retry(onRetry: () => ref.invalidate(myAppointmentsProvider)),
+            error:
+                (_, _) => _Retry(
+                  onRetry: () => ref.invalidate(myAppointmentsProvider),
+                ),
             data: (all) {
-              final startOfToday = DateTime.now().copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
-              final upcoming = all
-                  .where((a) => a.isActive && !a.scheduledFor.isBefore(startOfToday))
-                  .toList()
-                ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
-              final past = all.where((a) => !(a.isActive && !a.scheduledFor.isBefore(startOfToday))).toList()
-                ..sort((a, b) => b.scheduledFor.compareTo(a.scheduledFor));
+              final startOfToday = DateTime.now().copyWith(
+                hour: 0,
+                minute: 0,
+                second: 0,
+                millisecond: 0,
+                microsecond: 0,
+              );
+              final upcoming =
+                  all
+                      .where(
+                        (a) =>
+                            a.isActive &&
+                            !a.scheduledFor.isBefore(startOfToday),
+                      )
+                      .toList()
+                    ..sort((a, b) => a.scheduledFor.compareTo(b.scheduledFor));
+              final past =
+                  all
+                      .where(
+                        (a) =>
+                            !(a.isActive &&
+                                !a.scheduledFor.isBefore(startOfToday)),
+                      )
+                      .toList()
+                    ..sort((a, b) => b.scheduledFor.compareTo(a.scheduledFor));
 
               return TabBarView(
                 children: [
@@ -57,7 +80,8 @@ class MyAppointmentsScreen extends ConsumerWidget {
                     emptyIcon: Icons.event_available_outlined,
                     emptyTitle: l10n.apptNoUpcoming,
                     emptyBody: l10n.apptNoUpcomingBody,
-                    onRefresh: () async => ref.invalidate(myAppointmentsProvider),
+                    onRefresh:
+                        () async => ref.invalidate(myAppointmentsProvider),
                     showActions: true,
                   ),
                   _AppointmentList(
@@ -65,7 +89,8 @@ class MyAppointmentsScreen extends ConsumerWidget {
                     emptyIcon: Icons.history_rounded,
                     emptyTitle: l10n.apptNoPast,
                     emptyBody: '',
-                    onRefresh: () async => ref.invalidate(myAppointmentsProvider),
+                    onRefresh:
+                        () async => ref.invalidate(myAppointmentsProvider),
                     showActions: false,
                   ),
                 ],
@@ -104,9 +129,21 @@ class _AppointmentList extends ConsumerWidget {
         child: ListView(
           children: [
             SizedBox(height: MediaQuery.of(context).size.height * 0.18),
-            Icon(emptyIcon, size: 56, color: Theme.of(context).colorScheme.outlineVariant),
+            Icon(
+              emptyIcon,
+              size: 56,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
             const SizedBox(height: AppSpacing.md),
-            Center(child: Text(emptyTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+            Center(
+              child: Text(
+                emptyTitle,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
             if (emptyBody.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xs),
               Padding(
@@ -114,7 +151,9 @@ class _AppointmentList extends ConsumerWidget {
                 child: Text(
                   emptyBody,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -126,49 +165,65 @@ class _AppointmentList extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 96),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          96,
+        ),
         itemCount: items.length,
         separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
         itemBuilder: (context, i) {
           final a = items[i];
           return AppointmentCard(
             appointment: a,
-            actions: showActions && a.isActive
-                ? [
-                    TextButton(
-                      onPressed: () => _reschedule(context, ref, a),
-                      child: Text(l10n.apptReschedule),
-                    ),
-                    TextButton(
-                      style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                      onPressed: () => _cancel(context, ref, a),
-                      child: Text(l10n.apptCancel),
-                    ),
-                  ]
-                : null,
+            actions:
+                showActions && a.isActive
+                    ? [
+                      TextButton(
+                        onPressed: () => _reschedule(context, ref, a),
+                        child: Text(l10n.apptReschedule),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                        ),
+                        onPressed: () => _cancel(context, ref, a),
+                        child: Text(l10n.apptCancel),
+                      ),
+                    ]
+                    : null,
           );
         },
       ),
     );
   }
 
-  Future<void> _cancel(BuildContext context, WidgetRef ref, Appointment a) async {
+  Future<void> _cancel(
+    BuildContext context,
+    WidgetRef ref,
+    Appointment a,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.apptCancelConfirm),
-        content: Text(l10n.apptCancelConfirmBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.commonNo)),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.apptCancel),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(l10n.apptCancelConfirm),
+            content: Text(l10n.apptCancelConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonNo),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.apptCancel),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (ok != true) return;
     try {
@@ -176,11 +231,17 @@ class _AppointmentList extends ConsumerWidget {
       ref.invalidate(myAppointmentsProvider);
       messenger.showSnackBar(SnackBar(content: Text(l10n.apptCancelled)));
     } on ApiException {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.commonSomethingWentWrong)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonSomethingWentWrong)),
+      );
     }
   }
 
-  Future<void> _reschedule(BuildContext context, WidgetRef ref, Appointment a) async {
+  Future<void> _reschedule(
+    BuildContext context,
+    WidgetRef ref,
+    Appointment a,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     if (a.clinicId == null) return;
@@ -188,7 +249,11 @@ class _AppointmentList extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _RescheduleSheet(clinicId: a.clinicId!, clinicName: a.clinicName ?? ''),
+      builder:
+          (_) => _RescheduleSheet(
+            clinicId: a.clinicId!,
+            clinicName: a.clinicName ?? '',
+          ),
     );
     if (iso == null) return;
     try {
@@ -196,7 +261,10 @@ class _AppointmentList extends ConsumerWidget {
       ref.invalidate(myAppointmentsProvider);
       messenger.showSnackBar(SnackBar(content: Text(l10n.profileSaved)));
     } on ApiException catch (e) {
-      final msg = e.code == 'BAD_REQUEST' ? l10n.apptSlotTaken : l10n.commonSomethingWentWrong;
+      final msg =
+          e.code == 'BAD_REQUEST'
+              ? l10n.apptSlotTaken
+              : l10n.commonSomethingWentWrong;
       messenger.showSnackBar(SnackBar(content: Text(msg)));
     }
   }
@@ -231,7 +299,9 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = isDark ? AppColors.primaryDark : AppColors.primary;
-    final slotsAsync = ref.watch(slotDayProvider((clinicId: widget.clinicId, date: _dateKey)));
+    final slotsAsync = ref.watch(
+      slotDayProvider((clinicId: widget.clinicId, date: _dateKey)),
+    );
     final today = DateTime.now();
 
     return Padding(
@@ -245,8 +315,10 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${l10n.apptReschedule} · ${widget.clinicName}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(
+            '${l10n.apptReschedule} · ${widget.clinicName}',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             height: 68,
@@ -258,26 +330,39 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
                 final d = DateTime(today.year, today.month, today.day + i);
                 final sel = d.day == _date.day && d.month == _date.month;
                 return InkWell(
-                  onTap: () => setState(() {
-                    _date = d;
-                    _slot = null;
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _date = d;
+                        _slot = null;
+                      }),
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
                     width: 52,
                     decoration: BoxDecoration(
                       color: sel ? accent : scheme.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: sel ? accent : scheme.outlineVariant),
+                      border: Border.all(
+                        color: sel ? accent : scheme.outlineVariant,
+                      ),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(DateFormat('EEE').format(d),
-                            style: TextStyle(fontSize: 12, color: sel ? Colors.white : scheme.onSurfaceVariant)),
-                        Text('${d.day}',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w800, color: sel ? Colors.white : scheme.onSurface)),
+                        Text(
+                          DateFormat('EEE').format(d),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: sel ? Colors.white : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          '${d.day}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: sel ? Colors.white : scheme.onSurface,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -289,13 +374,25 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 220),
             child: slotsAsync.when(
-              loading: () => const Center(child: Padding(padding: EdgeInsets.all(AppSpacing.lg), child: CircularProgressIndicator())),
+              loading:
+                  () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(AppSpacing.lg),
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
               error: (_, _) => Text(l10n.commonSomethingWentWrong),
               data: (day) {
                 if (!day.hasAvailability) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                    child: Text(day.slots.isEmpty ? l10n.apptClosedThatDay : l10n.apptNoSlots),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Text(
+                      day.slots.isEmpty
+                          ? l10n.apptClosedThatDay
+                          : l10n.apptNoSlots,
+                    ),
                   );
                 }
                 return SingleChildScrollView(
@@ -320,7 +417,10 @@ class _RescheduleSheetState extends ConsumerState<_RescheduleSheet> {
             width: double.infinity,
             height: 50,
             child: FilledButton(
-              onPressed: _slot == null ? null : () => Navigator.pop(context, _slot!.iso),
+              onPressed:
+                  _slot == null
+                      ? null
+                      : () => Navigator.pop(context, _slot!.iso),
               child: Text(l10n.apptReschedule),
             ),
           ),

@@ -80,13 +80,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           .updateMe(
             name: _nameController.text.trim(),
             email: email.isEmpty ? null : email,
-            dateOfBirth: _dateOfBirth == null
-                ? null
-                : '${_dateOfBirth!.year.toString().padLeft(4, '0')}-'
-                      '${_dateOfBirth!.month.toString().padLeft(2, '0')}-'
-                      '${_dateOfBirth!.day.toString().padLeft(2, '0')}',
+            dateOfBirth:
+                _dateOfBirth == null
+                    ? null
+                    : '${_dateOfBirth!.year.toString().padLeft(4, '0')}-'
+                        '${_dateOfBirth!.month.toString().padLeft(2, '0')}-'
+                        '${_dateOfBirth!.day.toString().padLeft(2, '0')}',
             gender: _gender,
-            address: _addressController.text.trim().isEmpty ? null : _addressController.text.trim(),
+            address:
+                _addressController.text.trim().isEmpty
+                    ? null
+                    : _addressController.text.trim(),
           );
       ref.read(authControllerProvider.notifier).replaceUser(user);
       messenger.showSnackBar(SnackBar(content: Text(l10n.profileSaved)));
@@ -94,7 +98,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     } on ApiException {
       if (!mounted) return;
       setState(() => _isSaving = false);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.commonSomethingWentWrong)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonSomethingWentWrong)),
+      );
     }
   }
 
@@ -119,19 +125,31 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 backgroundColor: accent,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: accent.withValues(alpha: 0.4),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                    )
-                  : Text(
-                      l10n.profileSave,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
+              child:
+                  _isSaving
+                      ? const SizedBox(
+                        width: 16,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : Text(
+                        l10n.profileSave,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
             ),
           ),
         ],
@@ -182,7 +200,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         contentPadding: EdgeInsets.zero,
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return l10n.commonRequiredField;
+                        if (v == null || v.trim().isEmpty)
+                          return l10n.commonRequiredField;
                         if (v.trim().length < AuthValidators.minNameLength) {
                           return l10n.authNameTooShort;
                         }
@@ -197,10 +216,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   // Locked: this is the login identifier.
                   _Field(
                     label: l10n.authPhoneLabel,
-                    trailing: Icon(Icons.lock_outline_rounded, size: 18, color: scheme.outline),
+                    trailing: Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                      color: scheme.outline,
+                    ),
                     child: Text(
                       user?.phone ?? '',
-                      style: TextStyle(fontSize: 16, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   _Divider(scheme: scheme),
@@ -220,10 +246,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         isDense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty || AuthValidators.isValidEmail(v))
-                          ? null
-                          : l10n.authInvalidEmail,
+                      validator:
+                          (v) =>
+                              (v == null ||
+                                      v.trim().isEmpty ||
+                                      AuthValidators.isValidEmail(v))
+                                  ? null
+                                  : l10n.authInvalidEmail,
                     ),
                   ),
                   _Divider(scheme: scheme),
@@ -231,13 +260,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     onTap: _pickDateOfBirth,
                     child: _Field(
                       label: l10n.authDateOfBirthLabel,
-                      trailing: Icon(Icons.calendar_today_outlined, size: 18, color: accent),
+                      trailing: Icon(
+                        Icons.calendar_today_outlined,
+                        size: 18,
+                        color: accent,
+                      ),
                       child: Text(
                         _dateOfBirth == null
                             ? '—'
                             : '${_dateOfBirth!.day.toString().padLeft(2, '0')}/'
-                                  '${_dateOfBirth!.month.toString().padLeft(2, '0')}/'
-                                  '${_dateOfBirth!.year}',
+                                '${_dateOfBirth!.month.toString().padLeft(2, '0')}/'
+                                '${_dateOfBirth!.year}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -250,11 +283,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         value: _gender,
                         isExpanded: true,
                         isDense: true,
-                        hint: Text('—', style: TextStyle(color: scheme.onSurfaceVariant)),
+                        hint: Text(
+                          '—',
+                          style: TextStyle(color: scheme.onSurfaceVariant),
+                        ),
                         items: [
-                          DropdownMenuItem(value: 'male', child: Text(l10n.authGenderMale)),
-                          DropdownMenuItem(value: 'female', child: Text(l10n.authGenderFemale)),
-                          DropdownMenuItem(value: 'other', child: Text(l10n.authGenderOther)),
+                          DropdownMenuItem(
+                            value: 'male',
+                            child: Text(l10n.authGenderMale),
+                          ),
+                          DropdownMenuItem(
+                            value: 'female',
+                            child: Text(l10n.authGenderFemale),
+                          ),
+                          DropdownMenuItem(
+                            value: 'other',
+                            child: Text(l10n.authGenderOther),
+                          ),
                         ],
                         onChanged: (v) => setState(() => _gender = v),
                       ),
@@ -288,7 +333,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             const SizedBox(height: AppSpacing.md),
             Text(
               l10n.profilePhoneLocked,
-              style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -308,7 +357,10 @@ class _Field extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 12,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -330,7 +382,10 @@ class _Field extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: AppSpacing.sm), trailing!],
+          if (trailing != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            trailing!,
+          ],
         ],
       ),
     );
@@ -343,6 +398,9 @@ class _Divider extends StatelessWidget {
   final ColorScheme scheme;
 
   @override
-  Widget build(BuildContext context) =>
-      Divider(height: 1, thickness: 1, color: scheme.outlineVariant.withValues(alpha: 0.6));
+  Widget build(BuildContext context) => Divider(
+    height: 1,
+    thickness: 1,
+    color: scheme.outlineVariant.withValues(alpha: 0.6),
+  );
 }

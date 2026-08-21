@@ -52,7 +52,8 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: _statuses.length,
-                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                separatorBuilder:
+                    (_, _) => const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, i) {
                   final (value, label) = _statuses[i];
                   return ChoiceChip(
@@ -72,36 +73,54 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
           onRefresh: () async => ref.invalidate(alertsProvider(_query)),
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Could not load alerts'),
-                  const SizedBox(height: AppSpacing.sm),
-                  OutlinedButton(onPressed: () => ref.invalidate(alertsProvider(_query)), child: const Text('Retry')),
-                ],
-              ),
-            ),
+            error:
+                (_, _) => Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Could not load alerts'),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton(
+                        onPressed: () => ref.invalidate(alertsProvider(_query)),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
             data: (paged) {
               if (paged.items.isEmpty) {
                 return ListView(
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                    Icon(Icons.verified_outlined, size: 56, color: scheme.outlineVariant),
+                    Icon(
+                      Icons.verified_outlined,
+                      size: 56,
+                      color: scheme.outlineVariant,
+                    ),
                     const SizedBox(height: AppSpacing.md),
-                    const Center(child: Text('Nothing here', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                    const Center(
+                      child: Text(
+                        'Nothing here',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }
               return ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 itemCount: paged.items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) => _AlertCard(
-                  alert: paged.items[i],
-                  onAcknowledge: () => _acknowledge(paged.items[i]),
-                  onResolve: () => _resolve(paged.items[i]),
-                ),
+                separatorBuilder:
+                    (_, _) => const SizedBox(height: AppSpacing.sm),
+                itemBuilder:
+                    (context, i) => _AlertCard(
+                      alert: paged.items[i],
+                      onAcknowledge: () => _acknowledge(paged.items[i]),
+                      onResolve: () => _resolve(paged.items[i]),
+                    ),
               );
             },
           ),
@@ -120,7 +139,9 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
       ref.invalidate(overviewProvider);
       ref.invalidate(attentionPatientsProvider);
     } on ApiException {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not update. Please try again.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not update. Please try again.')),
+      );
     }
   }
 
@@ -128,35 +149,53 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
     final controller = TextEditingController();
     final notes = await showDialog<String?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Resolve alert'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(hintText: 'Resolution notes (optional)'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Resolve')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Resolve alert'),
+            content: TextField(
+              controller: controller,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Resolution notes (optional)',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                child: const Text('Resolve'),
+              ),
+            ],
+          ),
     );
-    if (notes == null || !mounted) return; // Cancel returns null (back button too).
+    if (notes == null || !mounted)
+      return; // Cancel returns null (back button too).
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(clinicianRepositoryProvider).resolveAlert(a.id, notes: notes.isEmpty ? null : notes);
+      await ref
+          .read(clinicianRepositoryProvider)
+          .resolveAlert(a.id, notes: notes.isEmpty ? null : notes);
       ref.invalidate(alertsProvider(_query));
       // Reflect the resolve on the dashboard immediately (open alerts, worklist).
       ref.invalidate(overviewProvider);
       ref.invalidate(attentionPatientsProvider);
     } on ApiException {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not update. Please try again.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not update. Please try again.')),
+      );
     }
   }
 }
 
 class _AlertCard extends StatelessWidget {
-  const _AlertCard({required this.alert, required this.onAcknowledge, required this.onResolve});
+  const _AlertCard({
+    required this.alert,
+    required this.onAcknowledge,
+    required this.onResolve,
+  });
 
   final ClinicalAlert alert;
   final VoidCallback onAcknowledge;
@@ -183,14 +222,27 @@ class _AlertCard extends StatelessWidget {
               children: [
                 MiniPill(label: a.severity.toUpperCase(), color: color),
                 const SizedBox(width: AppSpacing.sm),
-                if (a.status != 'open') MiniPill(label: a.status.toUpperCase(), color: const Color(0xFF6B7280)),
+                if (a.status != 'open')
+                  MiniPill(
+                    label: a.status.toUpperCase(),
+                    color: const Color(0xFF6B7280),
+                  ),
                 const Spacer(),
                 if (a.createdAt != null)
-                  Text(DateFormat('d MMM, h:mm a').format(a.createdAt!), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                  Text(
+                    DateFormat('d MMM, h:mm a').format(a.createdAt!),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            Text(a.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(
+              a.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
             // Who this is about, with a face. An alert is read in a hurry and
             // acted on immediately; a name in grey text is slower to place than
             // a photo, and tapping through to the record should not require
@@ -199,9 +251,11 @@ class _AlertCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: a.patientId == null
-                    ? null
-                    : () => context.push('/clinician/patients/${a.patientId}'),
+                onTap:
+                    a.patientId == null
+                        ? null
+                        : () =>
+                            context.push('/clinician/patients/${a.patientId}'),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
@@ -247,7 +301,10 @@ class _AlertCard extends StatelessWidget {
                                 if (a.patientGender != null) a.patientGender!,
                                 if (a.patientPhone != null) a.patientPhone!,
                               ].join('  •  '),
-                              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
                             if ((a.patientAddress ?? '').trim().isNotEmpty)
                               Text(
@@ -263,7 +320,11 @@ class _AlertCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Icon(Icons.chevron_right_rounded, size: 20, color: scheme.outline),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: scheme.outline,
+                      ),
                     ],
                   ),
                 ),
@@ -271,7 +332,16 @@ class _AlertCard extends StatelessWidget {
             ],
             if (a.detail != null && a.detail!.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(a.detail!, style: TextStyle(fontSize: 14, height: 1.4, color: scheme.onSurface), maxLines: 4, overflow: TextOverflow.ellipsis),
+              Text(
+                a.detail!,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                  color: scheme.onSurface,
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
             if (!a.isResolved) ...[
               const SizedBox(height: AppSpacing.md),
@@ -299,16 +369,28 @@ class _AlertCard extends StatelessWidget {
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                       ),
-                      icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 18,
+                      ),
                       label: const Text('Resolve'),
                     ),
                   ),
                 ],
               ),
             ],
-            if (a.isResolved && a.resolutionNotes != null && a.resolutionNotes!.isNotEmpty) ...[
+            if (a.isResolved &&
+                a.resolutionNotes != null &&
+                a.resolutionNotes!.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text('Resolution: ${a.resolutionNotes}', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: scheme.onSurfaceVariant)),
+              Text(
+                'Resolution: ${a.resolutionNotes}',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ],
         ),

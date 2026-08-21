@@ -75,7 +75,10 @@ class CareScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.careTitle), automaticallyImplyLeading: false),
+      appBar: AppBar(
+        title: Text(l10n.careTitle),
+        automaticallyImplyLeading: false,
+      ),
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.md),
         itemCount: _items.length,
@@ -91,10 +94,16 @@ class CareScreen extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     // Declared in a top-level const table, so the tone is picked here.
-                    color: AppColors.toneOn(context, item.color).withValues(alpha: 0.12),
+                    color: AppColors.toneOn(
+                      context,
+                      item.color,
+                    ).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(item.icon, color: AppColors.toneOn(context, item.color)),
+                  child: Icon(
+                    item.icon,
+                    color: AppColors.toneOn(context, item.color),
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -103,16 +112,22 @@ class CareScreen extends StatelessWidget {
                     children: [
                       Text(
                         item.titleBuilder(l10n),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 0),
-                      Text(item.descBuilder(l10n), style: Theme.of(context).textTheme.bodyMedium),
+                      Text(
+                        item.descBuilder(l10n),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.outline),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ],
             ),
           );

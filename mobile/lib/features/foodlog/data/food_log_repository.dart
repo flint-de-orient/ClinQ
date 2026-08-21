@@ -14,7 +14,10 @@ class FoodLogRepository {
   Future<List<FoodLogEntry>> list() async {
     final json = await _client.getJson(_base);
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(FoodLogEntry.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(FoodLogEntry.fromJson)
+        .toList();
   }
 
   /// Removes a meal the patient logged by mistake. Hard delete: a photo of the
@@ -24,12 +27,19 @@ class FoodLogRepository {
     await _client.delete('$_base/$id');
   }
 
-  Future<void> create({required String mealType, String note = '', String? photo}) async {
-    await _client.postJson(_base, body: {
-      'mealType': mealType,
-      if (note.isNotEmpty) 'note': note,
-      if (photo != null) 'photo': photo,
-    });
+  Future<void> create({
+    required String mealType,
+    String note = '',
+    String? photo,
+  }) async {
+    await _client.postJson(
+      _base,
+      body: {
+        'mealType': mealType,
+        if (note.isNotEmpty) 'note': note,
+        if (photo != null) 'photo': photo,
+      },
+    );
   }
 }
 

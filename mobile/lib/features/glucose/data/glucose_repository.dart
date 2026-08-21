@@ -62,6 +62,7 @@ class GlucoseRepository {
   }
 }
 
-final Provider<GlucoseRepository> glucoseRepositoryProvider = Provider<GlucoseRepository>((ref) {
-  return GlucoseRepository(ref.watch(apiClientProvider));
-});
+final Provider<GlucoseRepository> glucoseRepositoryProvider =
+    Provider<GlucoseRepository>((ref) {
+      return GlucoseRepository(ref.watch(apiClientProvider));
+    });

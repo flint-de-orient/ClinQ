@@ -17,7 +17,11 @@ import 'clinician_providers.dart';
 /// (diagnosis, medicine count, tests, follow-up) and a Download button that
 /// pulls the server-generated PDF and opens it in the phone's viewer.
 class PrescriptionListScreen extends ConsumerWidget {
-  const PrescriptionListScreen({super.key, required this.patientId, this.patientName});
+  const PrescriptionListScreen({
+    super.key,
+    required this.patientId,
+    this.patientName,
+  });
 
   final String patientId;
   final String? patientName;
@@ -30,44 +34,69 @@ class PrescriptionListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prescriptions'),
-        bottom: patientName == null
-            ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(22),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(patientName!, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
+        bottom:
+            patientName == null
+                ? null
+                : PreferredSize(
+                  preferredSize: const Size.fromHeight(22),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      patientName!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(patientPrescriptionsProvider(patientId)),
+        onRefresh:
+            () async => ref.invalidate(patientPrescriptionsProvider(patientId)),
         child: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => ListView(
-            children: [
-              const SizedBox(height: 120),
-              Center(child: Text('Could not load prescriptions', style: TextStyle(color: scheme.onSurfaceVariant))),
-            ],
-          ),
+          error:
+              (e, _) => ListView(
+                children: [
+                  const SizedBox(height: 120),
+                  Center(
+                    child: Text(
+                      'Could not load prescriptions',
+                      style: TextStyle(color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                ],
+              ),
           data: (items) {
             if (items.isEmpty) {
               return ListView(
                 children: [
                   const SizedBox(height: 120),
-                  Icon(Icons.receipt_long_outlined, size: 52, color: scheme.outlineVariant),
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 52,
+                    color: scheme.outlineVariant,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   Center(
                     child: Text(
                       'No prescriptions yet',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Center(
                     child: Text(
                       'A consultation will add one here',
-                      style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
@@ -104,11 +133,16 @@ class _PrescriptionCardState extends ConsumerState<_PrescriptionCard> {
     setState(() => _busy = true);
     try {
       final dir = await getTemporaryDirectory();
-      final name = '${widget.rx.referenceNo ?? widget.rx.id}.pdf'.replaceAll(RegExp(r'[^\w.\-]'), '_');
+      final name = '${widget.rx.referenceNo ?? widget.rx.id}.pdf'.replaceAll(
+        RegExp(r'[^\w.\-]'),
+        '_',
+      );
       final cached = File('${dir.path}/rx_${url.hashCode}_$name');
       // Immutable documents, so a cached copy is always current.
       if (!await cached.exists() || await cached.length() == 0) {
-        final bytes = await ref.read(apiClientProvider).getBytes('${AppConfig.apiOrigin}$url');
+        final bytes = await ref
+            .read(apiClientProvider)
+            .getBytes('${AppConfig.apiOrigin}$url');
         if (bytes.isEmpty) throw Exception('empty pdf download');
         await cached.writeAsBytes(bytes, flush: true);
       }
@@ -133,7 +167,10 @@ class _PrescriptionCardState extends ConsumerState<_PrescriptionCard> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final rx = widget.rx;
-    final date = rx.issuedOn == null ? '—' : DateFormat('d MMM yyyy, h:mm a').format(rx.issuedOn!);
+    final date =
+        rx.issuedOn == null
+            ? '—'
+            : DateFormat('d MMM yyyy, h:mm a').format(rx.issuedOn!);
 
     return Container(
       decoration: BoxDecoration(
@@ -156,17 +193,33 @@ class _PrescriptionCardState extends ConsumerState<_PrescriptionCard> {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 22),
+                child: Icon(
+                  Icons.receipt_long_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(date, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                    Text(
+                      date,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     if (rx.referenceNo != null) ...[
                       const SizedBox(height: 0),
-                      Text(rx.referenceNo!, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Text(
+                        rx.referenceNo!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -175,29 +228,44 @@ class _PrescriptionCardState extends ConsumerState<_PrescriptionCard> {
           ),
           if (rx.diagnosis.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
-            _line(context, Icons.local_hospital_outlined, rx.diagnosis.join(', ')),
+            _line(
+              context,
+              Icons.local_hospital_outlined,
+              rx.diagnosis.join(', '),
+            ),
           ],
           const SizedBox(height: 4),
           _line(
             context,
             Icons.medication_outlined,
             '${rx.itemCount} ${rx.itemCount == 1 ? 'medicine' : 'medicines'}'
-                '${rx.labTestsAdvised.isNotEmpty ? '  ·  ${rx.labTestsAdvised.length} test${rx.labTestsAdvised.length == 1 ? '' : 's'} advised' : ''}',
+            '${rx.labTestsAdvised.isNotEmpty ? '  ·  ${rx.labTestsAdvised.length} test${rx.labTestsAdvised.length == 1 ? '' : 's'} advised' : ''}',
           ),
           if (rx.followUpOn != null) ...[
             const SizedBox(height: 4),
-            _line(context, Icons.event_outlined, 'Follow-up ${DateFormat('d MMM yyyy').format(rx.followUpOn!)}'),
+            _line(
+              context,
+              Icons.event_outlined,
+              'Follow-up ${DateFormat('d MMM yyyy').format(rx.followUpOn!)}',
+            ),
           ],
           const SizedBox(height: AppSpacing.md),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               onPressed: _busy || rx.pdfUrl == null ? null : _download,
-              icon: _busy
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.download_rounded, size: 18),
+              icon:
+                  _busy
+                      ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : const Icon(Icons.download_rounded, size: 18),
               label: Text(_busy ? 'Preparing…' : 'Download PDF'),
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -213,7 +281,14 @@ class _PrescriptionCardState extends ConsumerState<_PrescriptionCard> {
         Icon(icon, size: 16, color: scheme.onSurfaceVariant),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(text, style: TextStyle(fontSize: 14, height: 1.3, color: scheme.onSurface)),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.3,
+              color: scheme.onSurface,
+            ),
+          ),
         ),
       ],
     );

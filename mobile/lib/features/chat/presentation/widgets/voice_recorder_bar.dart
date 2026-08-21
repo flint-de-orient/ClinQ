@@ -19,7 +19,11 @@ import '../../../../l10n/gen/app_localizations.dart';
 /// off. The bar states the mode, counts the seconds, and offers exactly two
 /// ways out — bin it, or send it.
 class VoiceRecorderBar extends StatefulWidget {
-  const VoiceRecorderBar({super.key, required this.onCancel, required this.onSend});
+  const VoiceRecorderBar({
+    super.key,
+    required this.onCancel,
+    required this.onSend,
+  });
 
   final VoidCallback onCancel;
 
@@ -75,7 +79,8 @@ class _VoiceRecorderBarState extends State<VoiceRecorderBar> {
       }
 
       final dir = await getTemporaryDirectory();
-      final path = '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final path =
+          '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
 
       await _recorder.start(
         // AAC mono — the hardware AAC encoder is the single most reliable path on
@@ -159,13 +164,21 @@ class _VoiceRecorderBarState extends State<VoiceRecorderBar> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm,
+            AppSpacing.sm,
+            AppSpacing.sm,
+            AppSpacing.sm,
+          ),
           child: Row(
             children: [
               IconButton(
                 tooltip: l10n.commonCancel,
                 onPressed: _cancel,
-                icon: Icon(Icons.delete_outline_rounded, color: scheme.onSurfaceVariant),
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               Expanded(
                 child: Container(
@@ -205,7 +218,11 @@ class _VoiceRecorderBarState extends State<VoiceRecorderBar> {
                   child: const SizedBox(
                     width: 52,
                     height: 52,
-                    child: Icon(Icons.send_rounded, color: Colors.white, size: 24),
+                    child: Icon(
+                      Icons.send_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
@@ -242,7 +259,10 @@ class _RecordingDot extends StatelessWidget {
           Container(
             width: 9,
             height: 9,
-            decoration: BoxDecoration(color: AppColors.dangerOn(context), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.dangerOn(context),
+              shape: BoxShape.circle,
+            ),
           ),
         ],
       ),
@@ -277,7 +297,11 @@ class _LiveBars extends StatelessWidget {
                   width: 3,
                   // Centre bars react most, so it reads as a voice rather than
                   // a progress bar.
-                  height: 4 + level * 18 * (0.45 + 0.55 * math.sin((i / count) * math.pi)),
+                  height:
+                      4 +
+                      level *
+                          18 *
+                          (0.45 + 0.55 * math.sin((i / count) * math.pi)),
                   decoration: BoxDecoration(
                     color: AppColors.dangerOn(context).withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(12),

@@ -22,7 +22,9 @@ class EmergencyCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     // The clinic's own number once the doctor has set one; the built-in number
     // until then — this button must never be left without something to dial.
-    final clinicPhone = ref.watch(clinicPhoneProvider).valueOrNull ?? AppConfig.clinicPhoneNumber;
+    final clinicPhone =
+        ref.watch(clinicPhoneProvider).valueOrNull ??
+        AppConfig.clinicPhoneNumber;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -47,7 +49,11 @@ class EmergencyCard extends ConsumerWidget {
                   color: AppColors.dangerOn(context),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 26),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -66,7 +72,11 @@ class EmergencyCard extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       content,
-                      style: const TextStyle(fontSize: 16, height: 1.45, color: Color(0xFF1F2937)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        height: 1.45,
+                        color: Color(0xFF1F2937),
+                      ),
                     ),
                   ],
                 ),
@@ -85,13 +95,19 @@ class EmergencyCard extends ConsumerWidget {
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-                  side: BorderSide(color: AppColors.dangerOn(context), width: 1.5),
+                  side: BorderSide(
+                    color: AppColors.dangerOn(context),
+                    width: 1.5,
+                  ),
                 ),
               ),
               icon: const Icon(Icons.call_rounded, size: 22),
               label: Text(
                 l10n.chatCallClinic,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

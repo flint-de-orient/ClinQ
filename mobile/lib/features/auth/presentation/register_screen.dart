@@ -101,19 +101,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           name: _nameController.text.trim(),
           phone: AuthValidators.toE164(_phoneController.text),
           password: _passwordController.text,
-          email: _emailController.text.trim().isEmpty
-              ? null
-              : _emailController.text.trim(),
+          email:
+              _emailController.text.trim().isEmpty
+                  ? null
+                  : _emailController.text.trim(),
           language: language,
-          dateOfBirth: _dateOfBirth == null
-              ? null
-              : '${_dateOfBirth!.year.toString().padLeft(4, '0')}-'
-                    '${_dateOfBirth!.month.toString().padLeft(2, '0')}-'
-                    '${_dateOfBirth!.day.toString().padLeft(2, '0')}',
+          dateOfBirth:
+              _dateOfBirth == null
+                  ? null
+                  : '${_dateOfBirth!.year.toString().padLeft(4, '0')}-'
+                      '${_dateOfBirth!.month.toString().padLeft(2, '0')}-'
+                      '${_dateOfBirth!.day.toString().padLeft(2, '0')}',
           gender: _gender,
-          address: _addressController.text.trim().isEmpty
-              ? null
-              : _addressController.text.trim(),
+          address:
+              _addressController.text.trim().isEmpty
+                  ? null
+                  : _addressController.text.trim(),
           heightCm: double.tryParse(_heightController.text.trim()),
           weightKg: double.tryParse(_weightController.text.trim()),
           systolic: int.tryParse(_systolicController.text.trim()),
@@ -121,12 +124,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           pulse: int.tryParse(_pulseController.text.trim()),
           spo2: int.tryParse(_spo2Controller.text.trim()),
           glucoseMgDl: int.tryParse(_sugarController.text.trim()),
-          complaints: _complaintsController.text.trim().isEmpty
-              ? null
-              : _complaintsController.text.trim(),
-          inviteCode: _inviteController.text.trim().isEmpty
-              ? null
-              : _inviteController.text.trim(),
+          complaints:
+              _complaintsController.text.trim().isEmpty
+                  ? null
+                  : _complaintsController.text.trim(),
+          inviteCode:
+              _inviteController.text.trim().isEmpty
+                  ? null
+                  : _inviteController.text.trim(),
           // Deliberately not sent from this screen — diabetes type is no
           // longer collected at signup. The server therefore applies its
           // `.default('type2')`, so it must be confirmed with the patient
@@ -167,19 +172,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget _section(String title, {String? note}) => Padding(
-        padding: const EdgeInsets.only(top: T.s8, bottom: T.s4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(title, style: T.title.copyWith(color: T.ink)),
-            if (note != null) ...[
-              const SizedBox(width: T.s2),
-              Text(note, style: T.small.copyWith(color: T.inkFaint)),
-            ],
-          ],
-        ),
-      );
+    padding: const EdgeInsets.only(top: T.s8, bottom: T.s4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(title, style: T.title.copyWith(color: T.ink)),
+        if (note != null) ...[
+          const SizedBox(width: T.s2),
+          Text(note, style: T.small.copyWith(color: T.inkFaint)),
+        ],
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -233,10 +238,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             if (v == null || v.trim().isEmpty) {
                               return l10n.commonRequiredField;
                             }
-                            if (v.trim().length < AuthValidators.minNameLength) {
+                            if (v.trim().length <
+                                AuthValidators.minNameLength) {
                               return l10n.authNameTooShort;
                             }
-                            if (v.trim().length > AuthValidators.maxNameLength) {
+                            if (v.trim().length >
+                                AuthValidators.maxNameLength) {
                               return l10n.authNameTooLong;
                             }
                             return null;
@@ -262,10 +269,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             hint: l10n.authPhoneHint,
                             prefixText: '${AuthValidators.countryCode} ',
                           ),
-                          validator: (v) =>
-                              (v == null || !AuthValidators.isValidPhone(v))
-                                  ? l10n.authInvalidPhone
-                                  : null,
+                          validator:
+                              (v) =>
+                                  (v == null || !AuthValidators.isValidPhone(v))
+                                      ? l10n.authInvalidPhone
+                                      : null,
                         ),
                       ),
                       const SizedBox(height: T.s5),
@@ -279,11 +287,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           decoration: AuthField.decoration(hint: 'Optional'),
                           // Optional field — but if they typed something, the
                           // server will reject anything that is not real.
-                          validator: (v) => (v == null ||
-                                  v.trim().isEmpty ||
-                                  AuthValidators.isValidEmail(v))
-                              ? null
-                              : l10n.authInvalidEmail,
+                          validator:
+                              (v) =>
+                                  (v == null ||
+                                          v.trim().isEmpty ||
+                                          AuthValidators.isValidEmail(v))
+                                      ? null
+                                      : l10n.authInvalidEmail,
                         ),
                       ),
 
@@ -306,9 +316,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                               ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed:
+                                  () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                             ),
                           ),
                           // Re-validate only the confirmation field, so a
@@ -317,7 +328,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           // every other field mid-typing — `validate()` shows
                           // errors regardless of autovalidateMode.
                           onChanged: (_) {
-                            if (_autovalidateMode != AutovalidateMode.disabled &&
+                            if (_autovalidateMode !=
+                                    AutovalidateMode.disabled &&
                                 _confirmPasswordController.text.isNotEmpty) {
                               _confirmPasswordKey.currentState?.validate();
                             }
@@ -359,10 +371,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                               ),
-                              onPressed: () => setState(
-                                () => _obscureConfirmPassword =
-                                    !_obscureConfirmPassword,
-                              ),
+                              onPressed:
+                                  () => setState(
+                                    () =>
+                                        _obscureConfirmPassword =
+                                            !_obscureConfirmPassword,
+                                  ),
                             ),
                           ),
                           validator: (v) {
@@ -391,37 +405,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           }
                           return null;
                         },
-                        builder: (field) => AuthField(
-                          label: l10n.authDateOfBirthLabel,
-                          child: InkWell(
-                            onTap: () async {
-                              await _pickDateOfBirth();
-                              field.didChange(_dateOfBirth);
-                            },
-                            borderRadius: BorderRadius.circular(T.rCard),
-                            child: InputDecorator(
-                              decoration: AuthField.decoration(
-                                suffix: const Icon(
-                                  Icons.calendar_today_outlined,
-                                  size: 20,
-                                  color: T.inkMuted,
-                                ),
-                              ).copyWith(errorText: field.errorText),
-                              child: Text(
-                                _dateOfBirth == null
-                                    ? 'Select date'
-                                    : '${_dateOfBirth!.day.toString().padLeft(2, '0')}'
-                                        '/${_dateOfBirth!.month.toString().padLeft(2, '0')}'
-                                        '/${_dateOfBirth!.year}',
-                                style: T.body.copyWith(
-                                  color: _dateOfBirth == null
-                                      ? T.inkFaint
-                                      : T.ink,
+                        builder:
+                            (field) => AuthField(
+                              label: l10n.authDateOfBirthLabel,
+                              child: InkWell(
+                                onTap: () async {
+                                  await _pickDateOfBirth();
+                                  field.didChange(_dateOfBirth);
+                                },
+                                borderRadius: BorderRadius.circular(T.rCard),
+                                child: InputDecorator(
+                                  decoration: AuthField.decoration(
+                                    suffix: const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 20,
+                                      color: T.inkMuted,
+                                    ),
+                                  ).copyWith(errorText: field.errorText),
+                                  child: Text(
+                                    _dateOfBirth == null
+                                        ? 'Select date'
+                                        : '${_dateOfBirth!.day.toString().padLeft(2, '0')}'
+                                            '/${_dateOfBirth!.month.toString().padLeft(2, '0')}'
+                                            '/${_dateOfBirth!.year}',
+                                    style: T.body.copyWith(
+                                      color:
+                                          _dateOfBirth == null
+                                              ? T.inkFaint
+                                              : T.ink,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
                       ),
                       const SizedBox(height: T.s5),
 
@@ -453,8 +469,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               child: Text(l10n.authGenderOther),
                             ),
                           ],
-                          validator: (v) =>
-                              v == null ? l10n.authGenderRequired : null,
+                          validator:
+                              (v) => v == null ? l10n.authGenderRequired : null,
                           onChanged: (v) => setState(() => _gender = v),
                         ),
                       ),
@@ -492,13 +508,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: _vital(_heightController, 'Height', 'cm',
-                                VitalsValidators.height),
+                            child: _vital(
+                              _heightController,
+                              'Height',
+                              'cm',
+                              VitalsValidators.height,
+                            ),
                           ),
                           const SizedBox(width: T.s3),
                           Expanded(
-                            child: _vital(_weightController, 'Weight', 'kg',
-                                VitalsValidators.weight),
+                            child: _vital(
+                              _weightController,
+                              'Weight',
+                              'kg',
+                              VitalsValidators.weight,
+                            ),
                           ),
                         ],
                       ),
@@ -507,9 +531,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: _vital(_systolicController, 'BP systolic',
-                                'mmHg', VitalsValidators.systolic,
-                                integer: true),
+                            child: _vital(
+                              _systolicController,
+                              'BP systolic',
+                              'mmHg',
+                              VitalsValidators.systolic,
+                              integer: true,
+                            ),
                           ),
                           const SizedBox(width: T.s3),
                           Expanded(
@@ -531,19 +559,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: _vital(_pulseController, 'Heart rate', 'bpm',
-                                VitalsValidators.pulse, integer: true),
+                            child: _vital(
+                              _pulseController,
+                              'Heart rate',
+                              'bpm',
+                              VitalsValidators.pulse,
+                              integer: true,
+                            ),
                           ),
                           const SizedBox(width: T.s3),
                           Expanded(
-                            child: _vital(_spo2Controller, 'SpO₂', '%',
-                                VitalsValidators.spo2, integer: true),
+                            child: _vital(
+                              _spo2Controller,
+                              'SpO₂',
+                              '%',
+                              VitalsValidators.spo2,
+                              integer: true,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: T.s5),
-                      _vital(_sugarController, 'Blood sugar', 'mg/dL',
-                          VitalsValidators.sugar, integer: true),
+                      _vital(
+                        _sugarController,
+                        'Blood sugar',
+                        'mg/dL',
+                        VitalsValidators.sugar,
+                        integer: true,
+                      ),
 
                       _section('Anything else', note: 'optional'),
 

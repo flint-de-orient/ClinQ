@@ -11,11 +11,11 @@ import '../domain/diet_models.dart';
 import 'dietician_providers.dart';
 
 Color dietRiskColor(String band) => switch (band) {
-      'critical' => AppColors.danger,
-      'high' => const Color(0xFFEA580C),
-      'moderate' => AppColors.warning,
-      _ => AppColors.success,
-    };
+  'critical' => AppColors.danger,
+  'high' => const Color(0xFFEA580C),
+  'moderate' => AppColors.warning,
+  _ => AppColors.success,
+};
 
 /// The dietician's home: the patients a doctor has assigned to them, with the
 /// ones whose food log is due for review surfaced first.
@@ -26,18 +26,25 @@ class DieticianPatientsScreen extends ConsumerStatefulWidget {
   final String? initialFilter;
 
   @override
-  ConsumerState<DieticianPatientsScreen> createState() => _DieticianPatientsScreenState();
+  ConsumerState<DieticianPatientsScreen> createState() =>
+      _DieticianPatientsScreenState();
 }
 
-class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScreen> {
+class _DieticianPatientsScreenState
+    extends ConsumerState<DieticianPatientsScreen> {
   final _search = TextEditingController();
   String _query = '';
 
   /// all | critical | high | review | noplan — the worklist on screen.
-  late String _filterKey = const {'critical', 'high', 'review', 'noplan'}
-          .contains(widget.initialFilter)
-      ? widget.initialFilter!
-      : 'all';
+  late String _filterKey =
+      const {
+            'critical',
+            'high',
+            'review',
+            'noplan',
+          }.contains(widget.initialFilter)
+          ? widget.initialFilter!
+          : 'all';
 
   @override
   void dispose() {
@@ -52,10 +59,12 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return all;
     return all
-        .where((p) =>
-            p.name.toLowerCase().contains(q) ||
-            p.phone.toLowerCase().contains(q) ||
-            (p.diabetesType ?? '').toLowerCase().contains(q))
+        .where(
+          (p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.phone.toLowerCase().contains(q) ||
+              (p.diabetesType ?? '').toLowerCase().contains(q),
+        )
         .toList();
   }
 
@@ -76,13 +85,27 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
     final user = ref.watch(authControllerProvider).user;
 
     return Scaffold(
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         titleSpacing: AppSpacing.md,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('My Patients', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.accentOn(context))),
-            Text('Worklist sorted by review priority.', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            Text(
+              'My Patients',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: AppColors.accentOn(context),
+              ),
+            ),
+            Text(
+              'Worklist sorted by review priority.',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
           ],
         ),
         actions: [
@@ -103,7 +126,12 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(116),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
             child: Column(
               children: [
                 TextField(
@@ -112,18 +140,25 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
                   style: const TextStyle(fontSize: 16),
                   decoration: InputDecoration(
                     hintText: 'Search patients, number, or condition…',
-                    prefixIcon: Icon(Icons.search_rounded, color: scheme.onSurfaceVariant),
-                    suffixIcon: _query.isEmpty
-                        ? null
-                        : IconButton(
-                            icon: const Icon(Icons.close_rounded),
-                            onPressed: () => setState(() {
-                              _search.clear();
-                              _query = '';
-                            }),
-                          ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    suffixIcon:
+                        _query.isEmpty
+                            ? null
+                            : IconButton(
+                              icon: const Icon(Icons.close_rounded),
+                              onPressed:
+                                  () => setState(() {
+                                    _search.clear();
+                                    _query = '';
+                                  }),
+                            ),
                     filled: true,
-                    fillColor: scheme.surfaceContainerHigh.withValues(alpha: 0.55),
+                    fillColor: scheme.surfaceContainerHigh.withValues(
+                      alpha: 0.55,
+                    ),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -147,13 +182,23 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
                   height: 32,
                   child: Builder(
                     builder: (context) {
-                      final all = _search_(async.valueOrNull ?? const <DietPatient>[]);
+                      final all = _search_(
+                        async.valueOrNull ?? const <DietPatient>[],
+                      );
                       final chips = <(String, String, int)>[
                         ('all', 'All Patients', all.length),
-                        ('critical', 'Critical', _byBand(all, 'critical').length),
+                        (
+                          'critical',
+                          'Critical',
+                          _byBand(all, 'critical').length,
+                        ),
                         ('high', 'High Risk', _byBand(all, 'high').length),
                         ('review', 'Review Due', _byBand(all, 'review').length),
-                        ('noplan', 'Waiting for Plan', _byBand(all, 'noplan').length),
+                        (
+                          'noplan',
+                          'Waiting for Plan',
+                          _byBand(all, 'noplan').length,
+                        ),
                       ];
                       return ListView.separated(
                         scrollDirection: Axis.horizontal,
@@ -185,54 +230,92 @@ class _DieticianPatientsScreenState extends ConsumerState<DieticianPatientsScree
         onTick: (ref) => ref.invalidate(dietPatientsProvider),
         interval: const Duration(seconds: 30),
         child: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(dietPatientsProvider),
-        child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => ListView(children: [
-            SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-            const Center(child: Text('Could not load patients')),
-            const SizedBox(height: AppSpacing.sm),
-            Center(child: OutlinedButton(onPressed: () => ref.invalidate(dietPatientsProvider), child: const Text('Retry'))),
-          ]),
-          data: (patients) {
-            if (patients.isEmpty) {
-              return ListView(children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-                Icon(Icons.restaurant_menu_rounded, size: 54, color: scheme.outlineVariant),
-                const SizedBox(height: AppSpacing.md),
-                const Center(child: Text('No patients assigned yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-                const SizedBox(height: 4),
-                Center(child: Text('A doctor will assign patients to you.', style: TextStyle(color: scheme.onSurfaceVariant))),
-              ]);
-            }
-            final matched = _byBand(_search_(patients), _filterKey);
-            if (matched.isEmpty) {
-              return ListView(children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
-                Icon(Icons.search_off_rounded, size: 54, color: scheme.outlineVariant),
-                const SizedBox(height: AppSpacing.md),
-                Center(
-                  child: Text(
-                    'No patient matches “${_query.trim()}”',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
+          onRefresh: () async => ref.invalidate(dietPatientsProvider),
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (_, _) => ListView(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                    const Center(child: Text('Could not load patients')),
+                    const SizedBox(height: AppSpacing.sm),
+                    Center(
+                      child: OutlinedButton(
+                        onPressed: () => ref.invalidate(dietPatientsProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ),
+                  ],
                 ),
-              ]);
-            }
-            final sorted = [...matched]..sort((a, b) => (b.reviewDue ? 1 : 0).compareTo(a.reviewDue ? 1 : 0));
-            return ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: sorted.length,
-              separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, i) => _PatientCard(patient: sorted[i]),
-            );
-          },
+            data: (patients) {
+              if (patients.isEmpty) {
+                return ListView(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.22),
+                    Icon(
+                      Icons.restaurant_menu_rounded,
+                      size: 54,
+                      color: scheme.outlineVariant,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    const Center(
+                      child: Text(
+                        'No patients assigned yet',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Center(
+                      child: Text(
+                        'A doctor will assign patients to you.',
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              final matched = _byBand(_search_(patients), _filterKey);
+              if (matched.isEmpty) {
+                return ListView(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.22),
+                    Icon(
+                      Icons.search_off_rounded,
+                      size: 54,
+                      color: scheme.outlineVariant,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Center(
+                      child: Text(
+                        'No patient matches “${_query.trim()}”',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              final sorted = [...matched]..sort(
+                (a, b) => (b.reviewDue ? 1 : 0).compareTo(a.reviewDue ? 1 : 0),
+              );
+              return ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: sorted.length,
+                separatorBuilder:
+                    (_, _) => const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, i) => _PatientCard(patient: sorted[i]),
+              );
+            },
+          ),
         ),
-      ),
       ),
     );
   }
-
 }
 
 class _PatientCard extends StatelessWidget {
@@ -278,7 +361,9 @@ class _PatientCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.55),
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF0B1B33).withValues(alpha: 0.04),
@@ -298,7 +383,12 @@ class _PatientCard extends StatelessWidget {
                 Container(width: 5, color: risk),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.md, 12, AppSpacing.md, 10),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      12,
+                      AppSpacing.md,
+                      10,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -326,9 +416,16 @@ class _PatientCard extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         color: AppColors.dangerOn(context),
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: scheme.surfaceContainerLowest, width: 2),
+                                        border: Border.all(
+                                          color: scheme.surfaceContainerLowest,
+                                          width: 2,
+                                        ),
                                       ),
-                                      child: const Icon(Icons.priority_high_rounded, size: 11, color: Colors.white),
+                                      child: const Icon(
+                                        Icons.priority_high_rounded,
+                                        size: 11,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                               ],
@@ -342,7 +439,11 @@ class _PatientCard extends StatelessWidget {
                                     p.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, height: 1.2),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.2,
+                                    ),
                                   ),
                                   const SizedBox(height: 0),
                                   Text(
@@ -352,7 +453,10 @@ class _PatientCard extends StatelessWidget {
                                     ].join('  •  '),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   Wrap(
@@ -364,7 +468,11 @@ class _PatientCard extends StatelessWidget {
                                         risk,
                                       ),
                                       if (condition.isNotEmpty)
-                                        _pill(condition, scheme.onSurfaceVariant, neutral: true),
+                                        _pill(
+                                          condition,
+                                          scheme.onSurfaceVariant,
+                                          neutral: true,
+                                        ),
                                     ],
                                   ),
                                 ],
@@ -374,7 +482,12 @@ class _PatientCard extends StatelessWidget {
                         ),
                         if (status.isNotEmpty) ...[
                           const SizedBox(height: 12),
-                          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.55)),
+                          Divider(
+                            height: 1,
+                            color: scheme.outlineVariant.withValues(
+                              alpha: 0.55,
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -384,8 +497,12 @@ class _PatientCard extends StatelessWidget {
                                   icon: Icons.schedule_rounded,
                                   label: 'Review Due',
                                   color: const Color(0xFFB45309),
-                                  bg: AppColors.warningOn(context).withValues(alpha: 0.13),
-                                  border: AppColors.warningOn(context).withValues(alpha: 0.4),
+                                  bg: AppColors.warningOn(
+                                    context,
+                                  ).withValues(alpha: 0.13),
+                                  border: AppColors.warningOn(
+                                    context,
+                                  ).withValues(alpha: 0.4),
                                 )
                               else
                                 _statusPill(
@@ -393,7 +510,9 @@ class _PatientCard extends StatelessWidget {
                                   icon: Icons.event_available_rounded,
                                   label: 'Scheduled',
                                   color: scheme.onSurfaceVariant,
-                                  bg: scheme.surfaceContainerHighest.withValues(alpha: 0.7),
+                                  bg: scheme.surfaceContainerHighest.withValues(
+                                    alpha: 0.7,
+                                  ),
                                   border: null,
                                 ),
                               const Spacer(),
@@ -403,7 +522,10 @@ class _PatientCard extends StatelessWidget {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 0.3,
-                                  color: overdue ? AppColors.dangerOn(context) : scheme.onSurfaceVariant,
+                                  color:
+                                      overdue
+                                          ? AppColors.dangerOn(context)
+                                          : scheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -428,45 +550,52 @@ class _PatientCard extends StatelessWidget {
     required Color color,
     required Color bg,
     required Color? border,
-  }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(20),
-          border: border == null ? null : Border.all(color: border),
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: bg,
+      borderRadius: BorderRadius.circular(20),
+      border: border == null ? null : Border.all(color: border),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 13, color: color),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: color),
-            ),
-          ],
-        ),
-      );
+      ],
+    ),
+  );
 
   Widget _pill(String text, Color color, {bool neutral = false}) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: neutral ? 0.10 : 0.13),
-          borderRadius: BorderRadius.circular(12),
-          border: neutral ? null : Border.all(color: color.withValues(alpha: 0.35)),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: neutral ? 0.10 : 0.13),
+      borderRadius: BorderRadius.circular(12),
+      border: neutral ? null : Border.all(color: color.withValues(alpha: 0.35)),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+    ),
+  );
 }
 
 /// One worklist filter. Filled navy when it is the list being shown, hairline
 /// when it is not — the same two states the design draws.
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -489,7 +618,10 @@ class _FilterChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected ? accent : scheme.outlineVariant.withValues(alpha: 0.8),
+              color:
+                  selected
+                      ? accent
+                      : scheme.outlineVariant.withValues(alpha: 0.8),
             ),
           ),
           child: Text(

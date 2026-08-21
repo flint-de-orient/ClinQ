@@ -33,7 +33,7 @@ class GlucoseScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(glucoseReadingsProvider);
-          ref.invalidate(glucoseTrendsProvider);
+          invalidateGlucoseTrends(ref);
           await Future.wait([
             ref.read(glucoseReadingsProvider.future),
             ref.read(glucoseTrendsProvider.future),
@@ -123,7 +123,7 @@ class GlucoseScreen extends ConsumerWidget {
                           .read(glucoseRepositoryProvider)
                           .deleteReading(reading.id);
                       ref.invalidate(glucoseReadingsProvider);
-                      ref.invalidate(glucoseTrendsProvider);
+                      invalidateGlucoseTrends(ref);
                     },
                   ),
               ],

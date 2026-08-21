@@ -43,7 +43,13 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
 
   /// Offered when the plan is empty, so the first plan is a few taps rather than
   /// a blank page. Free text after that — an Indian day is not three meals.
-  static const _suggestedMeals = ['Breakfast', 'Mid-morning', 'Lunch', 'Evening snack', 'Dinner'];
+  static const _suggestedMeals = [
+    'Breakfast',
+    'Mid-morning',
+    'Lunch',
+    'Evening snack',
+    'Dinner',
+  ];
 
   /// Drives the enabled state of the "add" button beside the avoid field. It
   /// used to be always enabled and silently do nothing on an empty box, which
@@ -73,7 +79,9 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
 
   Future<void> _load() async {
     try {
-      final plan = await ref.read(dieticianRepositoryProvider).dietPlan(widget.patientId);
+      final plan = await ref
+          .read(dieticianRepositoryProvider)
+          .dietPlan(widget.patientId);
       if (!mounted) return;
       setState(() {
         _goal.text = plan?.goal ?? '';
@@ -86,7 +94,9 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _loaded = true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -94,13 +104,16 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
     goal: _goal.text.trim(),
     notes: _notes.text.trim(),
     avoid: _avoidList,
-    meals: _meals.map((m) => m.toMeal()).where((m) => m.name.isNotEmpty).toList(),
+    meals:
+        _meals.map((m) => m.toMeal()).where((m) => m.name.isNotEmpty).toList(),
   );
 
   Future<bool> _save({bool quiet = false}) async {
     setState(() => _saving = true);
     try {
-      final saved = await ref.read(dieticianRepositoryProvider).saveDietPlan(widget.patientId, _current);
+      final saved = await ref
+          .read(dieticianRepositoryProvider)
+          .saveDietPlan(widget.patientId, _current);
       ref.invalidate(dietPlanProvider(widget.patientId));
       ref.invalidate(dietDashboardProvider);
       if (!mounted) return true;
@@ -110,13 +123,17 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
         _sharedAt = saved.sharedAt;
       });
       if (!quiet) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plan saved')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Plan saved')));
       }
       return true;
     } on ApiException catch (e) {
       if (!mounted) return false;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
       return false;
     }
   }
@@ -128,7 +145,9 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
 
     setState(() => _sending = true);
     try {
-      await ref.read(dieticianRepositoryProvider).sendDietPlan(widget.patientId);
+      await ref
+          .read(dieticianRepositoryProvider)
+          .sendDietPlan(widget.patientId);
       ref.invalidate(dietPlanProvider(widget.patientId));
       ref.invalidate(dietDashboardProvider);
       ref.invalidate(dietThreadProvider(widget.patientId));
@@ -138,12 +157,16 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
         _sharedAt = DateTime.now();
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sent to the patient in their care thread')),
+        const SnackBar(
+          content: Text('Sent to the patient in their care thread'),
+        ),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -191,7 +214,8 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final plan = _current;
-    final canSend = plan.meals.isNotEmpty || plan.goal.isNotEmpty || plan.avoid.isNotEmpty;
+    final canSend =
+        plan.meals.isNotEmpty || plan.goal.isNotEmpty || plan.avoid.isNotEmpty;
 
     return PopScope(
       // Keeps an unsent draft. Without a Save button, walking back from a
@@ -215,7 +239,10 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Plan Editor', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const Text(
+              'Plan Editor',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
             if (widget.patientName != null)
               Text(
                 'for ${widget.patientName!}',
@@ -242,284 +269,378 @@ class _DietPlanScreenState extends ConsumerState<DietPlanScreen> {
             ),
         ],
       ),
-      body: !_loaded
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 120),
-              children: [
-                _Label('Primary clinical goal'),
-                TextField(
-                  controller: _goal,
-                  minLines: 2,
-                  maxLines: 3,
-                  textCapitalization: TextCapitalization.sentences,
-                  onChanged: (_) => _dirty = true,
-                  style: const TextStyle(fontSize: 16, height: 1.45),
-                  decoration: InputDecoration(
-                    hintText: 'e.g. Bring fasting sugar under 130 without cutting rice completely',
-                    filled: true,
-                    fillColor: scheme.surfaceContainerLowest,
-                    contentPadding: const EdgeInsets.all(16),
-                    border: _softBorder(scheme),
-                    enabledBorder: _softBorder(scheme),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.accentOn(context), width: 1.4),
-                    ),
-                  ),
+      body:
+          !_loaded
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  120,
                 ),
-                const SizedBox(height: AppSpacing.xl),
-
-                _Label('Structured meals'),
-                for (var i = 0; i < _meals.length; i++)
-                  _MealCard(
-                    draft: _meals[i],
-                    onChanged: () => setState(() => _dirty = true),
-                    onRemove: () => setState(() {
-                      _meals.removeAt(i).dispose();
-                      _dirty = true;
-                    }),
-                  ),
-                // The add area, marked out as one block. A single "Add meal"
-                // button would have made the dietician name every meal from
-                // scratch; the named chips are the same affordance with the
-                // usual answer already filled in.
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.sm + 2),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    border: Border.all(
-                      color: AppColors.accentOn(context).withValues(alpha: 0.35),
-                    ),
-                    color: AppColors.accentOn(context).withValues(alpha: 0.04),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ADD MEAL / SNACK',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.7,
+                children: [
+                  _Label('Primary clinical goal'),
+                  TextField(
+                    controller: _goal,
+                    minLines: 2,
+                    maxLines: 3,
+                    textCapitalization: TextCapitalization.sentences,
+                    onChanged: (_) => _dirty = true,
+                    style: const TextStyle(fontSize: 16, height: 1.45),
+                    decoration: InputDecoration(
+                      hintText:
+                          'e.g. Bring fasting sugar under 130 without cutting rice completely',
+                      filled: true,
+                      fillColor: scheme.surfaceContainerLowest,
+                      contentPadding: const EdgeInsets.all(16),
+                      border: _softBorder(scheme),
+                      enabledBorder: _softBorder(scheme),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
                           color: AppColors.accentOn(context),
+                          width: 1.4,
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final name in [..._suggestedMeals, ''])
-                      if (name.isEmpty ||
-                          !_meals.any(
-                            (m) => m.name.text.trim().toLowerCase() == name.toLowerCase(),
-                          ))
-                        ActionChip(
-                          avatar: Icon(Icons.add_rounded, size: 18, color: AppColors.accentOn(context)),
-                          label: Text(
-                            name.isEmpty ? 'Other' : name,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                          ),
-                          labelPadding: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          backgroundColor: scheme.surfaceContainerLowest,
-                          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          onPressed: () => _addMeal(name),
-                        ),
-                  ],
-                ),
-                    ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: AppSpacing.xl),
 
-                // Kept out of the meal cards on purpose: a patient scanning for
-                // "can I have this?" should have one place to look. Given its
-                // own card with a red edge, because it is the only part of a
-                // plan that is a prohibition rather than a suggestion.
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-                    // A rule across the top rather than a full red border: the
-                    // section is a caution, not an alarm.
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0B1B33).withValues(alpha: 0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.warning_amber_rounded, size: 19, color: AppColors.dangerOn(context)),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Best Avoided',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.dangerOn(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      if (_avoidList.isNotEmpty) ...[
-                        Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (var i = 0; i < _avoidList.length; i++)
-                        Chip(
-                          label: Text(
-                            _avoidList[i],
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                          ),
-                          backgroundColor: AppColors.dangerBgOn(context),
-                          side: BorderSide(color: AppColors.dangerOn(context).withValues(alpha: 0.28)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          deleteIconColor: AppColors.danger,
-                          onDeleted: () => setState(() {
-                            _avoidList = [..._avoidList]..removeAt(i);
+                  _Label('Structured meals'),
+                  for (var i = 0; i < _meals.length; i++)
+                    _MealCard(
+                      draft: _meals[i],
+                      onChanged: () => setState(() => _dirty = true),
+                      onRemove:
+                          () => setState(() {
+                            _meals.removeAt(i).dispose();
                             _dirty = true;
                           }),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _avoid,
-                        textInputAction: TextInputAction.done,
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: (_) => _addAvoid(),
-                        decoration: InputDecoration(
-                          hintText: 'e.g. Sweetened lassi',
-                          filled: true,
-                          fillColor: scheme.surfaceContainerLowest,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          border: _softBorder(scheme),
-                          enabledBorder: _softBorder(scheme),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: AppColors.accentOn(context), width: 1.4),
-                          ),
-                        ),
+                    ),
+                  // The add area, marked out as one block. A single "Add meal"
+                  // button would have made the dietician name every meal from
+                  // scratch; the named chips are the same affordance with the
+                  // usual answer already filled in.
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppSpacing.sm + 2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardRadius,
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    // Disabled until there is something to add, so an empty tap
-                    // no longer looks like a dead button.
-                    SizedBox(
-                      height: 52,
-                      width: 52,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          disabledBackgroundColor: scheme.surfaceContainerHighest,
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        onPressed: _canAddAvoid ? _addAvoid : null,
-                        child: const Icon(Icons.add_rounded, size: 24),
+                      border: Border.all(
+                        color: AppColors.accentOn(
+                          context,
+                        ).withValues(alpha: 0.35),
                       ),
+                      color: AppColors.accentOn(
+                        context,
+                      ).withValues(alpha: 0.04),
                     ),
-                  ],
-                ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-
-                _Label('Anything else'),
-                TextField(
-                  controller: _notes,
-                  minLines: 3,
-                  maxLines: 6,
-                  maxLength: 2000,
-                  textCapitalization: TextCapitalization.sentences,
-                  onChanged: (_) => _dirty = true,
-                  style: const TextStyle(fontSize: 16, height: 1.45),
-                  decoration: InputDecoration(
-                    hintText: 'Water, cooking oil, eating out, fasting days…',
-                    filled: true,
-                    fillColor: scheme.surfaceContainerLowest,
-                    contentPadding: const EdgeInsets.all(16),
-                    border: _softBorder(scheme),
-                    enabledBorder: _softBorder(scheme),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide(color: AppColors.accentOn(context), width: 1.4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-      bottomNavigationBar: !_loaded
-          ? null
-          : SafeArea(
-              minimum: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Says where the plan stands at all times. With no Save
-                  // button there was nothing on screen to confirm the work had
-                  // been stored, which reads exactly like it has not been.
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(_statusIcon, size: 14, color: _statusColour(scheme)),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            _statusText,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: _statusColour(scheme),
-                            ),
+                        Text(
+                          'ADD MEAL / SNACK',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.7,
+                            color: AppColors.accentOn(context),
                           ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final name in [..._suggestedMeals, ''])
+                              if (name.isEmpty ||
+                                  !_meals.any(
+                                    (m) =>
+                                        m.name.text.trim().toLowerCase() ==
+                                        name.toLowerCase(),
+                                  ))
+                                ActionChip(
+                                  avatar: Icon(
+                                    Icons.add_rounded,
+                                    size: 18,
+                                    color: AppColors.accentOn(context),
+                                  ),
+                                  label: Text(
+                                    name.isEmpty ? 'Other' : name,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  labelPadding: const EdgeInsets.only(right: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 8,
+                                  ),
+                                  backgroundColor:
+                                      scheme.surfaceContainerLowest,
+                                  side: BorderSide(
+                                    color: scheme.outlineVariant.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  onPressed: () => _addMeal(name),
+                                ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    height: AppSpacing.minTapTarget + 6,
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
-                      onPressed: (!canSend || _sending || _saving) ? null : _send,
-                      icon: _sending
-                          ? const SizedBox(
-                              width: 16,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                            )
-                          : const Icon(Icons.send_rounded, size: 20),
-                      label: Text(
-                        _sharedAt == null ? 'Send to patient' : 'Send the updated plan',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Kept out of the meal cards on purpose: a patient scanning for
+                  // "can I have this?" should have one place to look. Given its
+                  // own card with a red edge, because it is the only part of a
+                  // plan that is a prohibition rather than a suggestion.
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: scheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardRadius,
+                      ),
+                      border: Border.all(
+                        color: scheme.outlineVariant.withValues(alpha: 0.6),
+                      ),
+                      // A rule across the top rather than a full red border: the
+                      // section is a caution, not an alarm.
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF0B1B33,
+                          ).withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 19,
+                              color: AppColors.dangerOn(context),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Best Avoided',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.dangerOn(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        if (_avoidList.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (var i = 0; i < _avoidList.length; i++)
+                                Chip(
+                                  label: Text(
+                                    _avoidList[i],
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  backgroundColor: AppColors.dangerBgOn(
+                                    context,
+                                  ),
+                                  side: BorderSide(
+                                    color: AppColors.dangerOn(
+                                      context,
+                                    ).withValues(alpha: 0.28),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  deleteIconColor: AppColors.danger,
+                                  onDeleted:
+                                      () => setState(() {
+                                        _avoidList = [..._avoidList]
+                                          ..removeAt(i);
+                                        _dirty = true;
+                                      }),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _avoid,
+                                textInputAction: TextInputAction.done,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                onSubmitted: (_) => _addAvoid(),
+                                decoration: InputDecoration(
+                                  hintText: 'e.g. Sweetened lassi',
+                                  filled: true,
+                                  fillColor: scheme.surfaceContainerLowest,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  border: _softBorder(scheme),
+                                  enabledBorder: _softBorder(scheme),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(
+                                      color: AppColors.accentOn(context),
+                                      width: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            // Disabled until there is something to add, so an empty tap
+                            // no longer looks like a dead button.
+                            SizedBox(
+                              height: 52,
+                              width: 52,
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  disabledBackgroundColor:
+                                      scheme.surfaceContainerHighest,
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                onPressed: _canAddAvoid ? _addAvoid : null,
+                                child: const Icon(Icons.add_rounded, size: 24),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  _Label('Anything else'),
+                  TextField(
+                    controller: _notes,
+                    minLines: 3,
+                    maxLines: 6,
+                    maxLength: 2000,
+                    textCapitalization: TextCapitalization.sentences,
+                    onChanged: (_) => _dirty = true,
+                    style: const TextStyle(fontSize: 16, height: 1.45),
+                    decoration: InputDecoration(
+                      hintText: 'Water, cooking oil, eating out, fasting days…',
+                      filled: true,
+                      fillColor: scheme.surfaceContainerLowest,
+                      contentPadding: const EdgeInsets.all(16),
+                      border: _softBorder(scheme),
+                      enabledBorder: _softBorder(scheme),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: AppColors.accentOn(context),
+                          width: 1.4,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+      bottomNavigationBar:
+          !_loaded
+              ? null
+              : SafeArea(
+                minimum: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  0,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Says where the plan stands at all times. With no Save
+                    // button there was nothing on screen to confirm the work had
+                    // been stored, which reads exactly like it has not been.
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _statusIcon,
+                            size: 14,
+                            color: _statusColour(scheme),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _statusText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _statusColour(scheme),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      height: AppSpacing.minTapTarget + 6,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        onPressed:
+                            (!canSend || _sending || _saving) ? null : _send,
+                        icon:
+                            _sending
+                                ? const SizedBox(
+                                  width: 16,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                                : const Icon(Icons.send_rounded, size: 20),
+                        label: Text(
+                          _sharedAt == null
+                              ? 'Send to patient'
+                              : 'Send the updated plan',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
     );
   }
 }
@@ -535,11 +656,15 @@ OutlineInputBorder _softBorder(ColorScheme scheme) => OutlineInputBorder(
 /// A meal being edited. Items are one controller per line so a dietician can
 /// fix "2 rotis" without retyping the rest of the meal.
 class _MealDraft {
-  _MealDraft({String name = '', String time = '', List<String> items = const [], String notes = ''})
-    : name = TextEditingController(text: name),
-      time = TextEditingController(text: time),
-      notes = TextEditingController(text: notes),
-      items = items.map((i) => TextEditingController(text: i)).toList();
+  _MealDraft({
+    String name = '',
+    String time = '',
+    List<String> items = const [],
+    String notes = '',
+  }) : name = TextEditingController(text: name),
+       time = TextEditingController(text: time),
+       notes = TextEditingController(text: notes),
+       items = items.map((i) => TextEditingController(text: i)).toList();
 
   factory _MealDraft.from(DietMeal m) =>
       _MealDraft(name: m.name, time: m.time, items: m.items, notes: m.notes);
@@ -567,7 +692,11 @@ class _MealDraft {
 }
 
 class _MealCard extends StatefulWidget {
-  const _MealCard({required this.draft, required this.onChanged, required this.onRemove});
+  const _MealCard({
+    required this.draft,
+    required this.onChanged,
+    required this.onRemove,
+  });
 
   final _MealDraft draft;
   final VoidCallback onChanged;
@@ -632,186 +761,238 @@ class _MealCardState extends State<_MealCard> {
             Container(width: 4, color: AppColors.accentOn(context)),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                ),
                 child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Sun or moon by the hour it falls, so the list can be scanned by
-              // time of day without reading the names.
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Icon(
-                  (_parsedTime?.hour ?? 8) >= 17 ? Icons.dark_mode_rounded : Icons.wb_sunny_rounded,
-                  size: 18,
-                  color: AppColors.accentOn(context),
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: d.name,
-                  textCapitalization: TextCapitalization.words,
-                  onChanged: (_) => widget.onChanged(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                  decoration: const InputDecoration(
-                    hintText: 'Meal name',
-                    isDense: true,
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ),
-              IconButton(
-                tooltip: 'Remove this meal',
-                visualDensity: VisualDensity.compact,
-                onPressed: widget.onRemove,
-                icon: Icon(Icons.close_rounded, size: 20, color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        // Sun or moon by the hour it falls, so the list can be scanned by
+                        // time of day without reading the names.
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Icon(
+                            (_parsedTime?.hour ?? 8) >= 17
+                                ? Icons.dark_mode_rounded
+                                : Icons.wb_sunny_rounded,
+                            size: 18,
+                            color: AppColors.accentOn(context),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: d.name,
+                            textCapitalization: TextCapitalization.words,
+                            onChanged: (_) => widget.onChanged(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Meal name',
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Remove this meal',
+                          visualDensity: VisualDensity.compact,
+                          onPressed: widget.onRemove,
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 20,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-          // A picker, not a text box. Typing the time by hand produced "8",
-          // "8pm", "20:00" and "8 o'clock" in the same plan, and the patient's
-          // side has to render whatever was typed.
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Material(
-              color: time.isEmpty ? scheme.surfaceContainerHigh : AppColors.accentSoftOn(context),
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: _pickTime,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.schedule_rounded,
-                        size: 18,
-                        color: time.isEmpty ? scheme.onSurfaceVariant : AppColors.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        time.isEmpty ? 'Set a time' : time,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: time.isEmpty ? scheme.onSurfaceVariant : AppColors.primary,
+                    // A picker, not a text box. Typing the time by hand produced "8",
+                    // "8pm", "20:00" and "8 o'clock" in the same plan, and the patient's
+                    // side has to render whatever was typed.
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Material(
+                        color:
+                            time.isEmpty
+                                ? scheme.surfaceContainerHigh
+                                : AppColors.accentSoftOn(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: _pickTime,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.schedule_rounded,
+                                  size: 18,
+                                  color:
+                                      time.isEmpty
+                                          ? scheme.onSurfaceVariant
+                                          : AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  time.isEmpty ? 'Set a time' : time,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        time.isEmpty
+                                            ? scheme.onSurfaceVariant
+                                            : AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.md, bottom: 4, right: AppSpacing.sm),
-            child: Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
-          ),
-
-          for (var i = 0; i < d.items.length; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentOn(context),
-                      shape: BoxShape.circle,
                     ),
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: d.items[i],
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (_) => widget.onChanged(),
-                      style: const TextStyle(fontSize: 16),
-                      decoration: const InputDecoration(
-                        hintText: 'e.g. 2 rotis, no ghee',
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
+
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.md,
+                        bottom: 4,
+                        right: AppSpacing.sm,
+                      ),
+                      child: Divider(
+                        height: 1,
+                        color: scheme.outlineVariant.withValues(alpha: 0.5),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    tooltip: 'Remove this item',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => setState(() {
-                      d.items.removeAt(i).dispose();
-                      widget.onChanged();
-                    }),
-                    icon: Icon(
-                      Icons.remove_circle_outline_rounded,
-                      size: 19,
-                      color: scheme.onSurfaceVariant,
+
+                    for (var i = 0; i < d.items.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.accentOn(context),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: d.items[i],
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (_) => widget.onChanged(),
+                                style: const TextStyle(fontSize: 16),
+                                decoration: const InputDecoration(
+                                  hintText: 'e.g. 2 rotis, no ghee',
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Remove this item',
+                              visualDensity: VisualDensity.compact,
+                              onPressed:
+                                  () => setState(() {
+                                    d.items.removeAt(i).dispose();
+                                    widget.onChanged();
+                                  }),
+                              icon: Icon(
+                                Icons.remove_circle_outline_rounded,
+                                size: 19,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                        ),
+                        onPressed:
+                            () => setState(() {
+                              d.items = [...d.items, TextEditingController()];
+                              widget.onChanged();
+                            }),
+                        icon: const Icon(Icons.add_rounded, size: 19),
+                        label: const Text(
+                          'Add item',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                    const SizedBox(height: AppSpacing.sm),
 
-          const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              ),
-              onPressed: () => setState(() {
-                d.items = [...d.items, TextEditingController()];
-                widget.onChanged();
-              }),
-              icon: const Icon(Icons.add_rounded, size: 19),
-              label: const Text(
-                'Add item',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: TextField(
-              controller: d.notes,
-              textCapitalization: TextCapitalization.sentences,
-              minLines: 1,
-              maxLines: 3,
-              onChanged: (_) => widget.onChanged(),
-              style: const TextStyle(fontSize: 14),
-              decoration: InputDecoration(
-                hintText: 'Note for this meal (optional)',
-                filled: true,
-                fillColor: scheme.surfaceContainerHigh.withValues(alpha: 0.45),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                    Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
+                      child: TextField(
+                        controller: d.notes,
+                        textCapitalization: TextCapitalization.sentences,
+                        minLines: 1,
+                        maxLines: 3,
+                        onChanged: (_) => widget.onChanged(),
+                        style: const TextStyle(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Note for this meal (optional)',
+                          filled: true,
+                          fillColor: scheme.surfaceContainerHigh.withValues(
+                            alpha: 0.45,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: AppColors.accentOn(context),
+                              width: 1.4,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.accentOn(context), width: 1.4),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
               ),
             ),
           ],

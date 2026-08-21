@@ -43,7 +43,11 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
     ('retired', 'Retired'),
   ];
 
-  KnowledgeQuery get _query => (status: _status, category: null, language: null);
+  KnowledgeQuery get _query => (
+    status: _status,
+    category: null,
+    language: null,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +67,15 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: _statuses.length,
-                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                separatorBuilder:
+                    (_, _) => const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, i) {
                   final (value, label) = _statuses[i];
-                  return ChoiceChip(label: Text(label), selected: _status == value, onSelected: (_) => setState(() => _status = value));
+                  return ChoiceChip(
+                    label: Text(label),
+                    selected: _status == value,
+                    onSelected: (_) => setState(() => _status = value),
+                  );
                 },
               ),
             ),
@@ -82,35 +91,62 @@ class _KnowledgeScreenState extends ConsumerState<KnowledgeScreen> {
         onRefresh: () async => ref.invalidate(knowledgeProvider(_query)),
         child: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Could not load knowledge base'),
-                const SizedBox(height: AppSpacing.sm),
-                OutlinedButton(onPressed: () => ref.invalidate(knowledgeProvider(_query)), child: const Text('Retry')),
-              ],
-            ),
-          ),
+          error:
+              (_, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Could not load knowledge base'),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton(
+                      onPressed:
+                          () => ref.invalidate(knowledgeProvider(_query)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
           data: (paged) {
             if (paged.items.isEmpty) {
               return ListView(
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.18),
-                  Icon(Icons.menu_book_outlined, size: 56, color: scheme.outlineVariant),
+                  Icon(
+                    Icons.menu_book_outlined,
+                    size: 56,
+                    color: scheme.outlineVariant,
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  const Center(child: Text('No entries', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                  const Center(
+                    child: Text(
+                      'No entries',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 96),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                96,
+              ),
               itemCount: paged.items.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, i) => _ChunkRow(
-                chunk: paged.items[i],
-                onTap: () => context.push('/clinician/knowledge/edit', extra: paged.items[i]),
-              ),
+              itemBuilder:
+                  (context, i) => _ChunkRow(
+                    chunk: paged.items[i],
+                    onTap:
+                        () => context.push(
+                          '/clinician/knowledge/edit',
+                          extra: paged.items[i],
+                        ),
+                  ),
             );
           },
         ),
@@ -137,19 +173,43 @@ class _ChunkRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Expanded(child: Text(c.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                MiniPill(label: knowledgeStatusLabel(c.status), color: knowledgeStatusColor(c.status)),
+                Expanded(
+                  child: Text(
+                    c.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                MiniPill(
+                  label: knowledgeStatusLabel(c.status),
+                  color: knowledgeStatusColor(c.status),
+                ),
               ],
             ),
             const SizedBox(height: 4),
-            Text(c.content, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant, height: 1.35)),
+            Text(
+              c.content,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                color: scheme.onSurfaceVariant,
+                height: 1.35,
+              ),
+            ),
             const SizedBox(height: 4),
             Wrap(
               spacing: AppSpacing.sm,
@@ -158,7 +218,8 @@ class _ChunkRow extends StatelessWidget {
                 _tag(c.category.replaceAll('_', ' '), scheme),
                 _tag(c.language.toUpperCase(), scheme),
                 _tag('v${c.version}', scheme),
-                if (!c.hasEmbedding && c.isApproved) _tag('no embedding', scheme),
+                if (!c.hasEmbedding && c.isApproved)
+                  _tag('no embedding', scheme),
               ],
             ),
           ],
@@ -169,7 +230,13 @@ class _ChunkRow extends StatelessWidget {
 
   Widget _tag(String label, ColorScheme scheme) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-    decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-    child: Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+    decoration: BoxDecoration(
+      color: scheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+    ),
   );
 }

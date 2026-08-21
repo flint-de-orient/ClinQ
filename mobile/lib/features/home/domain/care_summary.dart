@@ -25,14 +25,22 @@ class CareSummary {
   final List<CareFoodLog> recentFoodLogs;
 
   factory CareSummary.fromJson(Map<String, dynamic> j) => CareSummary(
-    profile: CareProfile.fromJson(j['profile'] as Map<String, dynamic>? ?? const {}),
-    latestHba1c: j['latestHba1c'] is Map
-        ? Hba1cResult.fromJson(Map<String, dynamic>.from(j['latestHba1c'] as Map))
-        : null,
+    profile: CareProfile.fromJson(
+      j['profile'] as Map<String, dynamic>? ?? const {},
+    ),
+    latestHba1c:
+        j['latestHba1c'] is Map
+            ? Hba1cResult.fromJson(
+              Map<String, dynamic>.from(j['latestHba1c'] as Map),
+            )
+            : null,
     followUpOn: DateTime.tryParse(j['followUpOn']?.toString() ?? '')?.toLocal(),
-    dietPlan: j['dietPlan'] is Map
-        ? PatientDietPlan.fromJson(Map<String, dynamic>.from(j['dietPlan'] as Map))
-        : null,
+    dietPlan:
+        j['dietPlan'] is Map
+            ? PatientDietPlan.fromJson(
+              Map<String, dynamic>.from(j['dietPlan'] as Map),
+            )
+            : null,
     medications:
         (j['medications'] as List?)
             ?.whereType<Map<String, dynamic>>()
@@ -93,7 +101,8 @@ class CareProfile {
 
   /// Only the bands worth flagging get a badge — "Low Risk" beside someone's
   /// name is a label doing no work.
-  bool get showRisk => riskBand == 'high' || riskBand == 'critical' || riskBand == 'moderate';
+  bool get showRisk =>
+      riskBand == 'high' || riskBand == 'critical' || riskBand == 'moderate';
 
   String get riskLabel => switch (riskBand) {
     'critical' => 'Critical Risk',
@@ -121,17 +130,26 @@ class CareProfile {
     heightCm: (j['heightCm'] as num?)?.toInt(),
     weightKg: j['weightKg'] as num?,
     bmi: j['bmi'] as num?,
-    bloodPressure: j['bloodPressure'] is Map
-        ? BloodPressure.fromJson(Map<String, dynamic>.from(j['bloodPressure'] as Map))
-        : null,
-    allergies: (j['allergies'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+    bloodPressure:
+        j['bloodPressure'] is Map
+            ? BloodPressure.fromJson(
+              Map<String, dynamic>.from(j['bloodPressure'] as Map),
+            )
+            : null,
+    allergies:
+        (j['allergies'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
     reviewIntervalDays: (j['reviewIntervalDays'] as num?)?.toInt(),
   );
 }
 
 /// The patient's latest blood pressure, flagged high against their own targets.
 class BloodPressure {
-  const BloodPressure({required this.systolic, this.diastolic, this.isHigh = false});
+  const BloodPressure({
+    required this.systolic,
+    this.diastolic,
+    this.isHigh = false,
+  });
 
   final int systolic;
   final int? diastolic;
@@ -148,7 +166,11 @@ class BloodPressure {
 }
 
 class Hba1cResult {
-  const Hba1cResult({required this.percentage, this.testedOn, this.isHigh = false});
+  const Hba1cResult({
+    required this.percentage,
+    this.testedOn,
+    this.isHigh = false,
+  });
 
   final num percentage;
   final DateTime? testedOn;
@@ -184,7 +206,10 @@ class PatientDietPlan {
   factory PatientDietPlan.fromJson(Map<String, dynamic> j) => PatientDietPlan(
     goal: j['goal']?.toString() ?? '',
     meals:
-        (j['meals'] as List?)?.whereType<Map<String, dynamic>>().map(PlanMeal.fromJson).toList() ??
+        (j['meals'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(PlanMeal.fromJson)
+            .toList() ??
         const [],
     avoid: (j['avoid'] as List?)?.map((e) => e.toString()).toList() ?? const [],
     notes: j['notes']?.toString() ?? '',
@@ -194,7 +219,12 @@ class PatientDietPlan {
 }
 
 class PlanMeal {
-  const PlanMeal({required this.name, this.time = '', this.items = const [], this.notes = ''});
+  const PlanMeal({
+    required this.name,
+    this.time = '',
+    this.items = const [],
+    this.notes = '',
+  });
 
   final String name;
   final String time;

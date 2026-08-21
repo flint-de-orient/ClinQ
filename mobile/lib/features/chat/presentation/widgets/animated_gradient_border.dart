@@ -80,7 +80,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
   @override
   void didUpdateWidget(AnimatedGradientBorder old) {
     super.didUpdateWidget(old);
-    if (widget.listening != old.listening || widget.active != old.active) _syncAnimation();
+    if (widget.listening != old.listening || widget.active != old.active)
+      _syncAnimation();
   }
 
   @override
@@ -113,16 +114,17 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     return RepaintBoundary(
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (context, child) => CustomPaint(
-          painter: _BorderPainter(
-            progress: _controller.value,
-            radius: widget.radius,
-            listening: widget.listening,
-            idle: false,
-            idleColor: scheme.outlineVariant,
-          ),
-          child: child,
-        ),
+        builder:
+            (context, child) => CustomPaint(
+              painter: _BorderPainter(
+                progress: _controller.value,
+                radius: widget.radius,
+                listening: widget.listening,
+                idle: false,
+                idleColor: scheme.outlineVariant,
+              ),
+              child: child,
+            ),
         child: widget.child,
       ),
     );
@@ -176,10 +178,11 @@ class _BorderPainter extends CustomPainter {
     // glow is used ONLY while listening (a deliberate, brief, hero moment).
     // While merely focused, a wider translucent stroke gives a hint of glow at
     // a fraction of the cost.
-    final glow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke + (listening ? 7 : 3)
-      ..shader = gradient;
+    final glow =
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke + (listening ? 7 : 3)
+          ..shader = gradient;
     if (listening) {
       glow.maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
     } else {

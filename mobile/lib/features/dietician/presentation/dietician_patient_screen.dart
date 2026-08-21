@@ -27,7 +27,11 @@ import 'widgets/plan_history_sheet.dart';
 /// status and the doctor's current medicine list. Food advice is given in the
 /// care chat (the "Message" button), informed by the food log.
 class DieticianPatientScreen extends ConsumerWidget {
-  const DieticianPatientScreen({super.key, required this.patientId, this.patientName});
+  const DieticianPatientScreen({
+    super.key,
+    required this.patientId,
+    this.patientName,
+  });
 
   final String patientId;
   final String? patientName;
@@ -51,104 +55,150 @@ class DieticianPatientScreen extends ConsumerWidget {
         },
         interval: const Duration(seconds: 30),
         child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Could not load this patient'),
-              const SizedBox(height: AppSpacing.sm),
-              OutlinedButton(onPressed: () => ref.invalidate(dietOverviewProvider(patientId)), child: const Text('Retry')),
-            ],
-          ),
-        ),
-        data: (o) => RefreshIndicator(
-          onRefresh: () async => ref.invalidate(dietOverviewProvider(patientId)),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 110),
-            children: [
-              _MedicalCard(overview: o),
-              const SizedBox(height: AppSpacing.lg),
-              // Above the medicines and the log on purpose: the plan is what the
-              // dietician is here to produce; everything below it is input.
-              _SectionTitle('Diet plan'),
-              const SizedBox(height: AppSpacing.sm),
-              _DietPlanSection(patientId: patientId, patientName: patientName ?? o.name),
-              if (o.vitals?.hasAny ?? false) ...[
-                const SizedBox(height: AppSpacing.lg),
-
-                const SizedBox(height: AppSpacing.sm),
-                _VitalsSection(vitals: o.vitals!),
-              ],
-              const SizedBox(height: AppSpacing.lg),
-              _SectionTitle('Current medicines', trailing: '${o.medications.length}'),
-              const SizedBox(height: AppSpacing.sm),
-              if (o.medications.isEmpty)
-                _emptyNote(scheme, 'No medicines on record from the doctor yet.')
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < o.medications.length; i++) ...[
-                        if (i > 0) Divider(height: 1, indent: 56, color: scheme.outlineVariant.withValues(alpha: 0.4)),
-                        _MedRow(med: o.medications[i]),
-                      ],
-                    ],
-                  ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error:
+              (_, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Could not load this patient'),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton(
+                      onPressed:
+                          () => ref.invalidate(dietOverviewProvider(patientId)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
                 ),
-              if (o.advice.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.lg),
-                _SectionTitle('Doctor’s advice'),
-                const SizedBox(height: AppSpacing.sm),
-                _AdviceSection(advice: o.advice),
-              ],
-              if (o.advisedTests.isNotEmpty || o.latestHba1c != null) ...[
-                const SizedBox(height: AppSpacing.lg),
-                _SectionTitle('Tests ordered by the doctor'),
-                const SizedBox(height: AppSpacing.sm),
-                _LabTests(overview: o),
-              ],
-              if (o.labReports.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.lg),
-                _SectionTitle('Lab reports', trailing: '${o.labReports.length}'),
-                const SizedBox(height: AppSpacing.sm),
-                _LabReportsSection(reports: o.labReports),
-              ],
-              const SizedBox(height: AppSpacing.lg),
-              _FoodLogSection(patientId: patientId),
-            ],
-          ),
+              ),
+          data:
+              (o) => RefreshIndicator(
+                onRefresh:
+                    () async => ref.invalidate(dietOverviewProvider(patientId)),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    110,
+                  ),
+                  children: [
+                    _MedicalCard(overview: o),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Above the medicines and the log on purpose: the plan is what the
+                    // dietician is here to produce; everything below it is input.
+                    _SectionTitle('Diet plan'),
+                    const SizedBox(height: AppSpacing.sm),
+                    _DietPlanSection(
+                      patientId: patientId,
+                      patientName: patientName ?? o.name,
+                    ),
+                    if (o.vitals?.hasAny ?? false) ...[
+                      const SizedBox(height: AppSpacing.lg),
+
+                      const SizedBox(height: AppSpacing.sm),
+                      _VitalsSection(vitals: o.vitals!),
+                    ],
+                    const SizedBox(height: AppSpacing.lg),
+                    _SectionTitle(
+                      'Current medicines',
+                      trailing: '${o.medications.length}',
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    if (o.medications.isEmpty)
+                      _emptyNote(
+                        scheme,
+                        'No medicines on record from the doctor yet.',
+                      )
+                    else
+                      Container(
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: scheme.outlineVariant.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < o.medications.length; i++) ...[
+                              if (i > 0)
+                                Divider(
+                                  height: 1,
+                                  indent: 56,
+                                  color: scheme.outlineVariant.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                ),
+                              _MedRow(med: o.medications[i]),
+                            ],
+                          ],
+                        ),
+                      ),
+                    if (o.advice.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _SectionTitle('Doctor’s advice'),
+                      const SizedBox(height: AppSpacing.sm),
+                      _AdviceSection(advice: o.advice),
+                    ],
+                    if (o.advisedTests.isNotEmpty || o.latestHba1c != null) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _SectionTitle('Tests ordered by the doctor'),
+                      const SizedBox(height: AppSpacing.sm),
+                      _LabTests(overview: o),
+                    ],
+                    if (o.labReports.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      _SectionTitle(
+                        'Lab reports',
+                        trailing: '${o.labReports.length}',
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _LabReportsSection(reports: o.labReports),
+                    ],
+                    const SizedBox(height: AppSpacing.lg),
+                    _FoodLogSection(patientId: patientId),
+                  ],
+                ),
+              ),
         ),
-      ),
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(AppSpacing.md),
         child: FilledButton.icon(
-          onPressed: () => context.push('/dietician/patients/$patientId/chat', extra: patientName),
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52), backgroundColor: AppColors.primary),
+          onPressed:
+              () => context.push(
+                '/dietician/patients/$patientId/chat',
+                extra: patientName,
+              ),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(52),
+            backgroundColor: AppColors.primary,
+          ),
           icon: const Icon(Icons.forum_rounded),
-          label: const Text('Message patient', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          label: const Text(
+            'Message patient',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
         ),
       ),
     );
   }
 
   Widget _emptyNote(ColorScheme scheme, String text) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Text(text, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.all(AppSpacing.md),
+    decoration: BoxDecoration(
+      color: scheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+    ),
+  );
 }
 
 class _MedicalCard extends StatelessWidget {
@@ -156,7 +206,8 @@ class _MedicalCard extends StatelessWidget {
 
   final DietPatientOverview overview;
 
-  static String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  static String _cap(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +228,11 @@ class _MedicalCard extends StatelessWidget {
             Expanded(
               child: Text(
                 o.name,
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, height: 1.15),
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  height: 1.15,
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -189,7 +244,11 @@ class _MedicalCard extends StatelessWidget {
               ),
               child: Text(
                 '${_cap(o.riskBand)} Risk',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: risk),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: risk,
+                ),
               ),
             ),
           ],
@@ -203,9 +262,12 @@ class _MedicalCard extends StatelessWidget {
           spacing: 16,
           runSpacing: 8,
           children: [
-            if (o.age != null) _bit(context, Icons.calendar_today_rounded, '${o.age} yrs'),
-            if ((o.gender ?? '').isNotEmpty) _bit(context, Icons.person_outline_rounded, _cap(o.gender!)),
-            if (o.heightCm != null) _bit(context, Icons.height_rounded, '${o.heightCm} cm'),
+            if (o.age != null)
+              _bit(context, Icons.calendar_today_rounded, '${o.age} yrs'),
+            if ((o.gender ?? '').isNotEmpty)
+              _bit(context, Icons.person_outline_rounded, _cap(o.gender!)),
+            if (o.heightCm != null)
+              _bit(context, Icons.height_rounded, '${o.heightCm} cm'),
             if (o.diabetesType != null && o.diabetesType!.isNotEmpty)
               _bit(context, Icons.monitor_heart_outlined, o.diabetesType!),
           ],
@@ -215,7 +277,10 @@ class _MedicalCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _label(context, 'MAIN CONCERN'),
           const SizedBox(height: 4),
-          Text(o.chiefComplaint!, style: const TextStyle(fontSize: 14, height: 1.4)),
+          Text(
+            o.chiefComplaint!,
+            style: const TextStyle(fontSize: 14, height: 1.4),
+          ),
         ],
 
         if (o.allergies.isNotEmpty) ...[
@@ -228,7 +293,10 @@ class _MedicalCard extends StatelessWidget {
             children: [
               for (final a in o.allergies)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     // Outlined rather than filled: an allergy is a hard stop
@@ -238,7 +306,11 @@ class _MedicalCard extends StatelessWidget {
                   ),
                   child: Text(
                     a,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: danger),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: danger,
+                    ),
                   ),
                 ),
             ],
@@ -258,20 +330,23 @@ class _MedicalCard extends StatelessWidget {
       children: [
         Icon(icon, size: 15, color: scheme.onSurfaceVariant),
         const SizedBox(width: 4),
-        Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }
 
   Widget _label(BuildContext context, String text) => Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.7,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      );
+    text,
+    style: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      letterSpacing: 0.7,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  );
 }
 
 class _MedRow extends StatelessWidget {
@@ -288,24 +363,46 @@ class _MedRow extends StatelessWidget {
       if (med.times.isNotEmpty) med.times.join(', '),
     ].join(' · ');
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 12,
+      ),
       child: Row(
         children: [
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: AppColors.accentOn(context).withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12)),
-            child: Icon(Icons.medication_rounded, size: 18, color: AppColors.accentOn(context)),
+            decoration: BoxDecoration(
+              color: AppColors.accentOn(context).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.medication_rounded,
+              size: 18,
+              color: AppColors.accentOn(context),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(med.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                Text(
+                  med.name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 if (sub.isNotEmpty) ...[
                   const SizedBox(height: 0),
-                  Text(sub, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                  Text(
+                    sub,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -325,10 +422,20 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         if (trailing != null) ...[
           const SizedBox(width: 8),
-          Text(trailing!, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            trailing!,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ],
     );
@@ -346,18 +453,25 @@ class _DietPlanSection extends ConsumerWidget {
   Future<void> _startNewPlan(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Start a new plan?'),
-        content: const Text(
-          'The current plan is filed in this patient\'s history and you write the '
-          'next one on a blank page. The patient keeps following the old plan '
-          'until you send the new one.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Start new plan')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Start a new plan?'),
+            content: const Text(
+              'The current plan is filed in this patient\'s history and you write the '
+              'next one on a blank page. The patient keeps following the old plan '
+              'until you send the new one.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Start new plan'),
+              ),
+            ],
+          ),
     );
     if (ok != true || !context.mounted) return;
 
@@ -385,13 +499,15 @@ class _DietPlanSection extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final async = ref.watch(dietPlanProvider(patientId));
 
-    void open() => context.push('/dietician/patients/$patientId/diet', extra: patientName);
+    void open() =>
+        context.push('/dietician/patients/$patientId/diet', extra: patientName);
 
     return async.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.md),
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading:
+          () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Center(child: CircularProgressIndicator()),
+          ),
       error: (_, _) => _note(scheme, 'Could not load the diet plan.'),
       data: (plan) {
         if (plan == null || plan.isEmpty) {
@@ -406,26 +522,43 @@ class _DietPlanSection extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.6),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.restaurant_menu_rounded, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.restaurant_menu_rounded,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('No plan yet', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                          const Text(
+                            'No plan yet',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           const SizedBox(height: 0),
                           Text(
                             'Write one so the advice survives the conversation.',
-                            style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: scheme.onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
@@ -444,9 +577,10 @@ class _DietPlanSection extends ConsumerWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: plan.hasUnsentChanges
-                      ? AppColors.warning.withValues(alpha: 0.55)
-                      : scheme.outlineVariant.withValues(alpha: 0.6),
+                  color:
+                      plan.hasUnsentChanges
+                          ? AppColors.warning.withValues(alpha: 0.55)
+                          : scheme.outlineVariant.withValues(alpha: 0.6),
                 ),
               ),
               child: Column(
@@ -456,14 +590,24 @@ class _DietPlanSection extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          plan.goal.isNotEmpty ? plan.goal : '${plan.meals.length} meals planned',
+                          plan.goal.isNotEmpty
+                              ? plan.goal
+                              : '${plan.meals.length} meals planned',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, height: 1.35),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      Icon(Icons.edit_outlined, size: 19, color: scheme.onSurfaceVariant),
+                      Icon(
+                        Icons.edit_outlined,
+                        size: 19,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -473,13 +617,18 @@ class _DietPlanSection extends ConsumerWidget {
                     children: [
                       for (final meal in plan.meals.take(5))
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.accentSoftOn(context),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            meal.time.isNotEmpty ? '${meal.name} · ${meal.time}' : meal.name,
+                            meal.time.isNotEmpty
+                                ? '${meal.name} · ${meal.time}'
+                                : meal.name,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -489,9 +638,14 @@ class _DietPlanSection extends ConsumerWidget {
                         ),
                       if (plan.avoid.isNotEmpty)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.dangerOn(context).withValues(alpha: 0.12),
+                            color: AppColors.dangerOn(
+                              context,
+                            ).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -509,9 +663,14 @@ class _DietPlanSection extends ConsumerWidget {
                   Row(
                     children: [
                       Icon(
-                        plan.hasUnsentChanges ? Icons.schedule_rounded : Icons.check_circle_rounded,
+                        plan.hasUnsentChanges
+                            ? Icons.schedule_rounded
+                            : Icons.check_circle_rounded,
                         size: 16,
-                        color: plan.hasUnsentChanges ? AppColors.warning : AppColors.primary,
+                        color:
+                            plan.hasUnsentChanges
+                                ? AppColors.warning
+                                : AppColors.primary,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
@@ -521,14 +680,20 @@ class _DietPlanSection extends ConsumerWidget {
                               : plan.hasUnsentChanges
                               ? 'Edited since it was last sent'
                               : 'Sent ${DateFormat('d MMM').format(plan.sharedAt!)}'
-                                    '${plan.dieticianName != null ? ' · ${plan.dieticianName}' : ''}',
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                                  '${plan.dieticianName != null ? ' · ${plan.dieticianName}' : ''}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                  Divider(
+                    height: 1,
+                    color: scheme.outlineVariant.withValues(alpha: 0.5),
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -542,7 +707,10 @@ class _DietPlanSection extends ConsumerWidget {
                         icon: const Icon(Icons.edit_outlined, size: 17),
                         label: const Text(
                           'Edit plan',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       // History only when there is some. The endpoint returns
@@ -551,19 +719,34 @@ class _DietPlanSection extends ConsumerWidget {
                       // to see.
                       Consumer(
                         builder: (context, ref, _) {
-                          final past = ref.watch(dietPlanHistoryProvider(patientId)).valueOrNull;
-                          if (past == null || past.isEmpty) return const SizedBox.shrink();
+                          final past =
+                              ref
+                                  .watch(dietPlanHistoryProvider(patientId))
+                                  .valueOrNull;
+                          if (past == null || past.isEmpty)
+                            return const SizedBox.shrink();
                           return TextButton.icon(
-                            onPressed: () => showPlanHistory(context, patientId),
+                            onPressed:
+                                () => showPlanHistory(context, patientId),
                             style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                              foregroundColor:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                               visualDensity: VisualDensity.compact,
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
                             ),
                             icon: const Icon(Icons.history_rounded, size: 17),
                             label: Text(
-                              past.length == 1 ? '1 previous' : '${past.length} previous',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                              past.length == 1
+                                  ? '1 previous'
+                                  : '${past.length} previous',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           );
                         },
@@ -584,7 +767,10 @@ class _DietPlanSection extends ConsumerWidget {
                           icon: const Icon(Icons.note_add_outlined, size: 17),
                           label: const Text(
                             'New plan',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                     ],
@@ -606,7 +792,10 @@ class _DietPlanSection extends ConsumerWidget {
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
     ),
-    child: Text(text, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+    ),
   );
 }
 
@@ -623,7 +812,8 @@ class _FoodLogSection extends ConsumerWidget {
 
   static const _slots = <String>['breakfast', 'lunch', 'snack', 'dinner'];
 
-  static String _cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+  static String _cap(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   /// Entries under a heading per day, newest day first, order preserved within
   /// each day.
@@ -637,7 +827,8 @@ class _FoodLogSection extends ConsumerWidget {
       if (at == null) {
         key = 'UNDATED';
       } else {
-        final diff = today.difference(DateTime(at.year, at.month, at.day)).inDays;
+        final diff =
+            today.difference(DateTime(at.year, at.month, at.day)).inDays;
         key = switch (diff) {
           0 => 'TODAY',
           1 => 'YESTERDAY',
@@ -655,15 +846,26 @@ class _FoodLogSection extends ConsumerWidget {
     final async = ref.watch(dietFoodLogProvider(patientId));
 
     return async.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.md),
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading:
+          () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Center(child: CircularProgressIndicator()),
+          ),
       error: (_, _) => _note(scheme, 'Could not load the food log.'),
       data: (entries) {
         final cutoff = DateTime.now().subtract(const Duration(hours: 24));
-        final recent = entries.where((e) => e.createdAt != null && e.createdAt!.isAfter(cutoff)).toList();
-        final earlier = entries.where((e) => e.createdAt == null || !e.createdAt!.isAfter(cutoff)).toList();
+        final recent =
+            entries
+                .where(
+                  (e) => e.createdAt != null && e.createdAt!.isAfter(cutoff),
+                )
+                .toList();
+        final earlier =
+            entries
+                .where(
+                  (e) => e.createdAt == null || !e.createdAt!.isAfter(cutoff),
+                )
+                .toList();
 
         // The newest entry for each slot, so a patient who logged lunch twice
         // shows the one they most recently sent.
@@ -682,14 +884,20 @@ class _FoodLogSection extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+                border: Border.all(
+                  color: scheme.outlineVariant.withValues(alpha: 0.55),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.photo_camera_rounded, size: 19, color: AppColors.accentOn(context)),
+                      Icon(
+                        Icons.photo_camera_rounded,
+                        size: 19,
+                        color: AppColors.accentOn(context),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -704,7 +912,10 @@ class _FoodLogSection extends ConsumerWidget {
                       if (entries.isNotEmpty)
                         Text(
                           '${recent.length} logged',
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                     ],
                   ),
@@ -714,9 +925,19 @@ class _FoodLogSection extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: _SlotTile(slot: _slots[row], entry: bySlot[_slots[row]])),
+                        Expanded(
+                          child: _SlotTile(
+                            slot: _slots[row],
+                            entry: bySlot[_slots[row]],
+                          ),
+                        ),
                         const SizedBox(width: AppSpacing.sm),
-                        Expanded(child: _SlotTile(slot: _slots[row + 1], entry: bySlot[_slots[row + 1]])),
+                        Expanded(
+                          child: _SlotTile(
+                            slot: _slots[row + 1],
+                            entry: bySlot[_slots[row + 1]],
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -731,14 +952,20 @@ class _FoodLogSection extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: scheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.55),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.history_rounded, size: 19, color: AppColors.accentOn(context)),
+                        Icon(
+                          Icons.history_rounded,
+                          size: 19,
+                          color: AppColors.accentOn(context),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -752,14 +979,18 @@ class _FoodLogSection extends ConsumerWidget {
                         ),
                         Text(
                           '${earlier.length} logged',
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
                     // Grouped by the day they were eaten. A flat run of thirty
                     // meals gives no sense of whether the patient logged three
                     // days solidly or one day nine times.
-                    for (final day in _byDay(earlier.take(30).toList()).entries) ...[
+                    for (final day
+                        in _byDay(earlier.take(30).toList()).entries) ...[
                       const SizedBox(height: AppSpacing.md),
                       Text(
                         day.key,
@@ -787,15 +1018,18 @@ class _FoodLogSection extends ConsumerWidget {
   }
 
   Widget _note(ColorScheme scheme, String text) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Text(text, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.all(AppSpacing.md),
+    decoration: BoxDecoration(
+      color: scheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+    ),
+  );
 }
 
 /// One meal slot in the day: the photograph if it was logged, a dashed outline
@@ -819,7 +1053,11 @@ class _SlotTile extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.help_outline_rounded, size: 19, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.help_outline_rounded,
+                size: 19,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(height: 4),
               Text(
                 'No $slot logged',
@@ -837,7 +1075,10 @@ class _SlotTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: e.photoUrl == null ? null : () => FullscreenPhoto.show(context, e.photoUrl),
+        onTap:
+            e.photoUrl == null
+                ? null
+                : () => FullscreenPhoto.show(context, e.photoUrl),
         child: AspectRatio(
           aspectRatio: 1.05,
           child: Stack(
@@ -879,7 +1120,10 @@ class _SlotTile extends StatelessWidget {
                       if (e.createdAt != null) ...[
                         Text(
                           DateFormat('h:mm a').format(e.createdAt!),
-                          style: const TextStyle(fontSize: 12, color: Colors.white),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(width: 4),
                       ],
@@ -930,10 +1174,11 @@ class _DashPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = colour
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.3;
+    final paint =
+        Paint()
+          ..color = colour
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.3;
     final rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0.65, 0.65, size.width - 1.3, size.height - 1.3),
       const Radius.circular(12),
@@ -962,7 +1207,10 @@ class _FoodEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final meal = entry.mealType.isEmpty ? 'Meal' : '${entry.mealType[0].toUpperCase()}${entry.mealType.substring(1)}';
+    final meal =
+        entry.mealType.isEmpty
+            ? 'Meal'
+            : '${entry.mealType[0].toUpperCase()}${entry.mealType.substring(1)}';
     // Sits inside the Earlier Meals card now, so it drops its own border and
     // takes a soft fill instead — a bordered box inside a bordered box read as
     // two frames around one meal.
@@ -978,7 +1226,12 @@ class _FoodEntry extends StatelessWidget {
           if (entry.photoUrl != null)
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: AuthedImage(path: entry.photoUrl!, width: 52, height: 52, radius: 10),
+              child: AuthedImage(
+                path: entry.photoUrl!,
+                width: 52,
+                height: 52,
+                radius: 10,
+              ),
             ),
           Expanded(
             child: Column(
@@ -986,10 +1239,23 @@ class _FoodEntry extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(meal, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.accentOn(context))),
+                    Text(
+                      meal,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.accentOn(context),
+                      ),
+                    ),
                     const Spacer(),
                     if (entry.createdAt != null)
-                      Text(DateFormat('h:mm a').format(entry.createdAt!), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Text(
+                        DateFormat('h:mm a').format(entry.createdAt!),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
                 if (entry.note.isNotEmpty) ...[
@@ -1033,21 +1299,32 @@ class _LabTests extends StatelessWidget {
           if (hba1c != null) ...[
             Row(
               children: [
-                Icon(Icons.science_outlined, size: 19, color: AppColors.accentOn(context)),
+                Icon(
+                  Icons.science_outlined,
+                  size: 19,
+                  color: AppColors.accentOn(context),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Last HbA1c  $hba1c%',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const Spacer(),
                 if (overview.hba1cTestedOn != null)
                   Text(
                     DateFormat('MMM yyyy').format(overview.hba1cTestedOn!),
-                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
               ],
             ),
-            if (overview.advisedTests.isNotEmpty) const Divider(height: AppSpacing.lg),
+            if (overview.advisedTests.isNotEmpty)
+              const Divider(height: AppSpacing.lg),
           ],
           for (final test in overview.advisedTests)
             Padding(
@@ -1055,18 +1332,27 @@ class _LabTests extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    test.reported ? Icons.check_circle_rounded : Icons.schedule_rounded,
+                    test.reported
+                        ? Icons.check_circle_rounded
+                        : Icons.schedule_rounded,
                     size: 17,
-                    color: test.reported ? AppColors.success : AppColors.warning,
+                    color:
+                        test.reported ? AppColors.success : AppColors.warning,
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  Expanded(child: Text(test.name, style: const TextStyle(fontSize: 14))),
+                  Expanded(
+                    child: Text(
+                      test.name,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
                   Text(
                     test.reported ? 'Result in' : 'Awaiting result',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: test.reported ? AppColors.success : AppColors.warning,
+                      color:
+                          test.reported ? AppColors.success : AppColors.warning,
                     ),
                   ),
                 ],
@@ -1086,16 +1372,17 @@ class _VitalsSection extends StatelessWidget {
 
   final DietVitals vitals;
 
-  static String _n(num v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+  static String _n(num v) =>
+      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 
   static String _glucoseLabel(String? ctx) => switch (ctx) {
-        'fasting' => 'Fasting sugar',
-        'pre_meal' => 'Pre-meal sugar',
-        'post_meal' => 'Post-meal sugar',
-        'bedtime' => 'Bedtime sugar',
-        'hypo_check' => 'Hypo check',
-        _ => 'Blood sugar',
-      };
+    'fasting' => 'Fasting sugar',
+    'pre_meal' => 'Pre-meal sugar',
+    'post_meal' => 'Post-meal sugar',
+    'bedtime' => 'Bedtime sugar',
+    'hypo_check' => 'Hypo check',
+    _ => 'Blood sugar',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -1103,15 +1390,64 @@ class _VitalsSection extends StatelessWidget {
     final v = vitals;
     final tiles = <Widget>[
       if (v.bloodPressure != null)
-        _MeasureTile(label: 'Blood pressure', value: v.bloodPressure!.label, unit: 'mmHg', at: v.bloodPressure!.at, danger: v.bloodPressure!.isHigh, trend: v.bloodPressure!.trend),
+        _MeasureTile(
+          label: 'Blood pressure',
+          value: v.bloodPressure!.label,
+          unit: 'mmHg',
+          at: v.bloodPressure!.at,
+          danger: v.bloodPressure!.isHigh,
+          trend: v.bloodPressure!.trend,
+        ),
       if (v.glucose != null)
-        _MeasureTile(label: _glucoseLabel(v.glucose!.context), value: _n(v.glucose!.valueMgDl), unit: 'mg/dL', at: v.glucose!.at, danger: v.glucose!.isAbnormal),
-      if (v.weightKg != null) _MeasureTile(label: 'Weight', value: _n(v.weightKg!.value), unit: 'kg', at: v.weightKg!.at, trend: v.weightKg!.trend),
-      if (v.bmi != null) _MeasureTile(label: 'BMI', value: _n(v.bmi!), unit: '', at: null),
-      if (v.waistCm != null) _MeasureTile(label: 'Waist', value: _n(v.waistCm!.value), unit: 'cm', at: v.waistCm!.at, trend: v.waistCm!.trend),
-      if (v.pulse != null) _MeasureTile(label: 'Pulse', value: _n(v.pulse!.value), unit: 'bpm', at: v.pulse!.at, trend: v.pulse!.trend),
-      if (v.spo2 != null) _MeasureTile(label: 'SpO₂', value: _n(v.spo2!.value), unit: '%', at: v.spo2!.at, trend: v.spo2!.trend),
-      if (v.temperatureC != null) _MeasureTile(label: 'Temp', value: _n(v.temperatureC!.value), unit: '°C', at: v.temperatureC!.at, trend: v.temperatureC!.trend),
+        _MeasureTile(
+          label: _glucoseLabel(v.glucose!.context),
+          value: _n(v.glucose!.valueMgDl),
+          unit: 'mg/dL',
+          at: v.glucose!.at,
+          danger: v.glucose!.isAbnormal,
+        ),
+      if (v.weightKg != null)
+        _MeasureTile(
+          label: 'Weight',
+          value: _n(v.weightKg!.value),
+          unit: 'kg',
+          at: v.weightKg!.at,
+          trend: v.weightKg!.trend,
+        ),
+      if (v.bmi != null)
+        _MeasureTile(label: 'BMI', value: _n(v.bmi!), unit: '', at: null),
+      if (v.waistCm != null)
+        _MeasureTile(
+          label: 'Waist',
+          value: _n(v.waistCm!.value),
+          unit: 'cm',
+          at: v.waistCm!.at,
+          trend: v.waistCm!.trend,
+        ),
+      if (v.pulse != null)
+        _MeasureTile(
+          label: 'Pulse',
+          value: _n(v.pulse!.value),
+          unit: 'bpm',
+          at: v.pulse!.at,
+          trend: v.pulse!.trend,
+        ),
+      if (v.spo2 != null)
+        _MeasureTile(
+          label: 'SpO₂',
+          value: _n(v.spo2!.value),
+          unit: '%',
+          at: v.spo2!.at,
+          trend: v.spo2!.trend,
+        ),
+      if (v.temperatureC != null)
+        _MeasureTile(
+          label: 'Temp',
+          value: _n(v.temperatureC!.value),
+          unit: '°C',
+          at: v.temperatureC!.at,
+          trend: v.temperatureC!.trend,
+        ),
     ];
 
     return Container(
@@ -1120,7 +1456,9 @@ class _VitalsSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.55),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0B1B33).withValues(alpha: 0.04),
@@ -1138,7 +1476,11 @@ class _VitalsSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.monitor_heart_rounded, size: 19, color: AppColors.accentOn(context)),
+              Icon(
+                Icons.monitor_heart_rounded,
+                size: 19,
+                color: AppColors.accentOn(context),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1158,7 +1500,10 @@ class _VitalsSection extends StatelessWidget {
           ),
           const SizedBox(height: 0),
           for (var i = 0; i < tiles.length; i++) ...[
-            Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            Divider(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
             tiles[i],
           ],
         ],
@@ -1226,20 +1571,30 @@ class _MeasureTile extends StatelessWidget {
                   children: [
                     Text(
                       value,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: fg),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: fg,
+                      ),
                     ),
                     if (unit.isNotEmpty) ...[
                       const SizedBox(width: 4),
                       Text(
                         unit,
-                        style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                     if (at != null) ...[
                       const SizedBox(width: 8),
                       Text(
                         DateFormat('d MMM').format(at!),
-                        style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ],
@@ -1272,7 +1627,11 @@ class _AdviceSection extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < advice.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.4)),
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.4),
+              ),
             _AdviceTile(entry: advice[i]),
           ],
         ],
@@ -1289,15 +1648,29 @@ class _AdviceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final date = entry.issuedOn != null ? DateFormat('d MMM yyyy').format(entry.issuedOn!) : '—';
+    final date =
+        entry.issuedOn != null
+            ? DateFormat('d MMM yyyy').format(entry.issuedOn!)
+            : '—';
     final dx = entry.diagnosis.join(', ');
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 0),
-        childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+        tilePadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 0,
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          0,
+          AppSpacing.md,
+          AppSpacing.md,
+        ),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        title: Text(date, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+        title: Text(
+          date,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
         subtitle: Text(
           dx.isNotEmpty ? dx : (entry.doctorName ?? 'Advice on record'),
           maxLines: 2,
@@ -1305,9 +1678,16 @@ class _AdviceTile extends StatelessWidget {
           style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
         ),
         children: [
-          if (entry.diagnosis.isNotEmpty) _kv(scheme, 'Diagnosis', entry.diagnosis.join(', ')),
-          if (entry.generalAdvice.isNotEmpty) _kv(scheme, 'Advice', entry.generalAdvice),
-          if (entry.followUpOn != null) _kv(scheme, 'Follow-up', DateFormat('d MMM yyyy').format(entry.followUpOn!)),
+          if (entry.diagnosis.isNotEmpty)
+            _kv(scheme, 'Diagnosis', entry.diagnosis.join(', ')),
+          if (entry.generalAdvice.isNotEmpty)
+            _kv(scheme, 'Advice', entry.generalAdvice),
+          if (entry.followUpOn != null)
+            _kv(
+              scheme,
+              'Follow-up',
+              DateFormat('d MMM yyyy').format(entry.followUpOn!),
+            ),
           if (entry.doctorName != null) _kv(scheme, 'By', entry.doctorName!),
         ],
       ),
@@ -1315,16 +1695,24 @@ class _AdviceTile extends StatelessWidget {
   }
 
   Widget _kv(ColorScheme scheme, String k, String v) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(k.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.4, color: scheme.onSurfaceVariant)),
-            const SizedBox(height: 0),
-            Text(v, style: const TextStyle(fontSize: 14, height: 1.35)),
-          ],
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          k.toUpperCase(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.4,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
-      );
+        const SizedBox(height: 0),
+        Text(v, style: const TextStyle(fontSize: 14, height: 1.35)),
+      ],
+    ),
+  );
 }
 
 /// The reports the patient actually uploaded, each with its transcribed values,
@@ -1339,7 +1727,10 @@ class _LabReportsSection extends StatelessWidget {
     return Column(
       children: [
         for (final r in reports)
-          Padding(padding: const EdgeInsets.only(bottom: AppSpacing.sm), child: _DietLabReportRow(report: r)),
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _DietLabReportRow(report: r),
+          ),
       ],
     );
   }
@@ -1383,16 +1774,25 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
       final ext = report.mimeType == 'application/pdf' ? 'pdf' : 'bin';
       final cached = File('${dir.path}/lab_${report.photoUrl.hashCode}.$ext');
       if (!await cached.exists() || await cached.length() == 0) {
-        final bytes = await ref.read(apiClientProvider).getBytes('${AppConfig.apiOrigin}${report.photoUrl}');
+        final bytes = await ref
+            .read(apiClientProvider)
+            .getBytes('${AppConfig.apiOrigin}${report.photoUrl}');
         if (bytes.isEmpty) throw Exception('empty report download');
         await cached.writeAsBytes(bytes, flush: true);
       }
       final res = await OpenFilex.open(cached.path);
       if (res.type != ResultType.done && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No app on this phone can open that report')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No app on this phone can open that report'),
+          ),
+        );
       }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open the report')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the report')),
+        );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1416,17 +1816,37 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
         children: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: showThumb
-                ? AuthedImage(path: report.photoUrl!, width: 52, height: 52, radius: 10)
-                : Container(
-                    width: 52,
-                    height: 52,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: scheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(12)),
-                    child: _busy
-                        ? const SizedBox(width: 20, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
-                        : Icon(_fileIcon(), color: scheme.onSurfaceVariant, size: 24),
-                  ),
+            child:
+                showThumb
+                    ? AuthedImage(
+                      path: report.photoUrl!,
+                      width: 52,
+                      height: 52,
+                      radius: 10,
+                    )
+                    : Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child:
+                          _busy
+                              ? const SizedBox(
+                                width: 20,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.4,
+                                ),
+                              )
+                              : Icon(
+                                _fileIcon(),
+                                color: scheme.onSurfaceVariant,
+                                size: 24,
+                              ),
+                    ),
           ),
           Expanded(
             child: Column(
@@ -1434,14 +1854,32 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(report.testName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700))),
+                    Expanded(
+                      child: Text(
+                        report.testName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                     if (report.createdAt != null)
-                      Text(DateFormat('d MMM').format(report.createdAt!), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Text(
+                        DateFormat('d MMM').format(report.createdAt!),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
-                if (report.analysisSummary != null && report.analysisSummary!.isNotEmpty) ...[
+                if (report.analysisSummary != null &&
+                    report.analysisSummary!.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text(report.analysisSummary!, style: const TextStyle(fontSize: 14, height: 1.3)),
+                  Text(
+                    report.analysisSummary!,
+                    style: const TextStyle(fontSize: 14, height: 1.3),
+                  ),
                 ] else if (report.note.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(report.note, style: const TextStyle(fontSize: 14)),
@@ -1450,11 +1888,25 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(showThumb ? Icons.visibility_outlined : Icons.open_in_new_rounded, size: 13, color: AppColors.accentOn(context)),
+                      Icon(
+                        showThumb
+                            ? Icons.visibility_outlined
+                            : Icons.open_in_new_rounded,
+                        size: 13,
+                        color: AppColors.accentOn(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        showThumb ? 'Tap to view' : (report.mimeType == 'application/pdf' ? 'Tap to open PDF' : 'Tap to open'),
-                        style: TextStyle(fontSize: 12, color: AppColors.accentOn(context), fontWeight: FontWeight.w600),
+                        showThumb
+                            ? 'Tap to view'
+                            : (report.mimeType == 'application/pdf'
+                                ? 'Tap to open PDF'
+                                : 'Tap to open'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.accentOn(context),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -1464,12 +1916,20 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.dangerOn(context)),
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 14,
+                        color: AppColors.dangerOn(context),
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           'Out of range: ${abnormal.map((a) => '${a.label} ${a.flag == 'low' ? '↓' : '↑'}').join(', ')}',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.dangerOn(context)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.dangerOn(context),
+                          ),
                         ),
                       ),
                     ],
@@ -1477,11 +1937,24 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
                 ],
                 if (report.analytes.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Wrap(spacing: 4, runSpacing: 4, children: [for (final a in report.analytes) _AnalyteChip(analyte: a)]),
-                ] else if (report.analysisStatus == 'failed' || report.analysisStatus == 'unsupported') ...[
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: [
+                      for (final a in report.analytes) _AnalyteChip(analyte: a),
+                    ],
+                  ),
+                ] else if (report.analysisStatus == 'failed' ||
+                    report.analysisStatus == 'unsupported') ...[
                   const SizedBox(height: 4),
-                  Text('Could not read automatically — needs a look',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.warningOn(context))),
+                  Text(
+                    'Could not read automatically — needs a look',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.warningOn(context),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1491,7 +1964,11 @@ class _DietLabReportRowState extends ConsumerState<_DietLabReportRow> {
     );
 
     if (!report.hasFile) return tile;
-    return InkWell(borderRadius: BorderRadius.circular(16), onTap: _open, child: tile);
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: _open,
+      child: tile,
+    );
   }
 }
 
@@ -1502,7 +1979,8 @@ class _AnalyteChip extends StatelessWidget {
 
   final Analyte analyte;
 
-  static String _fmt(num v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+  static String _fmt(num v) =>
+      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
@@ -1516,9 +1994,17 @@ class _AnalyteChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: abnormal ? color.withValues(alpha: 0.12) : scheme.surfaceContainerHigh,
+        color:
+            abnormal
+                ? color.withValues(alpha: 0.12)
+                : scheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: abnormal ? color.withValues(alpha: 0.4) : scheme.outlineVariant.withValues(alpha: 0.5)),
+        border: Border.all(
+          color:
+              abnormal
+                  ? color.withValues(alpha: 0.4)
+                  : scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1531,12 +2017,28 @@ class _AnalyteChip extends StatelessWidget {
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ),
-          Text(_fmt(analyte.value), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: abnormal ? color : scheme.onSurface)),
+          Text(
+            _fmt(analyte.value),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: abnormal ? color : scheme.onSurface,
+            ),
+          ),
           if (analyte.unit != null && analyte.unit!.isNotEmpty)
-            Text(' ${analyte.unit}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            Text(
+              ' ${analyte.unit}',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
           if (abnormal) ...[
             const SizedBox(width: 4),
-            Icon(analyte.flag == 'low' ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded, size: 12, color: color),
+            Icon(
+              analyte.flag == 'low'
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+              size: 12,
+              color: color,
+            ),
           ],
         ],
       ),

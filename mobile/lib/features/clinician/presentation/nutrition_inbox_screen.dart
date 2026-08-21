@@ -24,12 +24,17 @@ class NutritionInboxScreen extends ConsumerStatefulWidget {
   const NutritionInboxScreen({super.key});
 
   @override
-  ConsumerState<NutritionInboxScreen> createState() => _NutritionInboxScreenState();
+  ConsumerState<NutritionInboxScreen> createState() =>
+      _NutritionInboxScreenState();
 }
 
 class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
     with WidgetsBindingObserver {
-  static const ChatReviewQuery _query = (flagged: false, urgency: null, kind: 'nutrition');
+  static const ChatReviewQuery _query = (
+    flagged: false,
+    urgency: null,
+    kind: 'nutrition',
+  );
 
   final _searchController = TextEditingController();
   String _search = '';
@@ -81,7 +86,8 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
   List<ChatReviewSession> _ordered(List<ChatReviewSession> items) {
     final list = [...items];
     list.sort((a, b) {
-      if ((a.unreadCount > 0) != (b.unreadCount > 0)) return a.unreadCount > 0 ? -1 : 1;
+      if ((a.unreadCount > 0) != (b.unreadCount > 0))
+        return a.unreadCount > 0 ? -1 : 1;
       final at = a.lastMessage?.at ?? a.lastMessageAt;
       final bt = b.lastMessage?.at ?? b.lastMessageAt;
       final an = a.patientName ?? '';
@@ -113,7 +119,10 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -140,23 +149,31 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
                     ),
                     const SizedBox(height: AppSpacing.md),
                     async.when(
-                      loading: () => const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 60),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                      error: (_, _) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: Column(
-                          children: [
-                            const Text('Could not load conversations'),
-                            const SizedBox(height: AppSpacing.sm),
-                            OutlinedButton(onPressed: _refresh, child: const Text('Retry')),
-                          ],
-                        ),
-                      ),
+                      loading:
+                          () => const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 60),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                      error:
+                          (_, _) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: Column(
+                              children: [
+                                const Text('Could not load conversations'),
+                                const SizedBox(height: AppSpacing.sm),
+                                OutlinedButton(
+                                  onPressed: _refresh,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          ),
                       data: (paged) {
-                        var items = _ordered(paged.items).where(_matches).toList();
-                        if (_unreadOnly) items = items.where((s) => s.unreadCount > 0).toList();
+                        var items =
+                            _ordered(paged.items).where(_matches).toList();
+                        if (_unreadOnly)
+                          items =
+                              items.where((s) => s.unreadCount > 0).toList();
 
                         if (items.isEmpty) {
                           return Padding(
@@ -177,13 +194,19 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
                                       : _unreadOnly
                                       ? 'Nothing unread'
                                       : 'No nutrition conversations yet',
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 if (_search.isEmpty && !_unreadOnly) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     'Dietician–patient chats appear here',
-                                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -197,14 +220,22 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
                           children: [
                             for (final it in items)
                               Container(
-                                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                                margin: const EdgeInsets.only(
+                                  bottom: AppSpacing.sm,
+                                ),
                                 decoration: BoxDecoration(
                                   color: scheme.surfaceContainerLowest,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.22)),
+                                  border: Border.all(
+                                    color: scheme.outlineVariant.withValues(
+                                      alpha: 0.22,
+                                    ),
+                                  ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.04,
+                                      ),
                                       blurRadius: 14,
                                       offset: const Offset(0, 3),
                                     ),
@@ -213,16 +244,24 @@ class _NutritionInboxScreenState extends ConsumerState<NutritionInboxScreen>
                                 clipBehavior: Clip.antiAlias,
                                 child: IntrinsicHeight(
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
-                                      if (it.highestUrgency == 'emergency' || it.highestUrgency == 'urgent')
-                                        Container(width: 4, color: AppColors.danger),
+                                      if (it.highestUrgency == 'emergency' ||
+                                          it.highestUrgency == 'urgent')
+                                        Container(
+                                          width: 4,
+                                          color: AppColors.danger,
+                                        ),
                                       Expanded(
                                         child: Material(
                                           color: Colors.transparent,
                                           child: _ConversationRow(
                                             session: it,
-                                            onTap: () => context.push('/clinician/chat-review/${it.id}'),
+                                            onTap:
+                                                () => context.push(
+                                                  '/clinician/chat-review/${it.id}',
+                                                ),
                                           ),
                                         ),
                                       ),
@@ -256,25 +295,44 @@ class _InboxHeader extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).user;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
       ),
       child: Row(
         children: [
           Image.asset(
             'assets/brand/medpin_emblem.png',
             height: 30,
-            errorBuilder: (_, _, _) =>
-                Icon(Icons.forum_rounded, size: 26, color: AppColors.accentOn(context)),
+            errorBuilder:
+                (_, _, _) => Icon(
+                  Icons.forum_rounded,
+                  size: 26,
+                  color: AppColors.accentOn(context),
+                ),
           ),
           const SizedBox(width: 8),
           Text(
             'MedPin',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.accentOn(context)),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppColors.accentOn(context),
+            ),
           ),
           const Spacer(),
-          PanelNotificationBell(onTap: () => showClinicianNotifications(context)),
+          PanelNotificationBell(
+            onTap: () => showClinicianNotifications(context),
+          ),
           const SizedBox(width: 4),
           GestureDetector(
             // `go`, not `push`: Profile is one of this shell's own tabs, so
@@ -314,15 +372,22 @@ class _SearchField extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+          borderSide: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.35),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+          borderSide: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.35),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.accentOn(context), width: 1.6),
+          borderSide: BorderSide(
+            color: AppColors.accentOn(context),
+            width: 1.6,
+          ),
         ),
       ),
     );
@@ -348,7 +413,11 @@ class _SectionBar extends StatelessWidget {
             const Expanded(
               child: Text(
                 'Nutrition Inbox',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.4),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.4,
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -361,8 +430,16 @@ class _SectionBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _Seg(label: 'Unread', selected: unreadOnly, onTap: () => onSelect(true)),
-                  _Seg(label: 'All', selected: !unreadOnly, onTap: () => onSelect(false)),
+                  _Seg(
+                    label: 'Unread',
+                    selected: unreadOnly,
+                    onTap: () => onSelect(true),
+                  ),
+                  _Seg(
+                    label: 'All',
+                    selected: !unreadOnly,
+                    onTap: () => onSelect(false),
+                  ),
                 ],
               ),
             ),
@@ -375,7 +452,11 @@ class _SectionBar extends StatelessWidget {
 }
 
 class _Seg extends StatelessWidget {
-  const _Seg({required this.label, required this.selected, required this.onTap});
+  const _Seg({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -393,9 +474,16 @@ class _Seg extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? scheme.surfaceContainerLowest : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: selected
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 1))]
-              : null,
+          boxShadow:
+              selected
+                  ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 6,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                  : null,
         ),
         child: Text(
           label,
@@ -433,7 +521,20 @@ class _ConversationRow extends StatelessWidget {
     if (diff < 7) {
       return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][at.weekday - 1];
     }
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${at.day} ${months[at.month - 1]}';
   }
 
@@ -460,12 +561,17 @@ class _ConversationRow extends StatelessWidget {
     final unread = session.unreadCount > 0;
     final name = session.patientName ?? 'Patient';
     final at = msg?.at ?? session.lastMessageAt;
-    final emergency = session.highestUrgency == 'emergency' || session.highestUrgency == 'urgent';
+    final emergency =
+        session.highestUrgency == 'emergency' ||
+        session.highestUrgency == 'urgent';
 
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 12,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -489,7 +595,8 @@ class _ConversationRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: unread ? FontWeight.w800 : FontWeight.w600,
+                            fontWeight:
+                                unread ? FontWeight.w800 : FontWeight.w600,
                           ),
                         ),
                       ),
@@ -499,8 +606,12 @@ class _ConversationRow extends StatelessWidget {
                           _stamp(at),
                           style: TextStyle(
                             fontSize: 14,
-                            color: unread ? AppColors.primary : scheme.onSurfaceVariant,
-                            fontWeight: unread ? FontWeight.w700 : FontWeight.w400,
+                            color:
+                                unread
+                                    ? AppColors.primary
+                                    : scheme.onSurfaceVariant,
+                            fontWeight:
+                                unread ? FontWeight.w700 : FontWeight.w400,
                           ),
                         ),
                     ],
@@ -515,9 +626,10 @@ class _ConversationRow extends StatelessWidget {
                             children: [
                               if (msg == null)
                                 TextSpan(
-                                  text: session.title.isEmpty
-                                      ? 'No messages yet'
-                                      : session.title,
+                                  text:
+                                      session.title.isEmpty
+                                          ? 'No messages yet'
+                                          : session.title,
                                 )
                               else ...[
                                 if (_rolePrefix(msg.role).isNotEmpty)
@@ -530,11 +642,16 @@ class _ConversationRow extends StatelessWidget {
                                       child: Icon(
                                         _mediaIcon(msg.mediaType!),
                                         size: 15,
-                                        color: unread ? scheme.onSurface : scheme.onSurfaceVariant,
+                                        color:
+                                            unread
+                                                ? scheme.onSurface
+                                                : scheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),
-                                TextSpan(text: MarkdownText.toPreview(msg.preview)),
+                                TextSpan(
+                                  text: MarkdownText.toPreview(msg.preview),
+                                ),
                               ],
                             ],
                           ),
@@ -543,12 +660,14 @@ class _ConversationRow extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             height: 1.35,
-                            color: msg == null
-                                ? scheme.outline
-                                : unread
-                                ? scheme.onSurface
-                                : scheme.onSurfaceVariant,
-                            fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
+                            color:
+                                msg == null
+                                    ? scheme.outline
+                                    : unread
+                                    ? scheme.onSurface
+                                    : scheme.onSurfaceVariant,
+                            fontWeight:
+                                unread ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
                       ),
@@ -561,11 +680,19 @@ class _ConversationRow extends StatelessWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: AppColors.accentOn(context),
-                            borderRadius: const BorderRadius.all(Radius.circular(12)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(12),
+                            ),
                           ),
                           child: Text(
-                            session.unreadCount > 99 ? '99+' : '${session.unreadCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
+                            session.unreadCount > 99
+                                ? '99+'
+                                : '${session.unreadCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ],

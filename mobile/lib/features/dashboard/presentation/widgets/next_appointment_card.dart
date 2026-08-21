@@ -26,19 +26,27 @@ class NextAppointmentCard extends StatelessWidget {
               color: AppColors.accentOn(context).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.event_rounded, color: AppColors.accentOn(context)),
+            child: Icon(
+              Icons.event_rounded,
+              color: AppColors.accentOn(context),
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.dashboardNextAppointment, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.dashboardNextAppointment,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   appt == null || appt.scheduledFor == null
                       ? l10n.dashboardNoAppointment
-                      : DateFormat('EEE, d MMM · h:mm a').format(appt.scheduledFor!.toLocal()),
+                      : DateFormat(
+                        'EEE, d MMM · h:mm a',
+                      ).format(appt.scheduledFor!.toLocal()),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 if (appt != null) ...[

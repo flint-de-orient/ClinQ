@@ -32,19 +32,25 @@ class AdherenceTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.dashboardAdherence, style: Theme.of(context).textTheme.titleSmall),
+                Text(
+                  l10n.dashboardAdherence,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 if (adherence.todayPending > 0)
                   Text(
                     l10n.dashboardTodayPending(adherence.todayPending),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: AppColors.warningOn(context)),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.warningOn(context),
+                    ),
                   ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.outline),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: Theme.of(context).colorScheme.outline,
+          ),
         ],
       ),
     );

@@ -54,7 +54,8 @@ class MicButton extends StatefulWidget {
   State<MicButton> createState() => _MicButtonState();
 }
 
-class _MicButtonState extends State<MicButton> with SingleTickerProviderStateMixin {
+class _MicButtonState extends State<MicButton>
+    with SingleTickerProviderStateMixin {
   final SpeechToText _speech = SpeechToText();
   bool _initialised = false;
   bool _listening = false;
@@ -68,7 +69,10 @@ class _MicButtonState extends State<MicButton> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _rings = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600));
+    _rings = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    );
   }
 
   @override
@@ -97,9 +101,12 @@ class _MicButtonState extends State<MicButton> with SingleTickerProviderStateMix
     // Lazy init: the permission prompt appears on the first tap, not when the
     // chat screen opens.
     if (!_initialised) {
-      _initialised = await _speech.initialize(onError: (_) => _stop(), onStatus: (s) {
-        if ((s == 'done' || s == 'notListening') && _listening) _stop();
-      });
+      _initialised = await _speech.initialize(
+        onError: (_) => _stop(),
+        onStatus: (s) {
+          if ((s == 'done' || s == 'notListening') && _listening) _stop();
+        },
+      );
     }
     if (!_initialised) {
       final granted = await _speech.hasPermission;
@@ -164,9 +171,14 @@ class _MicButtonState extends State<MicButton> with SingleTickerProviderStateMix
           width: widget.size,
           height: widget.size,
           child: Center(
-            child: _listening
-                ? _listeningVisual(scheme)
-                : Icon(Icons.mic_none_rounded, size: 24, color: scheme.onSurfaceVariant),
+            child:
+                _listening
+                    ? _listeningVisual(scheme)
+                    : Icon(
+                      Icons.mic_none_rounded,
+                      size: 24,
+                      color: scheme.onSurfaceVariant,
+                    ),
           ),
         ),
       ),
@@ -183,28 +195,36 @@ class _MicButtonState extends State<MicButton> with SingleTickerProviderStateMix
           // Two expanding, fading rings.
           AnimatedBuilder(
             animation: _rings,
-            builder: (context, _) => CustomPaint(
-              size: Size(widget.size, widget.size),
-              painter: _RingsPainter(progress: _rings.value, color: AppColors.dangerOn(context)),
-            ),
+            builder:
+                (context, _) => CustomPaint(
+                  size: Size(widget.size, widget.size),
+                  painter: _RingsPainter(
+                    progress: _rings.value,
+                    color: AppColors.dangerOn(context),
+                  ),
+                ),
           ),
           // Halo that swells with loudness — repaints on its own.
           ValueListenableBuilder<double>(
             valueListenable: _level,
-            builder: (context, level, _) => Container(
-              width: 26 + level * 16,
-              height: 26 + level * 16,
-              decoration: BoxDecoration(
-                color: AppColors.dangerOn(context).withValues(alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
-            ),
+            builder:
+                (context, level, _) => Container(
+                  width: 26 + level * 16,
+                  height: 26 + level * 16,
+                  decoration: BoxDecoration(
+                    color: AppColors.dangerOn(context).withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                ),
           ),
           // The solid red mic.
           Container(
             width: 30,
             height: 30,
-            decoration: BoxDecoration(color: AppColors.dangerOn(context), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: AppColors.dangerOn(context),
+              shape: BoxShape.circle,
+            ),
             child: const Icon(Icons.mic_rounded, size: 18, color: Colors.white),
           ),
         ],

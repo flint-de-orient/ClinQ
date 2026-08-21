@@ -25,10 +25,12 @@ class DieticianProfileScreen extends ConsumerStatefulWidget {
   const DieticianProfileScreen({super.key});
 
   @override
-  ConsumerState<DieticianProfileScreen> createState() => _DieticianProfileScreenState();
+  ConsumerState<DieticianProfileScreen> createState() =>
+      _DieticianProfileScreenState();
 }
 
-class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen> {
+class _DieticianProfileScreenState
+    extends ConsumerState<DieticianProfileScreen> {
   bool _uploadingAvatar = false;
 
   /// Tap to replace the photo, long-press to view it full screen — the same
@@ -40,23 +42,24 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: Text(l10n.chatAttachCamera),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: Text(l10n.chatAttachCamera),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: Text(l10n.chatAttachGallery),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.chatAttachGallery),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (source == null) return;
 
@@ -70,12 +73,16 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
 
     setState(() => _uploadingAvatar = true);
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(
-        path: file.path,
-        filename: file.name,
-        kind: UploadKind.avatar,
-      );
-      final user = await ref.read(authRepositoryProvider).updateMe(avatarAssetId: asset.id);
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(
+            path: file.path,
+            filename: file.name,
+            kind: UploadKind.avatar,
+          );
+      final user = await ref
+          .read(authRepositoryProvider)
+          .updateMe(avatarAssetId: asset.id);
       ref.read(authControllerProvider.notifier).replaceUser(user);
       messenger.showSnackBar(SnackBar(content: Text(l10n.profileSaved)));
     } on ApiException {
@@ -98,10 +105,16 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
     }
     // Enabling needs one successful unlock first, so nobody can lock themselves
     // out with a method their phone does not actually support.
-    final ok = await ref.read(appLockProvider.notifier).enable(l10n.profileAppLock);
+    final ok = await ref
+        .read(appLockProvider.notifier)
+        .enable(l10n.profileAppLock);
     if (!ok) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Could not turn on app lock — check your device screen lock.')),
+        const SnackBar(
+          content: Text(
+            'Could not turn on app lock — check your device screen lock.',
+          ),
+        ),
       );
     }
   }
@@ -113,20 +126,24 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
     // is three chances to misread it.
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.authLogoutConfirmTitle),
-        content: Text(l10n.authLogoutConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.commonCancel),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(l10n.authLogoutConfirmTitle),
+            content: Text(l10n.authLogoutConfirmBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.commonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(
+                  l10n.profileLogout,
+                  style: TextStyle(color: AppColors.dangerOn(context)),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(l10n.profileLogout, style: TextStyle(color: AppColors.dangerOn(context))),
-          ),
-        ],
-      ),
     );
     if (confirmed == true) {
       await ref.read(authControllerProvider.notifier).logout();
@@ -153,18 +170,30 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
         automaticallyImplyLeading: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xl),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xl,
+        ),
         children: [
           // A centred identity card rather than a row: this screen opens on
           // who the dietician is, and the credentials underneath are what a
           // patient sees attached to every plan they send.
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.md,
+            ),
             decoration: BoxDecoration(
               color: scheme.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+              border: Border.all(
+                color: scheme.outlineVariant.withValues(alpha: 0.55),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF0B1B33).withValues(alpha: 0.04),
@@ -180,9 +209,11 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                   label: l10n.profileChangePhoto,
                   child: GestureDetector(
                     onTap: _uploadingAvatar ? null : _changeAvatar,
-                    onLongPress: user?.avatarUrl != null
-                        ? () => FullscreenPhoto.show(context, user!.avatarUrl)
-                        : null,
+                    onLongPress:
+                        user?.avatarUrl != null
+                            ? () =>
+                                FullscreenPhoto.show(context, user!.avatarUrl)
+                            : null,
                     child: Stack(
                       children: [
                         UserAvatar(
@@ -217,9 +248,16 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                             decoration: BoxDecoration(
                               color: accent,
                               shape: BoxShape.circle,
-                              border: Border.all(color: scheme.surfaceContainerLowest, width: 2.5),
+                              border: Border.all(
+                                color: scheme.surfaceContainerLowest,
+                                width: 2.5,
+                              ),
                             ),
-                            child: const Icon(Icons.edit_rounded, size: 14, color: Colors.white),
+                            child: const Icon(
+                              Icons.edit_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -230,7 +268,11 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                 Text(
                   user?.name ?? '',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.2),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -238,19 +280,37 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                   children: [
                     Flexible(
                       child: Text(
-                        user?.specialty?.trim().isNotEmpty == true ? user!.specialty!.trim() : 'Dietician',
+                        user?.specialty?.trim().isNotEmpty == true
+                            ? user!.specialty!.trim()
+                            : 'Dietician',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     if ((user?.phone ?? '').isNotEmpty) ...[
-                      Text('  •  ', style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
-                      Icon(Icons.call_rounded, size: 13, color: scheme.onSurfaceVariant),
+                      Text(
+                        '  •  ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Icon(
+                        Icons.call_rounded,
+                        size: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         user!.phone,
-                        style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ],
@@ -267,9 +327,15 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                     runSpacing: 8,
                     children: [
                       if ((user?.qualifications ?? '').trim().isNotEmpty)
-                        _CredChip(label: user!.qualifications!.trim(), accent: accent),
+                        _CredChip(
+                          label: user!.qualifications!.trim(),
+                          accent: accent,
+                        ),
                       if ((user?.registrationNo ?? '').trim().isNotEmpty)
-                        _CredChip(label: 'ID: ${user!.registrationNo!.trim()}', accent: null),
+                        _CredChip(
+                          label: 'ID: ${user!.registrationNo!.trim()}',
+                          accent: null,
+                        ),
                     ],
                   ),
                 ],
@@ -340,9 +406,18 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
               onChanged: _toggleAppLock,
               activeThumbColor: accent,
               secondary: Icon(Icons.lock_outline_rounded, color: accent),
-              title: Text(l10n.profileAppLock, style: const TextStyle(fontSize: 16)),
-              subtitle: Text(l10n.profileAppLockSub, style: const TextStyle(fontSize: 14)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+              title: Text(
+                l10n.profileAppLock,
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text(
+                l10n.profileAppLockSub,
+                style: const TextStyle(fontSize: 14),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: 4,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -355,11 +430,12 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
                 title: l10n.profileAbout,
                 value: 'v${AppConfig.appVersion}',
                 showDivider: false,
-                onTap: () => showAboutDialog(
-                  context: context,
-                  applicationName: AppConfig.appName,
-                  applicationVersion: 'v${AppConfig.appVersion}',
-                ),
+                onTap:
+                    () => showAboutDialog(
+                      context: context,
+                      applicationName: AppConfig.appName,
+                      applicationVersion: 'v${AppConfig.appVersion}',
+                    ),
               ),
             ],
           ),
@@ -370,7 +446,10 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.danger,
-                side: BorderSide(color: AppColors.dangerOn(context), width: 1.5),
+                side: BorderSide(
+                  color: AppColors.dangerOn(context),
+                  width: 1.5,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                 ),
@@ -379,7 +458,10 @@ class _DieticianProfileScreenState extends ConsumerState<DieticianProfileScreen>
               icon: const Icon(Icons.logout_rounded, size: 22),
               label: Text(
                 l10n.profileLogout,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -428,7 +510,9 @@ class _LangChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: selected ? accent : scheme.outlineVariant),
+            border: Border.all(
+              color: selected ? accent : scheme.outlineVariant,
+            ),
           ),
           child: Text(
             label,
@@ -443,7 +527,6 @@ class _LangChip extends StatelessWidget {
     );
   }
 }
-
 
 /// A credential on the profile card — the accented one is what the dietician
 /// qualified in, the plain one is the number the clinic files them under.

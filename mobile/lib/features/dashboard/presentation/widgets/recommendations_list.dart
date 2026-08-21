@@ -28,13 +28,19 @@ class RecommendationsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.dashboardRecommendations, style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          l10n.dashboardRecommendations,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: AppSpacing.sm),
         if (recommendations.isEmpty)
           AppCard(
             child: Row(
               children: [
-                Icon(Icons.check_circle_outline_rounded, color: AppColors.successOn(context)),
+                Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: AppColors.successOn(context),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(child: Text(l10n.dashboardNoRecommendations)),
               ],
@@ -64,12 +70,14 @@ class RecommendationsList extends StatelessWidget {
                         children: [
                           Text(
                             rec.title,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 0),
-                          Text(rec.body, style: Theme.of(context).textTheme.bodyMedium),
+                          Text(
+                            rec.body,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                         ],
                       ),
                     ),

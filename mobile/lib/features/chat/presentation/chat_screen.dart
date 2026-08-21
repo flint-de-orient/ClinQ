@@ -185,10 +185,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   /// the same as a typed one rather than routing a spoken emergency past the
   /// rules.
   Future<void> _sendVoiceNote(String path) async {
-    await ref.read(chatControllerProvider.notifier).sendVoiceNote(
-          localPath: path,
-          language: _replyLanguage,
-        );
+    await ref
+        .read(chatControllerProvider.notifier)
+        .sendVoiceNote(localPath: path, language: _replyLanguage);
     _scrollToBottom();
   }
 
@@ -266,6 +265,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     _itemCount = entries.length + (showGenerating ? 1 : 0);
 
     return Scaffold(
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         centerTitle: true,
         title: Text(
@@ -399,9 +402,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                                 onHide: () => _hide(message),
                                 // Delete for everyone only on the patient's own
                                 // turns — the server enforces the same rule.
-                                onDeleteForEveryone: message.isUser
-                                    ? () => _deleteForEveryone(message)
-                                    : null,
+                                onDeleteForEveryone:
+                                    message.isUser
+                                        ? () => _deleteForEveryone(message)
+                                        : null,
                                 onRetry:
                                     message.isUser
                                         ? null
@@ -460,7 +464,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: Row(
                     children: [
-                      Container(width: 3, height: 34, color: AppColors.accentOn(context)),
+                      Container(
+                        width: 3,
+                        height: 34,
+                        color: AppColors.accentOn(context),
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(

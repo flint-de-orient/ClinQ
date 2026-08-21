@@ -6,7 +6,11 @@ import '../../../../l10n/gen/app_localizations.dart';
 import '../../domain/medication.dart';
 
 class MedicationSlotTile extends StatelessWidget {
-  const MedicationSlotTile({super.key, required this.slot, required this.onTap});
+  const MedicationSlotTile({
+    super.key,
+    required this.slot,
+    required this.onTap,
+  });
 
   final MedicationScheduleSlot slot;
   final VoidCallback onTap;
@@ -77,7 +81,9 @@ class MedicationSlotTile extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
           padding: const EdgeInsets.all(AppSpacing.md),
-          constraints: const BoxConstraints(minHeight: AppSpacing.minTapTarget + 16),
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.minTapTarget + 16,
+          ),
           child: Row(
             children: [
               Container(
@@ -90,7 +96,10 @@ class MedicationSlotTile extends StatelessWidget {
                 ),
                 child: Text(
                   slot.time,
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -101,9 +110,9 @@ class MedicationSlotTile extends StatelessWidget {
                   children: [
                     Text(
                       slot.name,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 0),
                     Text(
@@ -119,7 +128,11 @@ class MedicationSlotTile extends StatelessWidget {
                   const SizedBox(height: 0),
                   Text(
                     _statusLabel(l10n, slot.status),
-                    style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),

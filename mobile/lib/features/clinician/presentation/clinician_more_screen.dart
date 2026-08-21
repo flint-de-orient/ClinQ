@@ -30,7 +30,8 @@ class ClinicianMoreScreen extends ConsumerStatefulWidget {
   const ClinicianMoreScreen({super.key});
 
   @override
-  ConsumerState<ClinicianMoreScreen> createState() => _ClinicianMoreScreenState();
+  ConsumerState<ClinicianMoreScreen> createState() =>
+      _ClinicianMoreScreenState();
 }
 
 class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
@@ -43,17 +44,26 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     final source = await _pickImageSource();
     if (source == null) return;
 
-    final XFile? file = await ImagePicker().pickImage(source: source, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+    final XFile? file = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
     if (file == null) return;
 
     setState(() => _uploadingAvatar = true);
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(
-        path: file.path,
-        filename: file.name,
-        kind: UploadKind.avatar,
-      );
-      final user = await ref.read(authRepositoryProvider).updateMe(avatarAssetId: asset.id);
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(
+            path: file.path,
+            filename: file.name,
+            kind: UploadKind.avatar,
+          );
+      final user = await ref
+          .read(authRepositoryProvider)
+          .updateMe(avatarAssetId: asset.id);
       ref.read(authControllerProvider.notifier).replaceUser(user);
       messenger.showSnackBar(SnackBar(content: Text(l10n.profileSaved)));
     } on ApiException {
@@ -70,21 +80,32 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     final source = await _pickImageSource();
     if (source == null) return;
 
-    final XFile? file = await ImagePicker().pickImage(source: source, maxWidth: 1200, maxHeight: 600, imageQuality: 90);
+    final XFile? file = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1200,
+      maxHeight: 600,
+      imageQuality: 90,
+    );
     if (file == null) return;
 
     setState(() => _uploadingSignature = true);
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(
-        path: file.path,
-        filename: file.name,
-        kind: UploadKind.signature,
-      );
-      final user = await ref.read(authRepositoryProvider).updateMe(signatureAssetId: asset.id);
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(
+            path: file.path,
+            filename: file.name,
+            kind: UploadKind.signature,
+          );
+      final user = await ref
+          .read(authRepositoryProvider)
+          .updateMe(signatureAssetId: asset.id);
       ref.read(authControllerProvider.notifier).replaceUser(user);
       messenger.showSnackBar(const SnackBar(content: Text('Signature saved')));
     } on ApiException {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not upload the signature')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not upload the signature')),
+      );
     } finally {
       if (mounted) setState(() => _uploadingSignature = false);
     }
@@ -100,48 +121,68 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
 
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Professional details'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: quals,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(labelText: 'Qualifications', hintText: 'MBBS, MD'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Professional details'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: quals,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(
+                      labelText: 'Qualifications',
+                      hintText: 'MBBS, MD',
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: specialty,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Specialty',
+                      hintText: 'Consultant Physician & Diabetologist',
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: reg,
+                    decoration: const InputDecoration(
+                      labelText: 'Registration no.',
+                      hintText: 'WBMC-XXXXX',
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: specialty,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Specialty', hintText: 'Consultant Physician & Diabetologist'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: reg,
-                decoration: const InputDecoration(labelText: 'Registration no.', hintText: 'WBMC-XXXXX'),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Save'),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Save')),
-        ],
-      ),
     );
     if (ok != true || !mounted) return;
     try {
-      final updated = await ref.read(authRepositoryProvider).updateMe(
-        qualifications: quals.text.trim(),
-        specialty: specialty.text.trim(),
-        registrationNo: reg.text.trim(),
-      );
+      final updated = await ref
+          .read(authRepositoryProvider)
+          .updateMe(
+            qualifications: quals.text.trim(),
+            specialty: specialty.text.trim(),
+            registrationNo: reg.text.trim(),
+          );
       ref.read(authControllerProvider.notifier).replaceUser(updated);
       messenger.showSnackBar(const SnackBar(content: Text('Details saved')));
     } on ApiException {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not save the details')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not save the details')),
+      );
     }
   }
 
@@ -150,15 +191,24 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     return showModalBottomSheet<ImageSource>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(leading: const Icon(Icons.photo_camera_outlined), title: Text(l10n.chatAttachCamera), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
-            ListTile(leading: const Icon(Icons.photo_library_outlined), title: Text(l10n.chatAttachGallery), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
-          ],
-        ),
-      ),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: Text(l10n.chatAttachCamera),
+                  onTap: () => Navigator.pop(ctx, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: Text(l10n.chatAttachGallery),
+                  onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
     );
   }
 
@@ -178,11 +228,15 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     final controller = ref.read(appLockProvider.notifier);
     if (enable) {
       if (!await controller.canUse()) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.appLockUnavailable)));
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.appLockUnavailable)),
+        );
         return;
       }
       if (!await controller.enable(l10n.appLockPrompt)) {
-        messenger.showSnackBar(SnackBar(content: Text(l10n.appLockUnavailable)));
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.appLockUnavailable)),
+        );
       }
     } else {
       await controller.disable();
@@ -192,18 +246,24 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
   Future<void> _confirmLogout() async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Log out?'),
-        content: const Text('You will need to log in again to access the clinic dashboard.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Log out'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Log out?'),
+            content: const Text(
+              'You will need to log in again to access the clinic dashboard.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Log out'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (ok == true) await ref.read(authControllerProvider.notifier).logout();
   }
@@ -218,7 +278,11 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     try {
       clinics = await repo.list();
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not load the clinic. Check your connection.')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Could not load the clinic. Check your connection.'),
+        ),
+      );
       return;
     }
     if (!mounted) return;
@@ -227,22 +291,29 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     final controller = TextEditingController(text: clinic?.phone ?? '');
     final saved = await showDialog<String?>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Clinic phone number'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.phone,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Number patients call',
-            hintText: '+91 98300 00000',
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Clinic phone number'),
+            content: TextField(
+              controller: controller,
+              keyboardType: TextInputType.phone,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Number patients call',
+                hintText: '+91 98300 00000',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                child: const Text('Save'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Save')),
-        ],
-      ),
     );
     if (saved == null || saved.isEmpty || !mounted) return;
 
@@ -253,9 +324,15 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
         await repo.create({'name': 'Clinic', 'phone': saved});
       }
       ref.invalidate(clinicPhoneProvider);
-      messenger.showSnackBar(const SnackBar(content: Text('Clinic number updated')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Clinic number updated')),
+      );
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not update the number. Please try again.')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Could not update the number. Please try again.'),
+        ),
+      );
     }
   }
 
@@ -270,22 +347,38 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     final currentLocale = ref.watch(localeControllerProvider);
     final lockEnabled = ref.watch(appLockProvider).enabled;
     final roleLabel = user?.role == 'doctor' ? 'Doctor' : 'Clinic staff';
-    final clinicPhone = ref.watch(clinicPhoneProvider).valueOrNull ?? AppConfig.clinicPhoneNumber;
+    final clinicPhone =
+        ref.watch(clinicPhoneProvider).valueOrNull ??
+        AppConfig.clinicPhoneNumber;
 
     return Scaffold(
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Profile', style: TextStyle(color: accent, fontWeight: FontWeight.w700)),
+        title: Text(
+          'Profile',
+          style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+        ),
         actions: [
           // The same counted bell as the other three tabs. A bell that shows a
           // number on Home and no number here reads as "nothing waiting" on
           // whichever screen the doctor happens to be looking at.
-          PanelNotificationBell(onTap: () => showClinicianNotifications(context)),
+          PanelNotificationBell(
+            onTap: () => showClinicianNotifications(context),
+          ),
           const SizedBox(width: 4),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xl),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.xl,
+        ),
         children: [
           // ---- Header --------------------------------------------------
           Column(
@@ -295,16 +388,33 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                 label: l10n.profileChangePhoto,
                 child: GestureDetector(
                   onTap: _uploadingAvatar ? null : _changeAvatar,
-                  onLongPress: user?.avatarUrl != null ? () => FullscreenPhoto.show(context, user!.avatarUrl) : null,
+                  onLongPress:
+                      user?.avatarUrl != null
+                          ? () => FullscreenPhoto.show(context, user!.avatarUrl)
+                          : null,
                   child: Stack(
                     children: [
-                      UserAvatar(name: user?.name ?? '', avatarUrl: user?.avatarUrl, accent: accent, size: 96),
+                      UserAvatar(
+                        name: user?.name ?? '',
+                        avatarUrl: user?.avatarUrl,
+                        accent: accent,
+                        size: 96,
+                      ),
                       if (_uploadingAvatar)
                         Positioned.fill(
                           child: ClipOval(
                             child: ColoredBox(
                               color: Colors.black.withValues(alpha: 0.45),
-                              child: const Center(child: SizedBox(width: 24, height: 26, child: CircularProgressIndicator(strokeWidth: 2.6, color: Colors.white))),
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 26,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.6,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -313,8 +423,19 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                         bottom: 0,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(color: accent, shape: BoxShape.circle, border: Border.all(color: scheme.surface, width: 2.5)),
-                          child: const Icon(Icons.photo_camera_rounded, size: 15, color: Colors.white),
+                          decoration: BoxDecoration(
+                            color: accent,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: scheme.surface,
+                              width: 2.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.photo_camera_rounded,
+                            size: 15,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
@@ -322,14 +443,37 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(user?.name ?? roleLabel, textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+              Text(
+                user?.name ?? roleLabel,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 0),
-              Text(user?.phone ?? '', style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
+              Text(
+                user?.phone ?? '',
+                style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+              ),
               const SizedBox(height: AppSpacing.sm),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(color: accent.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
-                child: Text(roleLabel, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: accent)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  roleLabel,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: accent,
+                  ),
+                ),
               ),
             ],
           ),
@@ -339,7 +483,12 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
           ProfileSection(
             label: l10n.profileAccount,
             children: [
-              ProfileRow(icon: Icons.person_outline_rounded, title: l10n.profileEditProfile, showDivider: false, onTap: () => context.push('/clinician/more/edit')),
+              ProfileRow(
+                icon: Icons.person_outline_rounded,
+                title: l10n.profileEditProfile,
+                showDivider: false,
+                onTap: () => context.push('/clinician/more/edit'),
+              ),
             ],
           ),
 
@@ -358,9 +507,24 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _LangChip(label: l10n.languageEnglish, selected: currentLocale?.languageCode == 'en', accent: accent, onTap: () => _changeLanguage('en')),
-              _LangChip(label: l10n.languageBengali, selected: currentLocale?.languageCode == 'bn', accent: accent, onTap: () => _changeLanguage('bn')),
-              _LangChip(label: l10n.languageHindi, selected: currentLocale?.languageCode == 'hi', accent: accent, onTap: () => _changeLanguage('hi')),
+              _LangChip(
+                label: l10n.languageEnglish,
+                selected: currentLocale?.languageCode == 'en',
+                accent: accent,
+                onTap: () => _changeLanguage('en'),
+              ),
+              _LangChip(
+                label: l10n.languageBengali,
+                selected: currentLocale?.languageCode == 'bn',
+                accent: accent,
+                onTap: () => _changeLanguage('bn'),
+              ),
+              _LangChip(
+                label: l10n.languageHindi,
+                selected: currentLocale?.languageCode == 'hi',
+                accent: accent,
+                onTap: () => _changeLanguage('hi'),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -372,12 +536,41 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
               // Messages deliberately absent: it is the first tab. A duplicate
               // here pointed at the retired DirectMessage inbox, so the same
               // word opened different data depending on where you tapped it.
-              ProfileRow(icon: Icons.notification_important_outlined, title: 'Clinical alerts', onTap: () => context.push('/clinician/alerts')),
-              ProfileRow(icon: Icons.restaurant_menu_outlined, title: 'Clinic care', subtitle: 'Dieticians, invites and food-log review', onTap: () => context.push('/clinician/dieticians')),
-              ProfileRow(icon: Icons.ios_share_rounded, title: 'Export data', subtitle: 'Download your patients, alerts and figures as CSV or JSON', onTap: () => context.push('/clinician/export')),
-              ProfileRow(icon: Icons.reviews_outlined, title: 'Chat review', onTap: () => context.push('/clinician/chat-review')),
-              ProfileRow(icon: Icons.menu_book_outlined, title: 'Knowledge base', onTap: () => context.push('/clinician/knowledge')),
-              ProfileRow(icon: Icons.rate_review_outlined, title: 'Patient feedback', subtitle: 'What patients say about the clinic and the app', showDivider: false, onTap: () => context.push('/clinician/feedback')),
+              ProfileRow(
+                icon: Icons.notification_important_outlined,
+                title: 'Clinical alerts',
+                onTap: () => context.push('/clinician/alerts'),
+              ),
+              ProfileRow(
+                icon: Icons.restaurant_menu_outlined,
+                title: 'Clinic care',
+                subtitle: 'Dieticians, invites and food-log review',
+                onTap: () => context.push('/clinician/dieticians'),
+              ),
+              ProfileRow(
+                icon: Icons.ios_share_rounded,
+                title: 'Export data',
+                subtitle:
+                    'Download your patients, alerts and figures as CSV or JSON',
+                onTap: () => context.push('/clinician/export'),
+              ),
+              ProfileRow(
+                icon: Icons.reviews_outlined,
+                title: 'Chat review',
+                onTap: () => context.push('/clinician/chat-review'),
+              ),
+              ProfileRow(
+                icon: Icons.menu_book_outlined,
+                title: 'Knowledge base',
+                onTap: () => context.push('/clinician/knowledge'),
+              ),
+              ProfileRow(
+                icon: Icons.rate_review_outlined,
+                title: 'Patient feedback',
+                subtitle: 'What patients say about the clinic and the app',
+                showDivider: false,
+                onTap: () => context.push('/clinician/feedback'),
+              ),
             ],
           ),
 
@@ -389,16 +582,20 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                 ProfileRow(
                   icon: Icons.badge_outlined,
                   title: 'Professional details',
-                  subtitle: (user?.qualifications?.isNotEmpty ?? false)
-                      ? user!.qualifications!
-                      : 'Qualifications, specialty & registration no.',
+                  subtitle:
+                      (user?.qualifications?.isNotEmpty ?? false)
+                          ? user!.qualifications!
+                          : 'Qualifications, specialty & registration no.',
                   onTap: _editProfessionalDetails,
                 ),
                 ProfileRow(
                   icon: Icons.draw_outlined,
                   title: 'Digital signature',
                   subtitle: 'Printed on every prescription',
-                  value: _uploadingSignature ? 'Uploading…' : (user?.signatureUrl != null ? 'Set' : 'Not set'),
+                  value:
+                      _uploadingSignature
+                          ? 'Uploading…'
+                          : (user?.signatureUrl != null ? 'Set' : 'Not set'),
                   showDivider: user?.signatureUrl != null,
                   onTap: _uploadingSignature ? null : _changeSignature,
                 ),
@@ -429,7 +626,10 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                         const SizedBox(height: 4),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 20,
+                          ),
                           decoration: BoxDecoration(
                             // White, always — the signature is cut out on
                             // transparency and prints onto white paper, so
@@ -440,7 +640,9 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: scheme.outlineVariant.withValues(alpha: 0.7),
+                              color: scheme.outlineVariant.withValues(
+                                alpha: 0.7,
+                              ),
                             ),
                           ),
                           // Sized to the card, not to a thumbnail. A signature
@@ -467,7 +669,11 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                         const SizedBox(height: 4),
                         Text(
                           'The paper background is removed automatically, so this prints as ink on the prescription.',
-                          style: TextStyle(fontSize: 12, height: 1.35, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.35,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -489,9 +695,18 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
               onChanged: _toggleAppLock,
               activeThumbColor: accent,
               secondary: Icon(Icons.lock_outline_rounded, color: accent),
-              title: Text(l10n.profileAppLock, style: const TextStyle(fontSize: 16)),
-              subtitle: Text(l10n.profileAppLockSub, style: const TextStyle(fontSize: 14)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+              title: Text(
+                l10n.profileAppLock,
+                style: const TextStyle(fontSize: 16),
+              ),
+              subtitle: Text(
+                l10n.profileAppLockSub,
+                style: const TextStyle(fontSize: 14),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: 4,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -510,7 +725,12 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
                 title: l10n.profileAbout,
                 value: 'v${AppConfig.appVersion}',
                 showDivider: false,
-                onTap: () => showAboutDialog(context: context, applicationName: AppConfig.appName, applicationVersion: 'v${AppConfig.appVersion}'),
+                onTap:
+                    () => showAboutDialog(
+                      context: context,
+                      applicationName: AppConfig.appName,
+                      applicationVersion: 'v${AppConfig.appVersion}',
+                    ),
               ),
             ],
           ),
@@ -522,16 +742,32 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.danger,
-                side: BorderSide(color: AppColors.dangerOn(context), width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.buttonRadius)),
+                side: BorderSide(
+                  color: AppColors.dangerOn(context),
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                ),
               ),
               onPressed: _confirmLogout,
               icon: const Icon(Icons.logout_rounded, size: 22),
-              label: Text(l10n.profileLogout, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              label: Text(
+                l10n.profileLogout,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Center(child: Text('MedPin v${AppConfig.appVersion}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant))),
+          Center(
+            child: Text(
+              'MedPin v${AppConfig.appVersion}',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
+          ),
         ],
       ),
     );
@@ -541,7 +777,12 @@ class _ClinicianMoreScreenState extends ConsumerState<ClinicianMoreScreen> {
     padding: const EdgeInsets.only(left: 4, bottom: AppSpacing.sm),
     child: Text(
       text.toUpperCase(),
-      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 0.8, color: scheme.onSurfaceVariant),
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+        color: scheme.onSurfaceVariant,
+      ),
     ),
   );
 }
@@ -567,7 +808,11 @@ class _ClinicPhoneCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: accent.withValues(alpha: 0.22)),
         boxShadow: [
-          BoxShadow(color: accent.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: accent.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
@@ -608,12 +853,20 @@ class _ClinicPhoneCard extends StatelessWidget {
                       phone,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.1, color: scheme.onSurface),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                        color: scheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'The number patients call',
-                      style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -621,7 +874,10 @@ class _ClinicPhoneCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               // Edit affordance.
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(20),
@@ -631,7 +887,14 @@ class _ClinicPhoneCard extends StatelessWidget {
                   children: [
                     Icon(Icons.edit_rounded, size: 15, color: accent),
                     const SizedBox(width: 4),
-                    Text('Edit', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: accent)),
+                    Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -644,7 +907,12 @@ class _ClinicPhoneCard extends StatelessWidget {
 }
 
 class _LangChip extends StatelessWidget {
-  const _LangChip({required this.label, required this.selected, required this.accent, required this.onTap});
+  const _LangChip({
+    required this.label,
+    required this.selected,
+    required this.accent,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -666,11 +934,21 @@ class _LangChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected ? accent.withValues(alpha: 0.12) : scheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: selected ? accent : scheme.outlineVariant, width: selected ? 1.5 : 1),
+            border: Border.all(
+              color: selected ? accent : scheme.outlineVariant,
+              width: selected ? 1.5 : 1,
+            ),
           ),
           child: Center(
             widthFactor: 1,
-            child: Text(label, style: TextStyle(fontSize: 16, fontWeight: selected ? FontWeight.w600 : FontWeight.w500, color: selected ? accent : scheme.onSurface)),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: selected ? accent : scheme.onSurface,
+              ),
+            ),
           ),
         ),
       ),

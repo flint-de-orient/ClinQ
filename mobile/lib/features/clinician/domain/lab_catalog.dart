@@ -5,7 +5,11 @@
 /// Panels are matched to reports and prescriptions by their [name], so this is
 /// the single list every surface draws from — keep names stable.
 class LabPanel {
-  const LabPanel({required this.name, required this.category, this.analytes = const []});
+  const LabPanel({
+    required this.name,
+    required this.category,
+    this.analytes = const [],
+  });
 
   /// The ordered name, stored in `labTestsAdvised` and matched against reports.
   final String name;
@@ -49,11 +53,22 @@ const List<LabPanel> kLabCatalog = [
   LabPanel(
     name: 'Liver Function (LFT)',
     category: 'Liver',
-    analytes: ['SGOT (AST)', 'SGPT (ALT)', 'ALP', 'Bilirubin', 'Albumin', 'Total Protein'],
+    analytes: [
+      'SGOT (AST)',
+      'SGPT (ALT)',
+      'ALP',
+      'Bilirubin',
+      'Albumin',
+      'Total Protein',
+    ],
   ),
 
   // Thyroid
-  LabPanel(name: 'Thyroid Profile', category: 'Thyroid', analytes: ['TSH', 'T3', 'T4']),
+  LabPanel(
+    name: 'Thyroid Profile',
+    category: 'Thyroid',
+    analytes: ['TSH', 'T3', 'T4'],
+  ),
 
   // Hematology
   LabPanel(
@@ -63,7 +78,11 @@ const List<LabPanel> kLabCatalog = [
   ),
 
   // Metabolic / other
-  LabPanel(name: 'Serum Electrolytes', category: 'Metabolic', analytes: ['Sodium', 'Potassium', 'Chloride']),
+  LabPanel(
+    name: 'Serum Electrolytes',
+    category: 'Metabolic',
+    analytes: ['Sodium', 'Potassium', 'Chloride'],
+  ),
   LabPanel(name: 'Vitamin B12', category: 'Vitamins'),
   LabPanel(name: 'Vitamin D', category: 'Vitamins'),
 ];

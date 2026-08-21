@@ -18,7 +18,8 @@ class KnowledgeEditScreen extends ConsumerStatefulWidget {
   final KnowledgeChunk? chunk;
 
   @override
-  ConsumerState<KnowledgeEditScreen> createState() => _KnowledgeEditScreenState();
+  ConsumerState<KnowledgeEditScreen> createState() =>
+      _KnowledgeEditScreenState();
 }
 
 class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
@@ -66,7 +67,9 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
   void _invalidateLists() {
     // Any status filter the list might be showing.
     for (final s in [null, 'approved', 'pending_review', 'draft', 'retired']) {
-      ref.invalidate(knowledgeProvider((status: s, category: null, language: null)));
+      ref.invalidate(
+        knowledgeProvider((status: s, category: null, language: null)),
+      );
     }
   }
 
@@ -76,7 +79,12 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
     final navigator = Navigator.of(context);
     setState(() => _saving = true);
 
-    final tags = _tags.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final tags =
+        _tags.text
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
     final body = {
       'docId': _docId.text.trim(),
       'title': _title.text.trim(),
@@ -90,11 +98,16 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
 
     try {
       final repo = ref.read(clinicianRepositoryProvider);
-      final saved = _editing ? await repo.updateKnowledge(widget.chunk!.id, body) : await repo.createKnowledge(body);
+      final saved =
+          _editing
+              ? await repo.updateKnowledge(widget.chunk!.id, body)
+              : await repo.createKnowledge(body);
       _invalidateLists();
       if (!mounted) return;
       setState(() => _status = saved.status);
-      messenger.showSnackBar(const SnackBar(content: Text('Saved — pending review until approved')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Saved — pending review until approved')),
+      );
       navigator.pop();
     } on ApiException catch (e) {
       setState(() => _saving = false);
@@ -107,9 +120,15 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
     final navigator = Navigator.of(context);
     setState(() => _saving = true);
     try {
-      await ref.read(clinicianRepositoryProvider).approveKnowledge(widget.chunk!.id);
+      await ref
+          .read(clinicianRepositoryProvider)
+          .approveKnowledge(widget.chunk!.id);
       _invalidateLists();
-      messenger.showSnackBar(const SnackBar(content: Text('Approved — the assistant can now use it')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Approved — the assistant can now use it'),
+        ),
+      );
       navigator.pop();
     } on ApiException catch (e) {
       setState(() => _saving = false);
@@ -122,22 +141,36 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
     final navigator = Navigator.of(context);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Retire entry?'),
-        content: const Text('The assistant will stop using it. You can re-approve later.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          TextButton(style: TextButton.styleFrom(foregroundColor: AppColors.danger), onPressed: () => Navigator.pop(ctx, true), child: const Text('Retire')),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Retire entry?'),
+            content: const Text(
+              'The assistant will stop using it. You can re-approve later.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Retire'),
+              ),
+            ],
+          ),
     );
     if (ok != true) return;
     try {
-      await ref.read(clinicianRepositoryProvider).retireKnowledge(widget.chunk!.id);
+      await ref
+          .read(clinicianRepositoryProvider)
+          .retireKnowledge(widget.chunk!.id);
       _invalidateLists();
       navigator.pop();
     } on ApiException {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not retire. Please try again.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not retire. Please try again.')),
+      );
     }
   }
 
@@ -152,14 +185,22 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
           if (_editing && _status != 'retired')
             PopupMenuButton<String>(
               onSelected: (v) => v == 'retire' ? _retire() : null,
-              itemBuilder: (_) => const [PopupMenuItem(value: 'retire', child: Text('Retire entry'))],
+              itemBuilder:
+                  (_) => const [
+                    PopupMenuItem(value: 'retire', child: Text('Retire entry')),
+                  ],
             ),
         ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 120),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            120,
+          ),
           children: [
             if (_editing)
               Padding(
@@ -167,9 +208,24 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: knowledgeStatusColor(_status).withValues(alpha: 0.14), borderRadius: BorderRadius.circular(999)),
-                      child: Text(knowledgeStatusLabel(_status), style: TextStyle(color: knowledgeStatusColor(_status), fontWeight: FontWeight.w700, fontSize: 12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: knowledgeStatusColor(
+                          _status,
+                        ).withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        knowledgeStatusLabel(_status),
+                        style: TextStyle(
+                          color: knowledgeStatusColor(_status),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -177,7 +233,8 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
             TextFormField(
               controller: _title,
               decoration: const InputDecoration(labelText: 'Title'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator:
+                  (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
@@ -185,12 +242,24 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _docId,
-                    decoration: const InputDecoration(labelText: 'Document ID', hintText: 'e.g. diet-basics-01'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Document ID',
+                      hintText: 'e.g. diet-basics-01',
+                    ),
+                    validator:
+                        (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                Expanded(child: TextFormField(controller: _section, decoration: const InputDecoration(labelText: 'Section (optional)'))),
+                Expanded(
+                  child: TextFormField(
+                    controller: _section,
+                    decoration: const InputDecoration(
+                      labelText: 'Section (optional)',
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -199,17 +268,40 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
               minLines: 5,
               maxLines: 14,
               maxLength: 8000,
-              decoration: const InputDecoration(labelText: 'Content', alignLabelWithHint: true, hintText: 'The guidance the assistant may use…'),
-              validator: (v) => (v == null || v.trim().length < 20) ? 'At least 20 characters' : null,
+              decoration: const InputDecoration(
+                labelText: 'Content',
+                alignLabelWithHint: true,
+                hintText: 'The guidance the assistant may use…',
+              ),
+              validator:
+                  (v) =>
+                      (v == null || v.trim().length < 20)
+                          ? 'At least 20 characters'
+                          : null,
             ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Language', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant)),
+            Text(
+              'Language',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
               children: [
-                for (final l in const [('en', 'English'), ('bn', 'বাংলা'), ('hi', 'हिन्दी')])
-                  ChoiceChip(label: Text(l.$2), selected: _language == l.$1, onSelected: (_) => setState(() => _language = l.$1)),
+                for (final l in const [
+                  ('en', 'English'),
+                  ('bn', 'বাংলা'),
+                  ('hi', 'हिन्दी'),
+                ])
+                  ChoiceChip(
+                    label: Text(l.$2),
+                    selected: _language == l.$1,
+                    onSelected: (_) => setState(() => _language = l.$1),
+                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -218,20 +310,42 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
               decoration: const InputDecoration(labelText: 'Category'),
               items: [
                 for (final c in KnowledgeChunk.categories)
-                  DropdownMenuItem(value: c, child: Text(c.replaceAll('_', ' '))),
+                  DropdownMenuItem(
+                    value: c,
+                    child: Text(c.replaceAll('_', ' ')),
+                  ),
               ],
               onChanged: (v) => setState(() => _category = v ?? 'general'),
             ),
             const SizedBox(height: AppSpacing.md),
-            TextFormField(controller: _source, decoration: const InputDecoration(labelText: 'Source citation (optional)')),
+            TextFormField(
+              controller: _source,
+              decoration: const InputDecoration(
+                labelText: 'Source citation (optional)',
+              ),
+            ),
             const SizedBox(height: AppSpacing.md),
-            TextFormField(controller: _tags, decoration: const InputDecoration(labelText: 'Tags (comma-separated)', hintText: 'diet, breakfast')),
+            TextFormField(
+              controller: _tags,
+              decoration: const InputDecoration(
+                labelText: 'Tags (comma-separated)',
+                hintText: 'diet, breakfast',
+              ),
+            ),
           ],
         ),
       ),
       bottomSheet: Container(
-        padding: EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.md + MediaQuery.of(context).padding.bottom),
-        decoration: BoxDecoration(color: scheme.surface, border: Border(top: BorderSide(color: scheme.outlineVariant))),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.md + MediaQuery.of(context).padding.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          border: Border(top: BorderSide(color: scheme.outlineVariant)),
+        ),
         child: Row(
           children: [
             Expanded(
@@ -249,7 +363,9 @@ class _KnowledgeEditScreenState extends ConsumerState<KnowledgeEditScreen> {
                 child: SizedBox(
                   height: 50,
                   child: FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                    ),
                     onPressed: _saving ? null : _approve,
                     icon: const Icon(Icons.verified_rounded, size: 18),
                     label: const Text('Approve'),

@@ -29,10 +29,12 @@ class _ScanPrescriptionSheet extends ConsumerStatefulWidget {
   const _ScanPrescriptionSheet();
 
   @override
-  ConsumerState<_ScanPrescriptionSheet> createState() => _ScanPrescriptionSheetState();
+  ConsumerState<_ScanPrescriptionSheet> createState() =>
+      _ScanPrescriptionSheetState();
 }
 
-class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> {
+class _ScanPrescriptionSheetState
+    extends ConsumerState<_ScanPrescriptionSheet> {
   _Phase _phase = _Phase.choose;
   PrescriptionScanResult? _result;
 
@@ -59,14 +61,21 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _phase = _Phase.choose);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: switch (_phase) {
         _Phase.choose => _chooser(),
         _Phase.scanning => _scanning(),
@@ -81,7 +90,10 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Scan prescription', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          'Scan prescription',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: AppSpacing.xs),
         Text(
           "Take a clear photo of Dr.'s prescription — we'll read the medicines and set your daily reminders automatically.",
@@ -110,7 +122,11 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
         const SizedBox(height: AppSpacing.md),
         Row(
           children: [
-            Icon(Icons.lightbulb_outline, size: 16, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.lightbulb_outline,
+              size: 16,
+              color: scheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 4),
             Expanded(
               child: Text(
@@ -130,9 +146,16 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(width: 40, height: 44, child: CircularProgressIndicator(strokeWidth: 3)),
+          SizedBox(
+            width: 40,
+            height: 44,
+            child: CircularProgressIndicator(strokeWidth: 3),
+          ),
           SizedBox(height: AppSpacing.lg),
-          Text('Reading your prescription…', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            'Reading your prescription…',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           SizedBox(height: 4),
           Text('This takes a few seconds', style: TextStyle(fontSize: 12)),
         ],
@@ -149,12 +172,20 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.image_not_supported_outlined, size: 40, color: AppColors.warningOn(context)),
+          Icon(
+            Icons.image_not_supported_outlined,
+            size: 40,
+            color: AppColors.warningOn(context),
+          ),
           const SizedBox(height: AppSpacing.sm),
-          Text("Couldn't read that photo", style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            "Couldn't read that photo",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            res.note ?? 'Make sure the whole prescription is in frame, in focus, and well lit — then try again.',
+            res.note ??
+                'Make sure the whole prescription is in frame, in focus, and well lit — then try again.',
             style: TextStyle(color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -178,7 +209,11 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
         children: [
           Row(
             children: [
-              Icon(Icons.check_circle_rounded, color: AppColors.successOn(context), size: 26),
+              Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.successOn(context),
+                size: 26,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
@@ -213,7 +248,11 @@ class _ScanPrescriptionSheetState extends ConsumerState<_ScanPrescriptionSheet> 
 }
 
 class _SourceButton extends StatelessWidget {
-  const _SourceButton({required this.icon, required this.label, required this.onTap});
+  const _SourceButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String label;
@@ -252,7 +291,10 @@ class _MedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final times = med.schedule.map((s) => s.time).where((t) => t.isNotEmpty).join(', ');
+    final times = med.schedule
+        .map((s) => s.time)
+        .where((t) => t.isNotEmpty)
+        .join(', ');
     final subtitleBits = <String>[
       if (med.dose.isNotEmpty) med.dose,
       if (med.strength.isNotEmpty) med.strength,
@@ -274,18 +316,40 @@ class _MedRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(med.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                  Text(
+                    med.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
                   if (subtitleBits.isNotEmpty)
-                    Text(subtitleBits.join(' · '), style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14)),
+                    Text(
+                      subtitleBits.join(' · '),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
+                    ),
                 ],
               ),
             ),
             if (times.isNotEmpty)
               Row(
                 children: [
-                  Icon(Icons.alarm, size: 15, color: AppColors.accentOn(context)),
+                  Icon(
+                    Icons.alarm,
+                    size: 15,
+                    color: AppColors.accentOn(context),
+                  ),
                   const SizedBox(width: 4),
-                  Text(times, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text(
+                    times,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
           ],

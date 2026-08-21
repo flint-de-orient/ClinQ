@@ -84,7 +84,12 @@ class _SparkPainter extends CustomPainter {
 
     // Target band.
     if (showBand) {
-      final bandRect = Rect.fromLTRB(0, y(targetHigh), size.width, y(targetLow));
+      final bandRect = Rect.fromLTRB(
+        0,
+        y(targetHigh),
+        size.width,
+        y(targetLow),
+      );
       canvas.drawRect(bandRect, Paint()..color = band);
     }
 
@@ -95,10 +100,11 @@ class _SparkPainter extends CustomPainter {
     }
 
     // Soft area fill under the line.
-    final fill = Path.from(path)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
+    final fill =
+        Path.from(path)
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
     canvas.drawPath(
       fill,
       Paint()

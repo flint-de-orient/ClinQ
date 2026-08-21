@@ -8,22 +8,23 @@ import '../domain/medication.dart';
 /// The patient's own meal times, which every "after breakfast" reminder is
 /// anchored to. Shown on the Medicines tab so the schedule below it reads in
 /// the patient's own day rather than in abstract clock times.
-final mealTimesProvider = FutureProvider.autoDispose<({String breakfast, String lunch, String dinner})>(
-  (ref) async {
-    final json = await ref.read(apiClientProvider).getJson('/auth/me');
-    final profile = json['profile'] as Map<String, dynamic>? ?? const {};
-    final meals = profile['mealTimes'] as Map<String, dynamic>? ?? const {};
-    return (
-      breakfast: meals['breakfast']?.toString() ?? '08:00',
-      lunch: meals['lunch']?.toString() ?? '13:30',
-      dinner: meals['dinner']?.toString() ?? '20:30',
-    );
-  },
-);
+final mealTimesProvider = FutureProvider.autoDispose<
+  ({String breakfast, String lunch, String dinner})
+>((ref) async {
+  final json = await ref.read(apiClientProvider).getJson('/auth/me');
+  final profile = json['profile'] as Map<String, dynamic>? ?? const {};
+  final meals = profile['mealTimes'] as Map<String, dynamic>? ?? const {};
+  return (
+    breakfast: meals['breakfast']?.toString() ?? '08:00',
+    lunch: meals['lunch']?.toString() ?? '13:30',
+    dinner: meals['dinner']?.toString() ?? '20:30',
+  );
+});
 
-final FutureProvider<TodaySchedule> todayScheduleProvider = FutureProvider<TodaySchedule>(
-  (ref) => ref.watch(medicationsRepositoryProvider).getTodaySchedule(),
-);
+final FutureProvider<TodaySchedule> todayScheduleProvider =
+    FutureProvider<TodaySchedule>(
+      (ref) => ref.watch(medicationsRepositoryProvider).getTodaySchedule(),
+    );
 
 final FutureProvider<MedicationAdherence> medicationAdherenceProvider =
     FutureProvider<MedicationAdherence>(
@@ -32,15 +33,18 @@ final FutureProvider<MedicationAdherence> medicationAdherenceProvider =
 
 /// The patient's medications. Fetched from the real API and reused both to list
 /// medicines and to build the reminder schedule.
-final FutureProvider<List<Medication>> medicationsListProvider = FutureProvider<List<Medication>>(
-  (ref) => ref.watch(medicationsRepositoryProvider).getMedications(),
-);
+final FutureProvider<List<Medication>> medicationsListProvider =
+    FutureProvider<List<Medication>>(
+      (ref) => ref.watch(medicationsRepositoryProvider).getMedications(),
+    );
 
 /// The patient's dose history over [days] days (newest first) — the medicine-
 /// taking history screen. Family so the range toggle re-fetches.
-final doseHistoryProvider = FutureProvider.autoDispose.family<List<DoseHistoryEntry>, int>(
-  (ref, days) => ref.watch(medicationsRepositoryProvider).getDoseHistory(days: days),
-);
+final doseHistoryProvider = FutureProvider.autoDispose
+    .family<List<DoseHistoryEntry>, int>(
+      (ref, days) =>
+          ref.watch(medicationsRepositoryProvider).getDoseHistory(days: days),
+    );
 
 /// Expands active medications into their DAILY-REPEATING dose reminders — one
 /// alarm per (medicine, slot time), which the OS then fires every day at that
@@ -55,13 +59,17 @@ final doseHistoryProvider = FutureProvider.autoDispose.family<List<DoseHistoryEn
 /// expressible as a plain daily repeat, so they fire daily — an occasional extra
 /// reminder (safe) rather than a missed morning one. [today] is accepted for
 /// call-site compatibility but no longer used.
-List<ScheduledDose> buildUpcomingDoses(List<Medication> meds, {TodaySchedule? today}) {
+List<ScheduledDose> buildUpcomingDoses(
+  List<Medication> meds, {
+  TodaySchedule? today,
+}) {
   final now = DateTime.now();
   final doses = <ScheduledDose>[];
   final seen = <int>{};
   for (final m in meds) {
     if (!m.isActive || m.asNeeded || m.stat) continue;
-    if (m.endDate != null && _dateOnly(m.endDate!).isBefore(_dateOnly(now))) continue;
+    if (m.endDate != null && _dateOnly(m.endDate!).isBefore(_dateOnly(now)))
+      continue;
     for (final s in m.schedule) {
       if (s.time.isEmpty) continue;
       final parts = s.time.split(':');
@@ -90,8 +98,13 @@ DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// (Re)builds and arms the device reminders from [meds] and today's [today]
 /// statuses. Returns how many alarms armed.
-Future<int> syncMedicationReminders(List<Medication> meds, {TodaySchedule? today}) {
-  return NotificationService.instance.scheduleMedicationReminders(buildUpcomingDoses(meds, today: today));
+Future<int> syncMedicationReminders(
+  List<Medication> meds, {
+  TodaySchedule? today,
+}) {
+  return NotificationService.instance.scheduleMedicationReminders(
+    buildUpcomingDoses(meds, today: today),
+  );
 }
 
 /// The single robust entry point — call on login, app resume, a schedule change,
@@ -111,7 +124,8 @@ Future<void> refreshAndScheduleMedicationReminders(WidgetRef ref) async {
         // Non-fatal: without today's statuses we just don't skip taken slots.
       }
       final doses = buildUpcomingDoses(meds, today: today);
-      final armed = await NotificationService.instance.scheduleMedicationReminders(doses);
+      final armed = await NotificationService.instance
+          .scheduleMedicationReminders(doses);
       if (doses.isEmpty || armed > 0) return; // nothing to do, or it stuck
     } catch (_) {
       // fall through to retry

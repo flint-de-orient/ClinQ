@@ -19,13 +19,12 @@ class TrackScreen extends StatelessWidget {
           automaticallyImplyLeading: false,
           title: Text(l10n.navTrack),
           bottom: TabBar(
-            tabs: [
-              Tab(text: l10n.glucoseTitle),
-              Tab(text: l10n.medsTitle),
-            ],
+            tabs: [Tab(text: l10n.glucoseTitle), Tab(text: l10n.medsTitle)],
           ),
         ),
-        body: const TabBarView(children: [GlucoseScreen(), MedicationsScreen()]),
+        body: const TabBarView(
+          children: [GlucoseScreen(), MedicationsScreen()],
+        ),
       ),
     );
   }

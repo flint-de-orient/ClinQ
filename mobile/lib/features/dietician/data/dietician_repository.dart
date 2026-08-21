@@ -13,7 +13,9 @@ class DieticianRepository {
   final ApiClient _client;
 
   Future<DietDashboard> dashboard() async {
-    return DietDashboard.fromJson(await _client.getJson('/dietician/dashboard'));
+    return DietDashboard.fromJson(
+      await _client.getJson('/dietician/dashboard'),
+    );
   }
 
   Future<DietPlan?> dietPlan(String patientId) async {
@@ -23,13 +25,18 @@ class DieticianRepository {
   }
 
   Future<DietPlan> saveDietPlan(String patientId, DietPlan plan) async {
-    final json = await _client.putJson('/dietician/patients/$patientId/diet', body: plan.toJson());
+    final json = await _client.putJson(
+      '/dietician/patients/$patientId/diet',
+      body: plan.toJson(),
+    );
     return DietPlan.fromJson(json['plan'] as Map<String, dynamic>? ?? const {});
   }
 
   /// Plans this patient has been on before, newest first.
   Future<List<DietPlanRevision>> dietPlanHistory(String patientId) async {
-    final json = await _client.getJson('/dietician/patients/$patientId/diet/history');
+    final json = await _client.getJson(
+      '/dietician/patients/$patientId/diet/history',
+    );
     return (json['revisions'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(DietPlanRevision.fromJson)
@@ -65,24 +72,37 @@ class DieticianRepository {
   Future<List<DietPatient>> patients() async {
     final json = await _client.getJson('/dietician/patients');
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(DietPatient.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(DietPatient.fromJson)
+        .toList();
   }
 
   Future<DietPatientOverview> overview(String patientId) async {
-    final json = await _client.getJson('/dietician/patients/$patientId/overview');
+    final json = await _client.getJson(
+      '/dietician/patients/$patientId/overview',
+    );
     return DietPatientOverview.fromJson(json);
   }
 
   Future<List<DietMessage>> thread(String patientId) async {
     final json = await _client.getJson('/dietician/patients/$patientId/thread');
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(DietMessage.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(DietMessage.fromJson)
+        .toList();
   }
 
   Future<List<FoodLogEntry>> foodLog(String patientId) async {
-    final json = await _client.getJson('/dietician/patients/$patientId/food-log');
+    final json = await _client.getJson(
+      '/dietician/patients/$patientId/food-log',
+    );
     final items = json['items'] as List? ?? const [];
-    return items.whereType<Map<String, dynamic>>().map(FoodLogEntry.fromJson).toList();
+    return items
+        .whereType<Map<String, dynamic>>()
+        .map(FoodLogEntry.fromJson)
+        .toList();
   }
 
   Future<void> sendMessage(
@@ -102,6 +122,7 @@ class DieticianRepository {
   }
 }
 
-final Provider<DieticianRepository> dieticianRepositoryProvider = Provider<DieticianRepository>((ref) {
-  return DieticianRepository(ref.watch(apiClientProvider));
-});
+final Provider<DieticianRepository> dieticianRepositoryProvider =
+    Provider<DieticianRepository>((ref) {
+      return DieticianRepository(ref.watch(apiClientProvider));
+    });

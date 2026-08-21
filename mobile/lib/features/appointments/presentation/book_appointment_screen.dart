@@ -20,7 +20,8 @@ class BookAppointmentScreen extends ConsumerStatefulWidget {
   const BookAppointmentScreen({super.key});
 
   @override
-  ConsumerState<BookAppointmentScreen> createState() => _BookAppointmentScreenState();
+  ConsumerState<BookAppointmentScreen> createState() =>
+      _BookAppointmentScreenState();
 }
 
 class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
@@ -70,17 +71,22 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
     }
     setState(() => _booking = true);
     try {
-      await ref.read(appointmentRepositoryProvider).book(
-        clinicId: _clinic!.id,
-        scheduledForIso: _slot!.iso,
-        reason: _reason.text.trim(),
-      );
+      await ref
+          .read(appointmentRepositoryProvider)
+          .book(
+            clinicId: _clinic!.id,
+            scheduledForIso: _slot!.iso,
+            reason: _reason.text.trim(),
+          );
       ref.invalidate(myAppointmentsProvider);
 
       // Confirmation notification with short, specific copy.
       if (ref.read(appPreferencesProvider).appointmentAlerts) {
         final when = DateTime.tryParse(_slot!.iso)?.toLocal();
-        final whenText = when != null ? DateFormat('EEE d MMM, h:mm a').format(when) : _slot!.time;
+        final whenText =
+            when != null
+                ? DateFormat('EEE d MMM, h:mm a').format(when)
+                : _slot!.time;
         NotificationService.instance.show(
           title: l10n.apptBookedTitle,
           body: '${_clinic!.name} · $whenText',
@@ -89,23 +95,34 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
       if (!mounted) return;
       await showDialog<void>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          icon: Icon(Icons.check_circle_rounded, color: AppColors.successOn(context), size: 40),
-          title: Text(l10n.apptBookedTitle),
-          content: Text(l10n.apptBookedBody),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.commonOk)),
-          ],
-        ),
+        builder:
+            (ctx) => AlertDialog(
+              icon: Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.successOn(context),
+                size: 40,
+              ),
+              title: Text(l10n.apptBookedTitle),
+              content: Text(l10n.apptBookedBody),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonOk),
+                ),
+              ],
+            ),
       );
       navigator.pop();
     } on ApiException catch (e) {
       setState(() => _booking = false);
-      final msg = e.code == 'BAD_REQUEST' ? l10n.apptSlotTaken : l10n.apptBookingFailed;
+      final msg =
+          e.code == 'BAD_REQUEST' ? l10n.apptSlotTaken : l10n.apptBookingFailed;
       messenger.showSnackBar(SnackBar(content: Text(msg)));
       // The slot list may be stale — refresh it.
       if (_clinic != null) {
-        ref.invalidate(slotDayProvider((clinicId: _clinic!.id, date: _dateKey)));
+        ref.invalidate(
+          slotDayProvider((clinicId: _clinic!.id, date: _dateKey)),
+        );
       }
     }
   }
@@ -119,7 +136,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
       appBar: AppBar(title: Text(l10n.apptBook)),
       body: clinics.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => _ErrorRetry(onRetry: () => ref.invalidate(clinicsProvider)),
+        error:
+            (_, _) =>
+                _ErrorRetry(onRetry: () => ref.invalidate(clinicsProvider)),
         data: (list) {
           if (list.isEmpty) {
             return Center(
@@ -140,11 +159,13 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
             ),
             children: [
               _SectionTitle(l10n.apptChooseClinic),
-              ...list.map((c) => _ClinicOption(
-                    clinic: c,
-                    selected: c.id == _clinic?.id,
-                    onTap: () => _selectClinic(c),
-                  )),
+              ...list.map(
+                (c) => _ClinicOption(
+                  clinic: c,
+                  selected: c.id == _clinic?.id,
+                  onTap: () => _selectClinic(c),
+                ),
+              ),
               const SizedBox(height: AppSpacing.lg),
               _SectionTitle(l10n.apptChooseDate),
               _DateStrip(
@@ -157,7 +178,9 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
               AutoRefresh(
                 onTick: (r) {
                   if (_clinic != null) {
-                    r.invalidate(slotDayProvider((clinicId: _clinic!.id, date: _dateKey)));
+                    r.invalidate(
+                      slotDayProvider((clinicId: _clinic!.id, date: _dateKey)),
+                    );
                   }
                 },
                 child: _SlotGrid(
@@ -182,14 +205,15 @@ class _BookAppointmentScreenState extends ConsumerState<BookAppointmentScreen> {
           );
         },
       ),
-      bottomSheet: _clinic == null
-          ? null
-          : _ConfirmBar(
-              enabled: _slot != null && !_booking,
-              busy: _booking,
-              slot: _slot,
-              onConfirm: _confirm,
-            ),
+      bottomSheet:
+          _clinic == null
+              ? null
+              : _ConfirmBar(
+                enabled: _slot != null && !_booking,
+                busy: _booking,
+                slot: _slot,
+                onConfirm: _confirm,
+              ),
     );
   }
 }
@@ -214,7 +238,11 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _ClinicOption extends StatelessWidget {
-  const _ClinicOption({required this.clinic, required this.selected, required this.onTap});
+  const _ClinicOption({
+    required this.clinic,
+    required this.selected,
+    required this.onTap,
+  });
 
   final Clinic clinic;
   final bool selected;
@@ -234,10 +262,16 @@ class _ClinicOption extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: selected ? accent.withValues(alpha: 0.08) : scheme.surfaceContainerLow,
+            color:
+                selected
+                    ? accent.withValues(alpha: 0.08)
+                    : scheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
             border: Border.all(
-              color: selected ? accent : scheme.outlineVariant.withValues(alpha: 0.6),
+              color:
+                  selected
+                      ? accent
+                      : scheme.outlineVariant.withValues(alpha: 0.6),
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -249,19 +283,30 @@ class _ClinicOption extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(clinic.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                    Text(
+                      clinic.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     if (clinic.locationLine.isNotEmpty) ...[
                       const SizedBox(height: 0),
                       Text(
                         clinic.locationLine,
-                        style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
               Icon(
-                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
                 color: selected ? accent : scheme.outlineVariant,
               ),
             ],
@@ -273,7 +318,11 @@ class _ClinicOption extends StatelessWidget {
 }
 
 class _DateStrip extends StatelessWidget {
-  const _DateStrip({required this.selected, required this.daysAhead, required this.onSelect});
+  const _DateStrip({
+    required this.selected,
+    required this.daysAhead,
+    required this.onSelect,
+  });
 
   final DateTime selected;
   final int daysAhead;
@@ -294,7 +343,10 @@ class _DateStrip extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, i) {
           final d = DateTime(today.year, today.month, today.day + i);
-          final isSel = d.year == selected.year && d.month == selected.month && d.day == selected.day;
+          final isSel =
+              d.year == selected.year &&
+              d.month == selected.month &&
+              d.day == selected.day;
           return InkWell(
             onTap: () => onSelect(d),
             borderRadius: BorderRadius.circular(16),
@@ -303,7 +355,12 @@ class _DateStrip extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSel ? accent : scheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isSel ? accent : scheme.outlineVariant.withValues(alpha: 0.6)),
+                border: Border.all(
+                  color:
+                      isSel
+                          ? accent
+                          : scheme.outlineVariant.withValues(alpha: 0.6),
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -354,19 +411,29 @@ class _SlotGrid extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = isDark ? AppColors.primaryDark : AppColors.primary;
-    final slotsAsync = ref.watch(slotDayProvider((clinicId: clinicId, date: dateKey)));
+    final slotsAsync = ref.watch(
+      slotDayProvider((clinicId: clinicId, date: dateKey)),
+    );
 
     return slotsAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (_, _) => _ErrorRetry(
-        onRetry: () => ref.invalidate(slotDayProvider((clinicId: clinicId, date: dateKey))),
-      ),
+      loading:
+          () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      error:
+          (_, _) => _ErrorRetry(
+            onRetry:
+                () => ref.invalidate(
+                  slotDayProvider((clinicId: clinicId, date: dateKey)),
+                ),
+          ),
       data: (day) {
         if (day.slots.isEmpty) {
-          return _EmptyNote(icon: Icons.event_busy_outlined, text: l10n.apptClosedThatDay);
+          return _EmptyNote(
+            icon: Icons.event_busy_outlined,
+            text: l10n.apptClosedThatDay,
+          );
         }
         final anyAvailable = day.hasAvailability;
         return Column(
@@ -424,10 +491,20 @@ class _SlotChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? accent : (disabled ? scheme.surfaceContainerHighest.withValues(alpha: 0.5) : scheme.surface),
+          color:
+              selected
+                  ? accent
+                  : (disabled
+                      ? scheme.surfaceContainerHighest.withValues(alpha: 0.5)
+                      : scheme.surface),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? accent : scheme.outlineVariant.withValues(alpha: disabled ? 0.4 : 0.8),
+            color:
+                selected
+                    ? accent
+                    : scheme.outlineVariant.withValues(
+                      alpha: disabled ? 0.4 : 0.8,
+                    ),
           ),
         ),
         child: Text(
@@ -436,9 +513,12 @@ class _SlotChip extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w600,
             decoration: disabled ? TextDecoration.lineThrough : null,
-            color: selected
-                ? Colors.white
-                : (disabled ? scheme.onSurfaceVariant.withValues(alpha: 0.6) : scheme.onSurface),
+            color:
+                selected
+                    ? Colors.white
+                    : (disabled
+                        ? scheme.onSurfaceVariant.withValues(alpha: 0.6)
+                        : scheme.onSurface),
           ),
         ),
       ),
@@ -492,12 +572,19 @@ class _WaitlistButtonState extends ConsumerState<_WaitlistButton> {
         padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Row(
           children: [
-            Icon(Icons.notifications_active_rounded, size: 18, color: AppColors.successOn(context)),
+            Icon(
+              Icons.notifications_active_rounded,
+              size: 18,
+              color: AppColors.successOn(context),
+            ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 l10n.apptWaitlistJoined,
-                style: TextStyle(color: AppColors.successOn(context), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: AppColors.successOn(context),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -506,16 +593,26 @@ class _WaitlistButtonState extends ConsumerState<_WaitlistButton> {
     }
     return OutlinedButton.icon(
       onPressed: _busy ? null : _join,
-      icon: _busy
-          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-          : const Icon(Icons.notifications_none_rounded, size: 18),
+      icon:
+          _busy
+              ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+              : const Icon(Icons.notifications_none_rounded, size: 18),
       label: Text(l10n.apptNotifyMeLater),
     );
   }
 }
 
 class _ConfirmBar extends StatelessWidget {
-  const _ConfirmBar({required this.enabled, required this.busy, required this.slot, required this.onConfirm});
+  const _ConfirmBar({
+    required this.enabled,
+    required this.busy,
+    required this.slot,
+    required this.onConfirm,
+  });
 
   final bool enabled;
   final bool busy;
@@ -543,12 +640,25 @@ class _ConfirmBar extends StatelessWidget {
         height: 52,
         child: FilledButton(
           onPressed: enabled ? onConfirm : null,
-          child: busy
-              ? const SizedBox(width: 20, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-              : Text(
-                  slot == null ? l10n.apptConfirmBooking : '${l10n.apptConfirmBooking} · ${slot!.time}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                ),
+          child:
+              busy
+                  ? const SizedBox(
+                    width: 20,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                  : Text(
+                    slot == null
+                        ? l10n.apptConfirmBooking
+                        : '${l10n.apptConfirmBooking} · ${slot!.time}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
         ),
       ),
     );
@@ -569,7 +679,9 @@ class _EmptyNote extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: scheme.onSurfaceVariant),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(text, style: TextStyle(color: scheme.onSurfaceVariant))),
+          Expanded(
+            child: Text(text, style: TextStyle(color: scheme.onSurfaceVariant)),
+          ),
         ],
       ),
     );

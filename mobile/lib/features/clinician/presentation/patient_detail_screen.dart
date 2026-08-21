@@ -31,7 +31,11 @@ import 'widgets/sparkline.dart';
 /// about a patient — what you read and what you then do about it — instead of
 /// splitting them across a navigation step.
 class PatientRecordSections extends ConsumerWidget {
-  const PatientRecordSections({super.key, required this.summary, required this.patientId});
+  const PatientRecordSections({
+    super.key,
+    required this.summary,
+    required this.patientId,
+  });
 
   final PatientSummary summary;
   final String patientId;
@@ -103,20 +107,27 @@ class PatientRecordSections extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        maxChildSize: 0.9,
-        builder: (ctx, controller) => ListView(
-          controller: controller,
-          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.lg),
-          children: [
-            const _SectionTitle('HbA1c history'),
-            const SizedBox(height: AppSpacing.md),
-            _Hba1cList(points: points),
-          ],
-        ),
-      ),
+      builder:
+          (ctx) => DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.6,
+            maxChildSize: 0.9,
+            builder:
+                (ctx, controller) => ListView(
+                  controller: controller,
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                  ),
+                  children: [
+                    const _SectionTitle('HbA1c history'),
+                    const SizedBox(height: AppSpacing.md),
+                    _Hba1cList(points: points),
+                  ],
+                ),
+          ),
     );
   }
 }
@@ -131,7 +142,9 @@ class _ConsultationHistory extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final list = ref.watch(patientPrescriptionsProvider(patientId)).valueOrNull ?? const [];
+    final list =
+        ref.watch(patientPrescriptionsProvider(patientId)).valueOrNull ??
+        const [];
     if (list.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -157,8 +170,14 @@ class _ConsultationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final date = rx.issuedOn != null ? DateFormat('d MMM yyyy').format(rx.issuedOn!) : '—';
-    final dx = rx.diagnosis.isNotEmpty ? rx.diagnosis.join(', ') : 'No diagnosis recorded';
+    final date =
+        rx.issuedOn != null
+            ? DateFormat('d MMM yyyy').format(rx.issuedOn!)
+            : '—';
+    final dx =
+        rx.diagnosis.isNotEmpty
+            ? rx.diagnosis.join(', ')
+            : 'No diagnosis recorded';
 
     return Container(
       decoration: BoxDecoration(
@@ -170,23 +189,44 @@ class _ConsultationTile extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 0),
-          childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 0,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md,
+          ),
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          title: Text(date, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-          subtitle: Text(dx,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          title: Text(
+            date,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+          subtitle: Text(
+            dx,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
           children: [
-            if (rx.diagnosis.isNotEmpty) _kv(context, 'Diagnosis', rx.diagnosis.join('\n')),
+            if (rx.diagnosis.isNotEmpty)
+              _kv(context, 'Diagnosis', rx.diagnosis.join('\n')),
             if (rx.medicines.isNotEmpty)
               _kv(context, 'Medicines', rx.medicines.join('\n'))
             else if (rx.itemCount > 0)
               _kv(context, 'Medicines', '${rx.itemCount} prescribed'),
-            if (rx.labTestsAdvised.isNotEmpty) _kv(context, 'Tests advised', rx.labTestsAdvised.join(', ')),
-            if (rx.generalAdvice != null) _kv(context, 'Advice', rx.generalAdvice!),
-            if (rx.followUpOn != null) _kv(context, 'Follow-up', DateFormat('d MMM yyyy').format(rx.followUpOn!)),
+            if (rx.labTestsAdvised.isNotEmpty)
+              _kv(context, 'Tests advised', rx.labTestsAdvised.join(', ')),
+            if (rx.generalAdvice != null)
+              _kv(context, 'Advice', rx.generalAdvice!),
+            if (rx.followUpOn != null)
+              _kv(
+                context,
+                'Follow-up',
+                DateFormat('d MMM yyyy').format(rx.followUpOn!),
+              ),
             if (rx.doctorName != null) _kv(context, 'By', rx.doctorName!),
           ],
         ),
@@ -201,8 +241,15 @@ class _ConsultationTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(k.toUpperCase(),
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: scheme.onSurfaceVariant)),
+          Text(
+            k.toUpperCase(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 0),
           Text(v, style: const TextStyle(fontSize: 14, height: 1.3)),
         ],
@@ -220,7 +267,8 @@ class _MetricsGrid extends StatelessWidget {
     final p = summary;
     // Adherence: the percentage as the headline. The doses breakdown lives in
     // the tap-through sheet, so the tile stays clean.
-    final adherenceValue = p.adherencePercent != null ? '${p.adherencePercent}%' : '—';
+    final adherenceValue =
+        p.adherencePercent != null ? '${p.adherencePercent}%' : '—';
 
     final tiles = <Widget>[
       _Metric(
@@ -259,7 +307,10 @@ class _MetricsGrid extends StatelessWidget {
       ),
       _Metric(
         label: 'Est. HbA1c',
-        value: p.estimatedHba1c != null ? p.estimatedHba1c!.toStringAsFixed(1) : '—',
+        value:
+            p.estimatedHba1c != null
+                ? p.estimatedHba1c!.toStringAsFixed(1)
+                : '—',
         unit: p.estimatedHba1c != null ? '%' : null,
         color: const Color(0xFF0EA5E9),
         icon: Icons.auto_graph_rounded,
@@ -284,7 +335,10 @@ class _MetricsGrid extends StatelessWidget {
                 Expanded(child: tiles[i]),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: i + 1 < tiles.length ? tiles[i + 1] : const SizedBox.shrink(),
+                  child:
+                      i + 1 < tiles.length
+                          ? tiles[i + 1]
+                          : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -301,16 +355,17 @@ class _MetricsGrid extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => _AdherenceSheet(
-        patientId: p.id,
-        // Seed with the summary's 30-day figures so the sheet opens instantly.
-        initial: AdherenceReport(
-          taken: p.adherenceTaken ?? 0,
-          expected: p.adherenceExpected ?? 0,
-          percentage: p.adherencePercent,
-          perMed: p.adherencePerMed,
-        ),
-      ),
+      builder:
+          (ctx) => _AdherenceSheet(
+            patientId: p.id,
+            // Seed with the summary's 30-day figures so the sheet opens instantly.
+            initial: AdherenceReport(
+              taken: p.adherenceTaken ?? 0,
+              expected: p.adherenceExpected ?? 0,
+              percentage: p.adherencePercent,
+              perMed: p.adherencePerMed,
+            ),
+          ),
     );
   }
 }
@@ -325,7 +380,11 @@ class _AdherenceSheet extends ConsumerStatefulWidget {
 }
 
 class _AdherenceSheetState extends ConsumerState<_AdherenceSheet> {
-  static const _periods = [(label: 'Week', days: 7), (label: 'Month', days: 30), (label: 'Year', days: 365)];
+  static const _periods = [
+    (label: 'Week', days: 7),
+    (label: 'Month', days: 30),
+    (label: 'Year', days: 365),
+  ];
   int _days = 30;
   late AdherenceReport _report = widget.initial;
   bool _loading = false;
@@ -336,7 +395,9 @@ class _AdherenceSheetState extends ConsumerState<_AdherenceSheet> {
       _loading = true;
     });
     try {
-      final r = await ref.read(clinicianRepositoryProvider).patientAdherence(widget.patientId, days: days);
+      final r = await ref
+          .read(clinicianRepositoryProvider)
+          .patientAdherence(widget.patientId, days: days);
       if (mounted) setState(() => _report = r);
     } catch (_) {
       // Keep whatever was showing.
@@ -354,89 +415,153 @@ class _AdherenceSheetState extends ConsumerState<_AdherenceSheet> {
       initialChildSize: 0.6,
       minChildSize: 0.3,
       maxChildSize: 0.92,
-      builder: (ctx, controller) => ListView(
-        controller: controller,
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.xl),
-        children: [
-          Row(
-            children: [
-              Icon(Icons.medication_rounded, color: AppColors.accentOn(context)),
-              const SizedBox(width: 8),
-              const Text('Adherence', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-              const Spacer(),
-              if (_loading) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              for (final period in _periods) ...[
-                _PeriodChip(label: period.label, selected: _days == period.days, onTap: () => _select(period.days)),
-                const SizedBox(width: 8),
-              ],
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+      builder:
+          (ctx, controller) => ListView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              0,
+              AppSpacing.md,
+              AppSpacing.xl,
             ),
-            child: r.expected == 0
-                ? Text('No scheduled doses have come due in this period.', style: TextStyle(color: scheme.onSurfaceVariant))
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('${r.taken}/${r.expected}',
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.accentOn(context))),
-                      const SizedBox(width: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text('doses taken', style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
-                      ),
-                      const Spacer(),
-                      if (r.percentage != null)
-                        Text('${r.percentage}%', style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
-                    ],
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.medication_rounded,
+                    color: AppColors.accentOn(context),
                   ),
-          ),
-          if (r.perMed.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.lg),
-            Text('By medicine', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant)),
-            const SizedBox(height: AppSpacing.sm),
-            for (final m in r.perMed) _AdherenceRow(med: m),
-          ],
-          const SizedBox(height: AppSpacing.lg),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline_rounded, size: 16, color: scheme.onSurfaceVariant),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Counts only doses whose time has already passed, and only those the patient marked as taken in the app. A low figure can mean doses were not logged, not necessarily missed.',
-                    style: TextStyle(fontSize: 12, height: 1.35, color: scheme.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Adherence',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  ),
+                  const Spacer(),
+                  if (_loading)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  for (final period in _periods) ...[
+                    _PeriodChip(
+                      label: period.label,
+                      selected: _days == period.days,
+                      onTap: () => _select(period.days),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.6),
                   ),
                 ),
+                child:
+                    r.expected == 0
+                        ? Text(
+                          'No scheduled doses have come due in this period.',
+                          style: TextStyle(color: scheme.onSurfaceVariant),
+                        )
+                        : Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '${r.taken}/${r.expected}',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.accentOn(context),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                'doses taken',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            if (r.percentage != null)
+                              Text(
+                                '${r.percentage}%',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                          ],
+                        ),
+              ),
+              if (r.perMed.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'By medicine',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                for (final m in r.perMed) _AdherenceRow(med: m),
               ],
-            ),
+              const SizedBox(height: AppSpacing.lg),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Counts only doses whose time has already passed, and only those the patient marked as taken in the app. A low figure can mean doses were not logged, not necessarily missed.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.35,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
 
 class _PeriodChip extends StatelessWidget {
-  const _PeriodChip({required this.label, required this.selected, required this.onTap});
+  const _PeriodChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -450,9 +575,17 @@ class _PeriodChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color:
+              selected
+                  ? AppColors.primary
+                  : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.primary : scheme.outlineVariant.withValues(alpha: 0.5)),
+          border: Border.all(
+            color:
+                selected
+                    ? AppColors.primary
+                    : scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
         child: Text(
           label,
@@ -502,67 +635,81 @@ class _MeasurementsSection extends StatelessWidget {
     final tiles = <Widget>[];
 
     if (p.heightCm != null) {
-      tiles.add(_MeasureTile(
-        icon: Icons.straighten_rounded,
-        label: 'Height',
-        value: _n(p.heightCm!.toDouble()),
-        unit: 'cm',
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.straighten_rounded,
+          label: 'Height',
+          value: _n(p.heightCm!.toDouble()),
+          unit: 'cm',
+        ),
+      );
     }
     if (p.weightKg != null) {
-      tiles.add(_MeasureTile(
-        icon: Icons.monitor_weight_outlined,
-        label: 'Weight',
-        value: _n(p.weightKg!.toDouble()),
-        unit: 'kg',
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.monitor_weight_outlined,
+          label: 'Weight',
+          value: _n(p.weightKg!.toDouble()),
+          unit: 'kg',
+        ),
+      );
     }
     if (p.bmi != null) {
       final band = _bmiBand(context, p.bmi!.toDouble());
-      tiles.add(_MeasureTile(
-        icon: Icons.accessibility_new_rounded,
-        label: 'BMI',
-        value: p.bmi!.toStringAsFixed(1),
-        note: band.$2,
-        tone: band.$1,
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.accessibility_new_rounded,
+          label: 'BMI',
+          value: p.bmi!.toStringAsFixed(1),
+          note: band.$2,
+          tone: band.$1,
+        ),
+      );
     }
     if (p.waistCm != null) {
-      tiles.add(_MeasureTile(
-        icon: Icons.radio_button_unchecked_rounded,
-        label: 'Waist',
-        value: _n(p.waistCm!.toDouble()),
-        unit: 'cm',
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.radio_button_unchecked_rounded,
+          label: 'Waist',
+          value: _n(p.waistCm!.toDouble()),
+          unit: 'cm',
+        ),
+      );
     }
     if (p.systolic != null && p.diastolic != null) {
       final band = _bpBand(context, p.systolic!, p.diastolic!);
-      tiles.add(_MeasureTile(
-        icon: Icons.favorite_outline_rounded,
-        label: 'Blood pressure',
-        value: '${p.systolic}/${p.diastolic}',
-        unit: 'mmHg',
-        note: band.$2,
-        tone: band.$1,
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.favorite_outline_rounded,
+          label: 'Blood pressure',
+          value: '${p.systolic}/${p.diastolic}',
+          unit: 'mmHg',
+          note: band.$2,
+          tone: band.$1,
+        ),
+      );
     }
     if (p.pulse != null) {
-      tiles.add(_MeasureTile(
-        icon: Icons.monitor_heart_outlined,
-        label: 'Pulse',
-        value: '${p.pulse}',
-        unit: 'bpm',
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.monitor_heart_outlined,
+          label: 'Pulse',
+          value: '${p.pulse}',
+          unit: 'bpm',
+        ),
+      );
     }
     if (p.spo2 != null) {
-      tiles.add(_MeasureTile(
-        icon: Icons.air_rounded,
-        label: 'SpO2',
-        value: '${p.spo2}',
-        unit: '%',
-        tone: p.spo2! < 94 ? AppColors.dangerOn(context) : null,
-        note: p.spo2! < 94 ? 'Low' : null,
-      ));
+      tiles.add(
+        _MeasureTile(
+          icon: Icons.air_rounded,
+          label: 'SpO2',
+          value: '${p.spo2}',
+          unit: '%',
+          tone: p.spo2! < 94 ? AppColors.dangerOn(context) : null,
+          note: p.spo2! < 94 ? 'Low' : null,
+        ),
+      );
     }
 
     if (tiles.isEmpty) return const SizedBox.shrink();
@@ -621,7 +768,9 @@ class _MeasureTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.55),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,7 +785,10 @@ class _MeasureTile extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -663,7 +815,10 @@ class _MeasureTile extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   unit!,
-                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ],
@@ -673,7 +828,9 @@ class _MeasureTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
               decoration: BoxDecoration(
-                color: (tone ?? scheme.onSurfaceVariant).withValues(alpha: 0.12),
+                color: (tone ?? scheme.onSurfaceVariant).withValues(
+                  alpha: 0.12,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -699,11 +856,15 @@ class _AdherenceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final frac = med.expected > 0 ? (med.taken / med.expected).clamp(0.0, 1.0) : 0.0;
+    final frac =
+        med.expected > 0 ? (med.taken / med.expected).clamp(0.0, 1.0) : 0.0;
     final pct = med.percentage;
-    final color = pct == null
-        ? scheme.onSurfaceVariant
-        : (pct >= 80 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger));
+    final color =
+        pct == null
+            ? scheme.onSurfaceVariant
+            : (pct >= 80
+                ? AppColors.success
+                : (pct >= 50 ? AppColors.warning : AppColors.danger));
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Column(
@@ -712,11 +873,20 @@ class _AdherenceRow extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(med.name,
-                    maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: Text(
+                  med.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              Text('${med.taken}/${med.expected}${pct != null ? '  ·  $pct%' : ''}',
-                  style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
+              Text(
+                '${med.taken}/${med.expected}${pct != null ? '  ·  $pct%' : ''}',
+                style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -774,8 +944,23 @@ class _Metric extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 4),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis)),
-              if (onTap != null) Icon(Icons.chevron_right_rounded, size: 18, color: scheme.onSurfaceVariant),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (onTap != null)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
+                ),
             ],
           ),
           const SizedBox(height: 4),
@@ -783,10 +968,23 @@ class _Metric extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
               if (unit != null) ...[
                 const SizedBox(width: 4),
-                Text(unit!, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  unit!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ],
           ),
@@ -820,12 +1018,31 @@ class _Hba1cList extends StatelessWidget {
       child: Column(
         children: [
           for (var i = 0; i < points.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
             ListTile(
               dense: true,
-              leading: Icon(Icons.science_outlined, color: points[i].percentage >= 9 ? AppColors.danger : (points[i].percentage >= 7 ? AppColors.warning : AppColors.success)),
-              title: Text('${points[i].percentage}%', style: const TextStyle(fontWeight: FontWeight.w700)),
-              trailing: Text(points[i].testedOn != null ? DateFormat('MMM yyyy').format(points[i].testedOn!) : ''),
+              leading: Icon(
+                Icons.science_outlined,
+                color:
+                    points[i].percentage >= 9
+                        ? AppColors.danger
+                        : (points[i].percentage >= 7
+                            ? AppColors.warning
+                            : AppColors.success),
+              ),
+              title: Text(
+                '${points[i].percentage}%',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              trailing: Text(
+                points[i].testedOn != null
+                    ? DateFormat('MMM yyyy').format(points[i].testedOn!)
+                    : '',
+              ),
             ),
           ],
         ],
@@ -852,7 +1069,8 @@ class _DieticianSection extends ConsumerWidget {
     // Restricting only makes sense with 2+ dieticians — with one, it would cut
     // the sole dietician off from every other patient. So the action is offered
     // only when there's a choice to make (or to undo an existing restriction).
-    final dieticianCount = ref.watch(clinicDieticiansProvider).valueOrNull?.length ?? 0;
+    final dieticianCount =
+        ref.watch(clinicDieticiansProvider).valueOrNull?.length ?? 0;
     final canRestrict = restricted || dieticianCount >= 2;
 
     return Container(
@@ -867,27 +1085,55 @@ class _DieticianSection extends ConsumerWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: AppColors.accentOn(context).withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12)),
-            child: Icon(Icons.restaurant_menu_rounded, size: 20, color: AppColors.accentOn(context)),
+            decoration: BoxDecoration(
+              color: AppColors.accentOn(context).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.restaurant_menu_rounded,
+              size: 20,
+              color: AppColors.accentOn(context),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('DIETICIAN', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: scheme.onSurfaceVariant)),
-                const SizedBox(height: 0),
-                Text(restricted ? name : 'Covered by clinic dietician',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                 Text(
-                  restricted ? 'Restricted to this dietician only' : 'The clinic dietician covers this patient',
-                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  'DIETICIAN',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 0),
+                Text(
+                  restricted ? name : 'Covered by clinic dietician',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  restricted
+                      ? 'Restricted to this dietician only'
+                      : 'The clinic dietician covers this patient',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           if (canRestrict)
-            TextButton(onPressed: () => _openAssign(context, ref), child: Text(restricted ? 'Change' : 'Restrict')),
+            TextButton(
+              onPressed: () => _openAssign(context, ref),
+              child: Text(restricted ? 'Change' : 'Restrict'),
+            ),
         ],
       ),
     );
@@ -901,7 +1147,9 @@ class _DieticianSection extends ConsumerWidget {
     try {
       options = await repo.dieticians();
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(content: Text('Could not load dieticians')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not load dieticians')),
+      );
       return;
     }
     if (!context.mounted) return;
@@ -912,119 +1160,180 @@ class _DieticianSection extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) => Padding(
-          padding: EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Nutrition care', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 4),
-              Text(
-                'By default the clinic dietician covers this patient. Restrict to a specific dietician only if this patient should be handled by that person alone.',
-                style: TextStyle(fontSize: 12, height: 1.35, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              if (options.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text('No dieticians yet — add one below.',
-                      style: TextStyle(color: Theme.of(ctx).colorScheme.onSurfaceVariant)),
-                ),
-              for (final d in options)
-                RadioListTile<String>(
-                  contentPadding: EdgeInsets.zero,
-                  value: d.id,
-                  groupValue: selectedId,
-                  onChanged: (v) => setSheet(() => selectedId = v),
-                  title: Text(d.name),
-                ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () async {
-                    final created = await _addDieticianForm(ctx, repo);
-                    if (created != null) {
-                      try {
-                        options = await repo.dieticians();
-                      } catch (_) {}
-                      setSheet(() => selectedId = created.id);
-                    }
-                  },
-                  icon: const Icon(Icons.person_add_alt_1_rounded),
-                  label: const Text('Add a new dietician'),
-                ),
-              ),
-              if (selectedId != null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(color: AppColors.warningBgOn(ctx), borderRadius: BorderRadius.circular(12)),
-                  child: Row(
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setSheet) => Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warningOn(ctx)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'This limits the chosen dietician to only the patients you restrict to them — they stop seeing the rest of the clinic by default.',
-                          style: TextStyle(fontSize: 12, height: 1.3, color: AppColors.warningOn(ctx)),
+                      const Text(
+                        'Nutrition care',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'By default the clinic dietician covers this patient. Restrict to a specific dietician only if this patient should be handled by that person alone.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 1.35,
+                          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      if (options.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            'No dieticians yet — add one below.',
+                            style: TextStyle(
+                              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      for (final d in options)
+                        RadioListTile<String>(
+                          contentPadding: EdgeInsets.zero,
+                          value: d.id,
+                          groupValue: selectedId,
+                          onChanged: (v) => setSheet(() => selectedId = v),
+                          title: Text(d.name),
+                        ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            final created = await _addDieticianForm(ctx, repo);
+                            if (created != null) {
+                              try {
+                                options = await repo.dieticians();
+                              } catch (_) {}
+                              setSheet(() => selectedId = created.id);
+                            }
+                          },
+                          icon: const Icon(Icons.person_add_alt_1_rounded),
+                          label: const Text('Add a new dietician'),
+                        ),
+                      ),
+                      if (selectedId != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: AppColors.warningBgOn(ctx),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                size: 16,
+                                color: AppColors.warningOn(ctx),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'This limits the chosen dietician to only the patients you restrict to them — they stop seeing the rest of the clinic by default.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 1.3,
+                                    color: AppColors.warningOn(ctx),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      Row(
+                        children: [
+                          if (summary.assignedDieticianId != null)
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.danger,
+                              ),
+                              onPressed: () async {
+                                try {
+                                  await repo.assignDietician(
+                                    patientId,
+                                    dieticianId: null,
+                                    reviewIntervalDays: null,
+                                  );
+                                  if (ctx.mounted) Navigator.pop(ctx, true);
+                                } catch (_) {
+                                  if (ctx.mounted)
+                                    ScaffoldMessenger.of(ctx).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Could not save'),
+                                      ),
+                                    );
+                                }
+                              },
+                              child: const Text('Back to clinic default'),
+                            ),
+                          const Spacer(),
+                          FilledButton(
+                            onPressed:
+                                selectedId == null
+                                    ? null
+                                    : () async {
+                                      try {
+                                        // Cadence is clinic-wide now, so we never set the
+                                        // dead per-patient field.
+                                        await repo.assignDietician(
+                                          patientId,
+                                          dieticianId: selectedId,
+                                          reviewIntervalDays: null,
+                                        );
+                                        if (ctx.mounted)
+                                          Navigator.pop(ctx, true);
+                                      } catch (_) {
+                                        if (ctx.mounted)
+                                          ScaffoldMessenger.of(
+                                            ctx,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Could not save'),
+                                            ),
+                                          );
+                                      }
+                                    },
+                            child: const Text('Restrict to this dietician'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ],
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  if (summary.assignedDieticianId != null)
-                    TextButton(
-                      style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                      onPressed: () async {
-                        try {
-                          await repo.assignDietician(patientId, dieticianId: null, reviewIntervalDays: null);
-                          if (ctx.mounted) Navigator.pop(ctx, true);
-                        } catch (_) {
-                          if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Could not save')));
-                        }
-                      },
-                      child: const Text('Back to clinic default'),
-                    ),
-                  const Spacer(),
-                  FilledButton(
-                    onPressed: selectedId == null
-                        ? null
-                        : () async {
-                            try {
-                              // Cadence is clinic-wide now, so we never set the
-                              // dead per-patient field.
-                              await repo.assignDietician(patientId, dieticianId: selectedId, reviewIntervalDays: null);
-                              if (ctx.mounted) Navigator.pop(ctx, true);
-                            } catch (_) {
-                              if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Could not save')));
-                            }
-                          },
-                    child: const Text('Restrict to this dietician'),
-                  ),
-                ],
-              ),
-            ],
           ),
-        ),
-      ),
     );
 
     if (saved == true) {
       ref.invalidate(patientSummaryProvider(patientId));
-      messenger.showSnackBar(const SnackBar(content: Text('Nutrition care updated')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Nutrition care updated')),
+      );
     }
   }
 
   /// A small inline form to create a dietician account. Returns the new
   /// dietician (id + name), or null if cancelled.
-  Future<({String id, String name})?> _addDieticianForm(BuildContext ctx, ClinicianRepository repo) {
+  Future<({String id, String name})?> _addDieticianForm(
+    BuildContext ctx,
+    ClinicianRepository repo,
+  ) {
     final name = TextEditingController();
     final phone = TextEditingController();
     final password = TextEditingController();
@@ -1034,103 +1343,135 @@ class _DieticianSection extends ConsumerWidget {
         bool saving = false;
         String? error;
         return StatefulBuilder(
-          builder: (dctx, setD) => AlertDialog(
-            title: const Text('Add dietician'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: name,
-                  textCapitalization: TextCapitalization.words,
-                  maxLength: 120,
-                  decoration: const InputDecoration(labelText: 'Name', counterText: ''),
-                ),
-                // Same rules as sign-in: +91 is fixed and only the 10 national
-                // digits are typed. Previously this only checked "not empty",
-                // so a 26-digit number was accepted here and then rejected by
-                // the server — or worse, created an account nobody could log
-                // into.
-                TextField(
-                  controller: phone,
-                  keyboardType: TextInputType.number,
-                  // maxLength dropped: paired with the limiter below it capped
-                  // the number twice and reset the caret to the end on every
-                  // mid-string edit.
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
+          builder:
+              (dctx, setD) => AlertDialog(
+                title: const Text('Add dietician'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: name,
+                      textCapitalization: TextCapitalization.words,
+                      maxLength: 120,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        counterText: '',
+                      ),
+                    ),
+                    // Same rules as sign-in: +91 is fixed and only the 10 national
+                    // digits are typed. Previously this only checked "not empty",
+                    // so a 26-digit number was accepted here and then rejected by
+                    // the server — or worse, created an account nobody could log
+                    // into.
+                    TextField(
+                      controller: phone,
+                      keyboardType: TextInputType.number,
+                      // maxLength dropped: paired with the limiter below it capped
+                      // the number twice and reset the caret to the end on every
+                      // mid-string edit.
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: 'Phone',
+                        prefixText: '${AuthValidators.countryCode} ',
+                        counterText: '',
+                      ),
+                    ),
+                    TextField(
+                      controller: password,
+                      obscureText: true,
+                      maxLength: 72,
+                      decoration: const InputDecoration(
+                        labelText: 'Temporary password (8+ chars)',
+                        counterText: '',
+                      ),
+                    ),
+                    if (error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          error!,
+                          style: TextStyle(
+                            color: AppColors.dangerOn(dctx),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
                   ],
-                  decoration: const InputDecoration(
-                    labelText: 'Phone',
-                    prefixText: '${AuthValidators.countryCode} ',
-                    counterText: '',
-                  ),
                 ),
-                TextField(
-                  controller: password,
-                  obscureText: true,
-                  maxLength: 72,
-                  decoration: const InputDecoration(
-                    labelText: 'Temporary password (8+ chars)',
-                    counterText: '',
+                actions: [
+                  TextButton(
+                    onPressed: saving ? null : () => Navigator.pop(dctx),
+                    child: const Text('Cancel'),
                   ),
-                ),
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(error!, style: TextStyle(color: AppColors.dangerOn(dctx), fontSize: 14)),
+                  FilledButton(
+                    onPressed:
+                        saving
+                            ? null
+                            : () async {
+                              final digits = phone.text.trim();
+                              if (name.text.trim().length < 2) {
+                                setD(
+                                  () =>
+                                      error =
+                                          'Enter the dietician\'s full name.',
+                                );
+                                return;
+                              }
+                              // Said separately rather than as one catch-all message:
+                              // "enter a name, phone and password" does not tell
+                              // someone who typed nine digits what is actually wrong.
+                              if (digits.length != 10 ||
+                                  !RegExp(r'^[6-9]\d{9}$').hasMatch(digits)) {
+                                setD(
+                                  () =>
+                                      error =
+                                          'Enter a valid 10-digit mobile number.',
+                                );
+                                return;
+                              }
+                              if (password.text.length < 8) {
+                                setD(
+                                  () =>
+                                      error =
+                                          'Password must be at least 8 characters.',
+                                );
+                                return;
+                              }
+                              setD(() {
+                                saving = true;
+                                error = null;
+                              });
+                              try {
+                                final d = await repo.addDietician(
+                                  name: name.text.trim(),
+                                  // Sent in the same +91XXXXXXXXXX form the server
+                                  // stores for every other account, so the dietician
+                                  // can sign in with the number the doctor typed.
+                                  phone: '${AuthValidators.countryCode}$digits',
+                                  password: password.text,
+                                );
+                                if (dctx.mounted) Navigator.pop(dctx, d);
+                              } on ApiException catch (e) {
+                                setD(() {
+                                  saving = false;
+                                  error = e.message;
+                                });
+                              }
+                            },
+                    child:
+                        saving
+                            ? const SizedBox(
+                              width: 16,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text('Create'),
                   ),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: saving ? null : () => Navigator.pop(dctx), child: const Text('Cancel')),
-              FilledButton(
-                onPressed: saving
-                    ? null
-                    : () async {
-                        final digits = phone.text.trim();
-                        if (name.text.trim().length < 2) {
-                          setD(() => error = 'Enter the dietician\'s full name.');
-                          return;
-                        }
-                        // Said separately rather than as one catch-all message:
-                        // "enter a name, phone and password" does not tell
-                        // someone who typed nine digits what is actually wrong.
-                        if (digits.length != 10 || !RegExp(r'^[6-9]\d{9}$').hasMatch(digits)) {
-                          setD(() => error = 'Enter a valid 10-digit mobile number.');
-                          return;
-                        }
-                        if (password.text.length < 8) {
-                          setD(() => error = 'Password must be at least 8 characters.');
-                          return;
-                        }
-                        setD(() {
-                          saving = true;
-                          error = null;
-                        });
-                        try {
-                          final d = await repo.addDietician(
-                            name: name.text.trim(),
-                            // Sent in the same +91XXXXXXXXXX form the server
-                            // stores for every other account, so the dietician
-                            // can sign in with the number the doctor typed.
-                            phone: '${AuthValidators.countryCode}$digits',
-                            password: password.text,
-                          );
-                          if (dctx.mounted) Navigator.pop(dctx, d);
-                        } on ApiException catch (e) {
-                          setD(() {
-                            saving = false;
-                            error = e.message;
-                          });
-                        }
-                      },
-                child: saving
-                    ? const SizedBox(width: 16, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Create'),
+                ],
               ),
-            ],
-          ),
         );
       },
     );
@@ -1173,16 +1514,25 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
       final ext = report.mimeType == 'application/pdf' ? 'pdf' : 'bin';
       final cached = File('${dir.path}/lab_${report.photoUrl.hashCode}.$ext');
       if (!await cached.exists() || await cached.length() == 0) {
-        final bytes = await ref.read(apiClientProvider).getBytes('${AppConfig.apiOrigin}${report.photoUrl}');
+        final bytes = await ref
+            .read(apiClientProvider)
+            .getBytes('${AppConfig.apiOrigin}${report.photoUrl}');
         if (bytes.isEmpty) throw Exception('empty report download');
         await cached.writeAsBytes(bytes, flush: true);
       }
       final res = await OpenFilex.open(cached.path);
       if (res.type != ResultType.done && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No app on this phone can open that report')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No app on this phone can open that report'),
+          ),
+        );
       }
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open the report')));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open the report')),
+        );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -1207,20 +1557,37 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
         children: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: showThumb
-                ? AuthedImage(path: report.photoUrl!, width: 52, height: 52, radius: 10)
-                : Container(
-                    width: 52,
-                    height: 52,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(12),
+            child:
+                showThumb
+                    ? AuthedImage(
+                      path: report.photoUrl!,
+                      width: 52,
+                      height: 52,
+                      radius: 10,
+                    )
+                    : Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child:
+                          _busy
+                              ? const SizedBox(
+                                width: 20,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.4,
+                                ),
+                              )
+                              : Icon(
+                                _fileIcon(),
+                                color: scheme.onSurfaceVariant,
+                                size: 24,
+                              ),
                     ),
-                    child: _busy
-                        ? const SizedBox(width: 20, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
-                        : Icon(_fileIcon(), color: scheme.onSurfaceVariant, size: 24),
-                  ),
           ),
           Expanded(
             child: Column(
@@ -1228,9 +1595,23 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(report.testName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700))),
+                    Expanded(
+                      child: Text(
+                        report.testName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                     if (report.createdAt != null)
-                      Text(DateFormat('d MMM').format(report.createdAt!), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                      Text(
+                        DateFormat('d MMM').format(report.createdAt!),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                   ],
                 ),
                 if (report.note.isNotEmpty) ...[
@@ -1241,11 +1622,25 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(showThumb ? Icons.visibility_outlined : Icons.open_in_new_rounded, size: 13, color: AppColors.accentOn(context)),
+                      Icon(
+                        showThumb
+                            ? Icons.visibility_outlined
+                            : Icons.open_in_new_rounded,
+                        size: 13,
+                        color: AppColors.accentOn(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        showThumb ? 'Tap to view' : (report.mimeType == 'application/pdf' ? 'Tap to open PDF' : 'Tap to open'),
-                        style: TextStyle(fontSize: 12, color: AppColors.accentOn(context), fontWeight: FontWeight.w600),
+                        showThumb
+                            ? 'Tap to view'
+                            : (report.mimeType == 'application/pdf'
+                                ? 'Tap to open PDF'
+                                : 'Tap to open'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.accentOn(context),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -1256,12 +1651,20 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.dangerOn(context)),
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 14,
+                        color: AppColors.dangerOn(context),
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           'Out of range: ${abnormal.map((a) => '${a.label} ${a.flag == 'low' ? '↓' : '↑'}').join(', ')}',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.dangerOn(context)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.dangerOn(context),
+                          ),
                         ),
                       ),
                     ],
@@ -1274,12 +1677,21 @@ class _LabReportRowState extends ConsumerState<_LabReportRow> {
                   Wrap(
                     spacing: 4,
                     runSpacing: 4,
-                    children: [for (final a in report.analytes) _AnalyteChip(analyte: a)],
+                    children: [
+                      for (final a in report.analytes) _AnalyteChip(analyte: a),
+                    ],
                   ),
-                ] else if (report.analysisStatus == 'failed' || report.analysisStatus == 'unsupported') ...[
+                ] else if (report.analysisStatus == 'failed' ||
+                    report.analysisStatus == 'unsupported') ...[
                   const SizedBox(height: 4),
-                  Text('Could not read automatically — needs a look',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.warningOn(context))),
+                  Text(
+                    'Could not read automatically — needs a look',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.warningOn(context),
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -1306,7 +1718,8 @@ class _AnalyteChip extends StatelessWidget {
 
   final Analyte analyte;
 
-  static String _fmt(num v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+  static String _fmt(num v) =>
+      v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
@@ -1320,21 +1733,47 @@ class _AnalyteChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: abnormal ? color.withValues(alpha: 0.12) : scheme.surfaceContainerHigh,
+        color:
+            abnormal
+                ? color.withValues(alpha: 0.12)
+                : scheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: abnormal ? color.withValues(alpha: 0.4) : scheme.outlineVariant.withValues(alpha: 0.5)),
+        border: Border.all(
+          color:
+              abnormal
+                  ? color.withValues(alpha: 0.4)
+                  : scheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('${analyte.label} ', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-          Text(_fmt(analyte.value),
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: abnormal ? color : scheme.onSurface)),
+          Text(
+            '${analyte.label} ',
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
+          Text(
+            _fmt(analyte.value),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: abnormal ? color : scheme.onSurface,
+            ),
+          ),
           if (analyte.unit != null && analyte.unit!.isNotEmpty)
-            Text(' ${analyte.unit}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            Text(
+              ' ${analyte.unit}',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
           if (abnormal) ...[
             const SizedBox(width: 4),
-            Icon(analyte.flag == 'low' ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded, size: 12, color: color),
+            Icon(
+              analyte.flag == 'low'
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+              size: 12,
+              color: color,
+            ),
           ],
         ],
       ),
@@ -1352,7 +1791,10 @@ class _AnalyteTrends extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final sorted = [...reports]..sort((a, b) => (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)));
+    final sorted = [...reports]..sort(
+      (a, b) =>
+          (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)),
+    );
     final series = <String, List<Analyte>>{};
     final labels = <String, String>{};
     for (final r in sorted) {
@@ -1368,21 +1810,40 @@ class _AnalyteTrends extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: AppSpacing.md),
-        Text('LAB TRENDS',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: scheme.onSurfaceVariant)),
+        Text(
+          'LAB TRENDS',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: AppSpacing.sm),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 4,
+          ),
           decoration: BoxDecoration(
             color: scheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.6),
+            ),
           ),
           child: Column(
             children: [
               for (var i = 0; i < trended.length; i++) ...[
-                if (i > 0) Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.4)),
-                _AnalyteTrendRow(label: labels[trended[i].key]!, readings: trended[i].value),
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    color: scheme.outlineVariant.withValues(alpha: 0.4),
+                  ),
+                _AnalyteTrendRow(
+                  label: labels[trended[i].key]!,
+                  readings: trended[i].value,
+                ),
               ],
             ],
           ),
@@ -1408,7 +1869,8 @@ class _AnalyteTrendRow extends StatelessWidget {
       'low' => AppColors.warningOn(context),
       _ => AppColors.successOn(context),
     };
-    String fmt(num v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+    String fmt(num v) =>
+        v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -1417,10 +1879,21 @@ class _AnalyteTrendRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 if (latest.rangeText.isNotEmpty)
-                  Text('target ${latest.rangeText}${latest.unit != null ? ' ${latest.unit}' : ''}',
-                      style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                  Text(
+                    'target ${latest.rangeText}${latest.unit != null ? ' ${latest.unit}' : ''}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -1432,8 +1905,14 @@ class _AnalyteTrendRow extends StatelessWidget {
             showBand: false,
           ),
           const SizedBox(width: 8),
-          Text(fmt(latest.value),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: abnormal ? color : scheme.onSurface)),
+          Text(
+            fmt(latest.value),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: abnormal ? color : scheme.onSurface,
+            ),
+          ),
         ],
       ),
     );
@@ -1441,7 +1920,12 @@ class _AnalyteTrendRow extends StatelessWidget {
 }
 
 class _AlertMini extends StatelessWidget {
-  const _AlertMini({required this.title, required this.severity, required this.status, this.when});
+  const _AlertMini({
+    required this.title,
+    required this.severity,
+    required this.status,
+    this.when,
+  });
   final String title;
   final String severity;
   final String status;
@@ -1464,12 +1948,33 @@ class _AlertMini extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
-                if (when != null) Text(DateFormat('d MMM, h:mm a').format(when!), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (when != null)
+                  Text(
+                    DateFormat('d MMM, h:mm a').format(when!),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
               ],
             ),
           ),
-          MiniPill(label: status == 'open' ? severity.toUpperCase() : status.toUpperCase(), color: status == 'open' ? color : const Color(0xFF6B7280)),
+          MiniPill(
+            label:
+                status == 'open'
+                    ? severity.toUpperCase()
+                    : status.toUpperCase(),
+            color: status == 'open' ? color : const Color(0xFF6B7280),
+          ),
         ],
       ),
     );
@@ -1496,14 +2001,39 @@ class _AiContextCard extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 0),
-          childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 0,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            AppSpacing.md,
+          ),
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          leading: Icon(Icons.smart_toy_outlined, size: 20, color: scheme.onSurfaceVariant),
-          title: const Text('Assistant context', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-          subtitle: Text('What the AI assistant sees', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          leading: Icon(
+            Icons.smart_toy_outlined,
+            size: 20,
+            color: scheme.onSurfaceVariant,
+          ),
+          title: const Text(
+            'Assistant context',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          subtitle: Text(
+            'What the AI assistant sees',
+            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+          ),
           children: [
-            Text(text, style: TextStyle(fontSize: 14, height: 1.5, color: scheme.onSurface)),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: scheme.onSurface,
+              ),
+            ),
           ],
         ),
       ),
@@ -1516,6 +2046,8 @@ class _SectionTitle extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+  );
 }

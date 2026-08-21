@@ -30,17 +30,27 @@ class GlucoseReading {
       id: json['id']?.toString() ?? '',
       valueMgDl: json['valueMgDl'] as num? ?? 0,
       context: json['context']?.toString() ?? 'random',
-      measuredAt: json['measuredAt'] == null ? null : DateTime.tryParse(json['measuredAt'].toString()),
+      measuredAt:
+          json['measuredAt'] == null
+              ? null
+              : DateTime.tryParse(json['measuredAt'].toString()),
       flag: json['flag']?.toString() ?? 'in_range',
       notes: json['notes'] as String?,
       source: json['source'] as String?,
-      createdAt: json['createdAt'] == null ? null : DateTime.tryParse(json['createdAt'].toString()),
+      createdAt:
+          json['createdAt'] == null
+              ? null
+              : DateTime.tryParse(json['createdAt'].toString()),
     );
   }
 }
 
 class GlucoseAssessment {
-  const GlucoseAssessment({required this.flag, required this.urgency, required this.summary});
+  const GlucoseAssessment({
+    required this.flag,
+    required this.urgency,
+    required this.summary,
+  });
 
   final String flag;
   final String urgency;
@@ -83,7 +93,11 @@ class GlucoseAlert {
 
 /// Response of `POST /glucose`.
 class LogGlucoseResult {
-  const LogGlucoseResult({required this.reading, required this.assessment, this.alert});
+  const LogGlucoseResult({
+    required this.reading,
+    required this.assessment,
+    this.alert,
+  });
 
   final GlucoseReading reading;
   final GlucoseAssessment assessment;
@@ -92,10 +106,13 @@ class LogGlucoseResult {
   factory LogGlucoseResult.fromJson(Map<String, dynamic> json) {
     return LogGlucoseResult(
       reading: GlucoseReading.fromJson(json['reading'] as Map<String, dynamic>),
-      assessment: GlucoseAssessment.fromJson(json['assessment'] as Map<String, dynamic>? ?? const {}),
-      alert: json['alert'] == null
-          ? null
-          : GlucoseAlert.fromJson(json['alert'] as Map<String, dynamic>),
+      assessment: GlucoseAssessment.fromJson(
+        json['assessment'] as Map<String, dynamic>? ?? const {},
+      ),
+      alert:
+          json['alert'] == null
+              ? null
+              : GlucoseAlert.fromJson(json['alert'] as Map<String, dynamic>),
     );
   }
 }

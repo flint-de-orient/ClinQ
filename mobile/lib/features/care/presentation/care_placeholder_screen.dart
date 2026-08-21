@@ -9,7 +9,11 @@ import '../../../l10n/gen/app_localizations.dart';
 /// Prescriptions, Lab Reports) — nav + empty state only, per the task
 /// brief.
 class CarePlaceholderScreen extends StatelessWidget {
-  const CarePlaceholderScreen({super.key, required this.title, required this.icon});
+  const CarePlaceholderScreen({
+    super.key,
+    required this.title,
+    required this.icon,
+  });
 
   final String title;
   final IconData icon;

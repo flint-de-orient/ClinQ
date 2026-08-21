@@ -57,7 +57,11 @@ class StatusPill extends StatelessWidget {
       ),
       child: Text(
         appointmentStatusLabel(l10n, status),
-        style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -90,10 +94,17 @@ class AppointmentCard extends StatelessWidget {
     final color = appointmentStatusColor(a.status);
     final dimmed = a.isCancelled;
 
-    final title = clinicianView ? (a.patientName ?? l10n.profilePatient) : (a.clinicName ?? l10n.apptModeInClinic);
-    final subtitle = clinicianView
-        ? (a.patientPhone ?? '')
-        : [if (a.clinicAddress != null) a.clinicAddress!, if (a.clinicCity != null) a.clinicCity!].join(' · ');
+    final title =
+        clinicianView
+            ? (a.patientName ?? l10n.profilePatient)
+            : (a.clinicName ?? l10n.apptModeInClinic);
+    final subtitle =
+        clinicianView
+            ? (a.patientPhone ?? '')
+            : [
+              if (a.clinicAddress != null) a.clinicAddress!,
+              if (a.clinicCity != null) a.clinicCity!,
+            ].join(' · ');
 
     return Opacity(
       opacity: dimmed ? 0.6 : 1,
@@ -101,7 +112,9 @@ class AppointmentCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -126,11 +139,19 @@ class AppointmentCard extends StatelessWidget {
                         children: [
                           Text(
                             DateFormat('h:mm').format(a.scheduledFor),
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: color),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              color: color,
+                            ),
                           ),
                           Text(
                             DateFormat('a').format(a.scheduledFor),
-                            style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: color,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -142,7 +163,10 @@ class AppointmentCard extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -150,7 +174,10 @@ class AppointmentCard extends StatelessWidget {
                             const SizedBox(height: 0),
                             Text(
                               subtitle,
-                              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: scheme.onSurfaceVariant,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -159,19 +186,27 @@ class AppointmentCard extends StatelessWidget {
                           Row(
                             children: [
                               Icon(
-                                a.isTeleconsult ? Icons.videocam_outlined : Icons.location_on_outlined,
+                                a.isTeleconsult
+                                    ? Icons.videocam_outlined
+                                    : Icons.location_on_outlined,
                                 size: 14,
                                 color: scheme.onSurfaceVariant,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 appointmentModeLabel(l10n, a.mode),
-                                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 DateFormat('EEE, d MMM').format(a.scheduledFor),
-                                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -183,7 +218,10 @@ class AppointmentCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         StatusPill(status: a.status),
-                        if (trailing != null) ...[const SizedBox(height: 4), trailing!],
+                        if (trailing != null) ...[
+                          const SizedBox(height: 4),
+                          trailing!,
+                        ],
                       ],
                     ),
                   ],
@@ -192,14 +230,21 @@ class AppointmentCard extends StatelessWidget {
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     a.reason!,
-                    style: TextStyle(fontSize: 14, color: scheme.onSurface, height: 1.3),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurface,
+                      height: 1.3,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
                 if (actions != null && actions!.isNotEmpty) ...[
                   const Divider(height: AppSpacing.lg),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: _spaced(actions!)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: _spaced(actions!),
+                  ),
                 ],
               ],
             ),

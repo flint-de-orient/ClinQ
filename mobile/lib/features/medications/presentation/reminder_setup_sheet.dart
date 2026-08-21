@@ -10,7 +10,10 @@ import 'medications_providers.dart';
 
 /// Shows the reliability prompt at most once (unless reopened from settings),
 /// and only when there's actually something to fix — so it never nags.
-Future<void> maybePromptReminderSetup(BuildContext context, WidgetRef ref) async {
+Future<void> maybePromptReminderSetup(
+  BuildContext context,
+  WidgetRef ref,
+) async {
   final prefs = ref.read(appPreferencesProvider);
   if (prefs.reminderSetupDone || !prefs.medicationReminders) return;
 
@@ -42,7 +45,8 @@ class _ReminderSetupSheet extends ConsumerStatefulWidget {
   const _ReminderSetupSheet();
 
   @override
-  ConsumerState<_ReminderSetupSheet> createState() => _ReminderSetupSheetState();
+  ConsumerState<_ReminderSetupSheet> createState() =>
+      _ReminderSetupSheetState();
 }
 
 class _ReminderSetupSheetState extends ConsumerState<_ReminderSetupSheet> {
@@ -70,43 +74,86 @@ class _ReminderSetupSheetState extends ConsumerState<_ReminderSetupSheet> {
     final scheme = Theme.of(context).colorScheme;
     final accent = AppColors.accentOn(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Icon(Icons.alarm_on_rounded, color: accent, size: 26),
           ),
           const SizedBox(height: AppSpacing.md),
-          const Text('Never miss a dose', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          const Text(
+            'Never miss a dose',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 4),
           Text(
             'Some phones put apps to sleep and silence their alarms. One quick step keeps your medicine reminders firing on time, even when MedPin is closed.',
-            style: TextStyle(fontSize: 14, height: 1.4, color: scheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.4,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-          _point(context, Icons.notifications_active_rounded, 'Show reminder alarms'),
+          _point(
+            context,
+            Icons.notifications_active_rounded,
+            'Show reminder alarms',
+          ),
           _point(context, Icons.schedule_rounded, 'Fire exactly on time'),
-          _point(context, Icons.battery_saver_rounded, "Don't sleep the reminders"),
+          _point(
+            context,
+            Icons.battery_saver_rounded,
+            "Don't sleep the reminders",
+          ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
               onPressed: _working ? null : _enable,
-              style: FilledButton.styleFrom(backgroundColor: accent, minimumSize: const Size.fromHeight(50)),
-              child: _working
-                  ? const SizedBox(width: 20, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-                  : const Text('Turn on reliable reminders', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                minimumSize: const Size.fromHeight(50),
+              ),
+              child:
+                  _working
+                      ? const SizedBox(
+                        width: 20,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text(
+                        'Turn on reliable reminders',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
             ),
           ),
           const SizedBox(height: 4),
           Center(
             child: TextButton(
               onPressed: _working ? null : _later,
-              child: Text('Maybe later', style: TextStyle(color: scheme.onSurfaceVariant)),
+              child: Text(
+                'Maybe later',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
             ),
           ),
         ],
@@ -122,8 +169,17 @@ class _ReminderSetupSheetState extends ConsumerState<_ReminderSetupSheet> {
         children: [
           Icon(icon, size: 19, color: AppColors.accentOn(context)),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-          Icon(Icons.check_circle_rounded, size: 18, color: scheme.outlineVariant),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+          ),
+          Icon(
+            Icons.check_circle_rounded,
+            size: 18,
+            color: scheme.outlineVariant,
+          ),
         ],
       ),
     );

@@ -26,7 +26,9 @@ final _dieticiansProvider = FutureProvider.autoDispose<List<_Dietician>>((
 /// with their own password. Null when this deployment has no code configured,
 /// in which case the invite card is hidden and only direct "Add" remains.
 final _inviteCodeProvider = FutureProvider.autoDispose<String?>((ref) async {
-  final data = await ref.read(apiClientProvider).getJson('/doctor/dietician-invite');
+  final data = await ref
+      .read(apiClientProvider)
+      .getJson('/doctor/dietician-invite');
   return data['code']?.toString();
 });
 
@@ -59,29 +61,39 @@ class _DieticiansScreenState extends ConsumerState<DieticiansScreen> {
   Future<void> _regenerateInvite(BuildContext context, WidgetRef ref) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Generate a new invite code?'),
-        content: const Text(
-          'The current code stops working immediately. Anyone you have already '
-          'sent it to will need the new one.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Generate'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Generate a new invite code?'),
+            content: const Text(
+              'The current code stops working immediately. Anyone you have already '
+              'sent it to will need the new one.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Generate'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
     if (ok != true || !context.mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(apiClientProvider).postJson('/doctor/dietician-invite/generate');
+      await ref
+          .read(apiClientProvider)
+          .postJson('/doctor/dietician-invite/generate');
       ref.invalidate(_inviteCodeProvider);
-      messenger.showSnackBar(const SnackBar(content: Text('New invite code generated')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('New invite code generated')),
+      );
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
@@ -286,32 +298,52 @@ class _DieticiansScreenState extends ConsumerState<DieticiansScreen> {
                   Consumer(
                     builder: (context, ref, _) {
                       final code = ref.watch(_inviteCodeProvider).valueOrNull;
-                      if (code == null || code.isEmpty) return const SizedBox.shrink();
+                      if (code == null || code.isEmpty)
+                        return const SizedBox.shrink();
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                         child: Container(
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
                             color: scheme.surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.7)),
+                            borderRadius: BorderRadius.circular(
+                              AppSpacing.cardRadius,
+                            ),
+                            border: Border.all(
+                              color: scheme.outlineVariant.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.mail_outline_rounded, size: 20, color: AppColors.accentOn(context)),
+                                  Icon(
+                                    Icons.mail_outline_rounded,
+                                    size: 20,
+                                    color: AppColors.accentOn(context),
+                                  ),
                                   const SizedBox(width: AppSpacing.sm),
-                                  const Text('Invite a dietician',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                                  const Text(
+                                    'Invite a dietician',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 'Share this code. They install the app, register, and enter it to '
                                 'join as a dietician — with their own password.',
-                                style: TextStyle(fontSize: 14, height: 1.4, color: scheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.4,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                               const SizedBox(height: AppSpacing.md),
                               // Full width and a single line — it used to share a
@@ -319,7 +351,10 @@ class _DieticiansScreenState extends ConsumerState<DieticiansScreen> {
                               // it collapsed and the code stacked one letter per row.
                               Container(
                                 width: double.infinity,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.accentSoftOn(context),
                                   borderRadius: BorderRadius.circular(12),
@@ -343,11 +378,17 @@ class _DieticiansScreenState extends ConsumerState<DieticiansScreen> {
                                   Expanded(
                                     child: OutlinedButton.icon(
                                       style: OutlinedButton.styleFrom(
-                                        foregroundColor: AppColors.accentOn(context),
+                                        foregroundColor: AppColors.accentOn(
+                                          context,
+                                        ),
                                         minimumSize: const Size.fromHeight(48),
                                       ),
-                                      onPressed: () => _regenerateInvite(context, ref),
-                                      icon: const Icon(Icons.autorenew_rounded, size: 18),
+                                      onPressed:
+                                          () => _regenerateInvite(context, ref),
+                                      icon: const Icon(
+                                        Icons.autorenew_rounded,
+                                        size: 18,
+                                      ),
                                       label: const Text('Generate new'),
                                     ),
                                   ),
@@ -360,12 +401,21 @@ class _DieticiansScreenState extends ConsumerState<DieticiansScreen> {
                                         minimumSize: const Size.fromHeight(48),
                                       ),
                                       onPressed: () {
-                                        Clipboard.setData(ClipboardData(text: code));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Invite code copied')),
+                                        Clipboard.setData(
+                                          ClipboardData(text: code),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Invite code copied'),
+                                          ),
                                         );
                                       },
-                                      icon: const Icon(Icons.copy_rounded, size: 18),
+                                      icon: const Icon(
+                                        Icons.copy_rounded,
+                                        size: 18,
+                                      ),
                                       label: const Text('Copy'),
                                     ),
                                   ),
@@ -882,7 +932,10 @@ class _AddDieticianSheetState extends ConsumerState<_AddDieticianSheet> {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 _serverError!,
-                style: TextStyle(fontSize: 14, color: AppColors.dangerOn(context)),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.dangerOn(context),
+                ),
               ),
             ],
             const SizedBox(height: AppSpacing.lg),

@@ -57,7 +57,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
     if (ref.read(authControllerProvider).user?.language == appLanguage) return;
 
-    ref.read(authControllerProvider.notifier).updateLocalUserLanguage(appLanguage);
+    ref
+        .read(authControllerProvider.notifier)
+        .updateLocalUserLanguage(appLanguage);
     try {
       await ref.read(authRepositoryProvider).updateMe(language: appLanguage);
     } on ApiException {
@@ -88,9 +90,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isSubmitting = false);
     if (error != null) {
       setState(() {
-        _errorMessage = error.code == 'UNAUTHORIZED' || error.code == 'BAD_REQUEST'
-            ? l10n.authInvalidCredentials
-            : ErrorView.messageFor(context, error);
+        _errorMessage =
+            error.code == 'UNAUTHORIZED' || error.code == 'BAD_REQUEST'
+                ? l10n.authInvalidCredentials
+                : ErrorView.messageFor(context, error);
       });
     }
   }
@@ -176,9 +179,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     : Icons.visibility_off_outlined,
                               ),
                               tooltip: _obscurePassword ? 'Show' : 'Hide',
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed:
+                                  () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                             ),
                           ),
                           onFieldSubmitted: (_) => _submit(),
@@ -188,9 +192,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           // password on login, and telling someone their
                           // *existing* password is "too short" reads as a rule
                           // about the account rather than a typo in the box.
-                          validator: (value) => (value == null || value.isEmpty)
-                              ? l10n.authPasswordRequired
-                              : null,
+                          validator:
+                              (value) =>
+                                  (value == null || value.isEmpty)
+                                      ? l10n.authPasswordRequired
+                                      : null,
                         ),
                       ),
 

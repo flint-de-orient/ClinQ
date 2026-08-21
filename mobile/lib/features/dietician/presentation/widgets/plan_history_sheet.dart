@@ -42,52 +42,72 @@ class _PlanHistorySheet extends ConsumerWidget {
       initialChildSize: 0.7,
       minChildSize: 0.4,
       maxChildSize: 0.94,
-      builder: (context, controller) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Previous plans',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                if (revisions != null)
-                  Text(
-                    '${revisions.length}',
-                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
-                  ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
-          Expanded(
-            child: switch ((revisions, async.isLoading)) {
-              (null, true) => const Center(child: CircularProgressIndicator()),
-              (null, _) => const _Note('Could not load the history.'),
-              (final r, _) when r!.isEmpty => const _Note(
-                'No previous plans. The one this patient is on now is the first '
-                'they have been given.',
-              ),
-              (final r, _) => ListView.separated(
-                controller: controller,
+      builder:
+          (context, controller) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  0,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
                 ),
-                itemCount: r!.length,
-                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-                itemBuilder: (context, i) => _RevisionCard(revision: r[i], index: r.length - i),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Previous plans',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    if (revisions != null)
+                      Text(
+                        '${revisions.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            },
+              Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              Expanded(
+                child: switch ((revisions, async.isLoading)) {
+                  (null, true) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  (null, _) => const _Note('Could not load the history.'),
+                  (final r, _) when r!.isEmpty => const _Note(
+                    'No previous plans. The one this patient is on now is the first '
+                    'they have been given.',
+                  ),
+                  (final r, _) => ListView.separated(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.xl,
+                    ),
+                    itemCount: r!.length,
+                    separatorBuilder:
+                        (_, _) => const SizedBox(height: AppSpacing.sm),
+                    itemBuilder:
+                        (context, i) =>
+                            _RevisionCard(revision: r[i], index: r.length - i),
+                  ),
+                },
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -111,15 +131,19 @@ class _RevisionCard extends StatelessWidget {
     final days = revision.days;
 
     final period = [
-      if (revision.startedAt != null) DateFormat('d MMM yyyy').format(revision.startedAt!),
-      if (revision.replacedAt != null) DateFormat('d MMM yyyy').format(revision.replacedAt!),
+      if (revision.startedAt != null)
+        DateFormat('d MMM yyyy').format(revision.startedAt!),
+      if (revision.replacedAt != null)
+        DateFormat('d MMM yyyy').format(revision.replacedAt!),
     ].join(' – ');
 
     return Container(
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.55),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Theme(
@@ -127,7 +151,10 @@ class _RevisionCard extends StatelessWidget {
         // that already has a border.
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 4,
+          ),
           childrenPadding: const EdgeInsets.fromLTRB(
             AppSpacing.md,
             0,
@@ -138,7 +165,11 @@ class _RevisionCard extends StatelessWidget {
             plan.goal.trim().isNotEmpty ? plan.goal.trim() : 'Plan $index',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, height: 1.35),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
           ),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -156,7 +187,10 @@ class _RevisionCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  [meal.name, if (meal.time.isNotEmpty) meal.time].join('  ·  ').toUpperCase(),
+                  [
+                    meal.name,
+                    if (meal.time.isNotEmpty) meal.time,
+                  ].join('  ·  ').toUpperCase(),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
@@ -172,9 +206,15 @@ class _RevisionCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('•  ', style: TextStyle(color: scheme.onSurfaceVariant)),
+                      Text(
+                        '•  ',
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
                       Expanded(
-                        child: Text(item, style: const TextStyle(fontSize: 14, height: 1.4)),
+                        child: Text(
+                          item,
+                          style: const TextStyle(fontSize: 14, height: 1.4),
+                        ),
                       ),
                     ],
                   ),
@@ -213,16 +253,24 @@ class _RevisionCard extends StatelessWidget {
                 children: [
                   for (final a in plan.avoid)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.dangerOn(context).withValues(alpha: 0.45),
+                          color: AppColors.dangerOn(
+                            context,
+                          ).withValues(alpha: 0.45),
                         ),
                       ),
                       child: Text(
                         a,
-                        style: TextStyle(fontSize: 12, color: AppColors.dangerOn(context)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.dangerOn(context),
+                        ),
                       ),
                     ),
                 ],
@@ -234,7 +282,11 @@ class _RevisionCard extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   plan.notes.trim(),
-                  style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurface),
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    color: scheme.onSurface,
+                  ),
                 ),
               ),
           ],
@@ -258,7 +310,11 @@ class _Note extends StatelessWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurfaceVariant),
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.45,
+            color: scheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

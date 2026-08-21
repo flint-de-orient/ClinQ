@@ -31,12 +31,14 @@ class DieticianDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
     final user = ref.watch(authControllerProvider).user;
     final async = ref.watch(dietDashboardProvider);
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       // The dietician's day is made of other people's actions — a patient
       // logging a meal, a doctor prescribing, a report the server has just
       // finished reading. Waiting for a pull-to-refresh showed them a morning

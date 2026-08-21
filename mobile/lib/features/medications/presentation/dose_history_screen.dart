@@ -18,7 +18,11 @@ class DoseHistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _DoseHistoryScreenState extends ConsumerState<DoseHistoryScreen> {
-  static const _periods = [(label: '7 days', days: 7), (label: '2 weeks', days: 14), (label: '30 days', days: 30)];
+  static const _periods = [
+    (label: '7 days', days: 7),
+    (label: '2 weeks', days: 14),
+    (label: '30 days', days: 30),
+  ];
   int _days = 14;
 
   @override
@@ -31,11 +35,20 @@ class _DoseHistoryScreenState extends ConsumerState<DoseHistoryScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              0,
+            ),
             child: Row(
               children: [
                 for (final p in _periods) ...[
-                  _PeriodChip(label: p.label, selected: _days == p.days, onTap: () => setState(() => _days = p.days)),
+                  _PeriodChip(
+                    label: p.label,
+                    selected: _days == p.days,
+                    onTap: () => setState(() => _days = p.days),
+                  ),
                   const SizedBox(width: 8),
                 ],
               ],
@@ -46,19 +59,41 @@ class _DoseHistoryScreenState extends ConsumerState<DoseHistoryScreen> {
               onRefresh: () async => ref.invalidate(doseHistoryProvider(_days)),
               child: async.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => ListView(children: [
-                  const SizedBox(height: 120),
-                  Center(child: Text('Could not load your history', style: TextStyle(color: scheme.onSurfaceVariant))),
-                ]),
+                error:
+                    (e, _) => ListView(
+                      children: [
+                        const SizedBox(height: 120),
+                        Center(
+                          child: Text(
+                            'Could not load your history',
+                            style: TextStyle(color: scheme.onSurfaceVariant),
+                          ),
+                        ),
+                      ],
+                    ),
                 data: (doses) {
                   if (doses.isEmpty) {
-                    return ListView(children: [
-                      const SizedBox(height: 120),
-                      Icon(Icons.medication_outlined, size: 52, color: scheme.outlineVariant),
-                      const SizedBox(height: AppSpacing.md),
-                      Center(child: Text('No doses in this period',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: scheme.onSurfaceVariant))),
-                    ]);
+                    return ListView(
+                      children: [
+                        const SizedBox(height: 120),
+                        Icon(
+                          Icons.medication_outlined,
+                          size: 52,
+                          color: scheme.outlineVariant,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Center(
+                          child: Text(
+                            'No doses in this period',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   }
                   return _HistoryList(doses: doses);
                 },
@@ -101,25 +136,47 @@ class _HistoryList extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xl),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xl,
+      ),
       children: [
         for (final key in order) ...[
-          Builder(builder: (context) {
-            final scheme = Theme.of(context).colorScheme;
-            final list = byDay[key]!;
-            final at = list.first.scheduledFor ?? DateTime.now();
-            final taken = list.where((d) => d.status == 'taken').length;
-            return Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.sm),
-              child: Row(
-                children: [
-                  Text(_dayLabel(at), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-                  const Spacer(),
-                  Text('$taken/${list.length} taken', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-                ],
-              ),
-            );
-          }),
+          Builder(
+            builder: (context) {
+              final scheme = Theme.of(context).colorScheme;
+              final list = byDay[key]!;
+              final at = list.first.scheduledFor ?? DateTime.now();
+              final taken = list.where((d) => d.status == 'taken').length;
+              return Padding(
+                padding: const EdgeInsets.only(
+                  top: AppSpacing.md,
+                  bottom: AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _dayLabel(at),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$taken/${list.length} taken',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           for (final dose in byDay[key]!) _DoseRow(dose: dose),
         ],
       ],
@@ -131,21 +188,34 @@ class _DoseRow extends StatelessWidget {
   const _DoseRow({required this.dose});
   final DoseHistoryEntry dose;
 
-  ({Color color, IconData icon, String label}) get _status => switch (dose.status) {
-        'taken' => (color: AppColors.success, icon: Icons.check_circle_rounded, label: 'Taken'),
-        'skipped' => (color: AppColors.warning, icon: Icons.remove_circle_rounded, label: 'Skipped'),
-        _ => (color: AppColors.danger, icon: Icons.cancel_rounded, label: 'Missed'),
-      };
+  ({Color color, IconData icon, String label}) get _status => switch (dose
+      .status) {
+    'taken' => (
+      color: AppColors.success,
+      icon: Icons.check_circle_rounded,
+      label: 'Taken',
+    ),
+    'skipped' => (
+      color: AppColors.warning,
+      icon: Icons.remove_circle_rounded,
+      label: 'Skipped',
+    ),
+    _ => (color: AppColors.danger, icon: Icons.cancel_rounded, label: 'Missed'),
+  };
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final s = _status;
-    final time = dose.scheduledFor != null ? DateFormat('h:mm a').format(dose.scheduledFor!) : dose.time;
+    final time =
+        dose.scheduledFor != null
+            ? DateFormat('h:mm a').format(dose.scheduledFor!)
+            : dose.time;
     final sub = [
       if (dose.strength != null && dose.strength!.isNotEmpty) dose.strength,
       time,
-      if (dose.status == 'taken' && dose.takenAt != null) 'took ${DateFormat('h:mm a').format(dose.takenAt!)}',
+      if (dose.status == 'taken' && dose.takenAt != null)
+        'took ${DateFormat('h:mm a').format(dose.takenAt!)}',
     ].whereType<String>().join('  ·  ');
 
     return Container(
@@ -164,16 +234,38 @@ class _DoseRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(dose.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                Text(
+                  dose.name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 0),
-                Text(sub, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  sub,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: s.color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
-            child: Text(s.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: s.color)),
+            decoration: BoxDecoration(
+              color: s.color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              s.label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: s.color,
+              ),
+            ),
           ),
         ],
       ),
@@ -182,7 +274,11 @@ class _DoseRow extends StatelessWidget {
 }
 
 class _PeriodChip extends StatelessWidget {
-  const _PeriodChip({required this.label, required this.selected, required this.onTap});
+  const _PeriodChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -196,16 +292,26 @@ class _PeriodChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          color:
+              selected
+                  ? AppColors.primary
+                  : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.primary : scheme.outlineVariant.withValues(alpha: 0.5)),
+          border: Border.all(
+            color:
+                selected
+                    ? AppColors.primary
+                    : scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
-        child: Text(label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              color: selected ? Colors.white : scheme.onSurface,
-            )),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected ? Colors.white : scheme.onSurface,
+          ),
+        ),
       ),
     );
   }

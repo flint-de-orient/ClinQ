@@ -26,7 +26,8 @@ class ChatRepository {
         if (sessionId != null) 'sessionId': sessionId,
         'text': text,
         'language': language,
-        if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+        if (attachments != null && attachments.isNotEmpty)
+          'attachments': attachments,
         if (replyToId != null) 'replyTo': replyToId,
       },
     );
@@ -51,14 +52,18 @@ class ChatRepository {
         if (sessionId != null) 'sessionId': sessionId,
         'text': text,
         'language': language,
-        if (attachments != null && attachments.isNotEmpty) 'attachments': attachments,
+        if (attachments != null && attachments.isNotEmpty)
+          'attachments': attachments,
         if (replyToId != null) 'replyTo': replyToId,
       },
     );
   }
 
   Future<Paged<ChatSession>> getSessions({int page = 1, int limit = 50}) async {
-    final json = await _client.getJson('/chat/sessions', query: {'page': page, 'limit': limit});
+    final json = await _client.getJson(
+      '/chat/sessions',
+      query: {'page': page, 'limit': limit},
+    );
     return Paged.fromJson(json, ChatSession.fromJson);
   }
 
@@ -83,7 +88,10 @@ class ChatRepository {
   }
 
   Future<void> setPinned(String messageId, bool pinned) async {
-    await _client.postJson('/chat/messages/$messageId/pin', body: {'pinned': pinned});
+    await _client.postJson(
+      '/chat/messages/$messageId/pin',
+      body: {'pinned': pinned},
+    );
   }
 
   /// Hides the message from this reader only. The server refuses on anything
@@ -97,10 +105,14 @@ class ChatRepository {
   /// caller's own, non-emergency messages and returns an error otherwise, so
   /// callers must surface it.
   Future<void> deleteForEveryone(String messageId) async {
-    await _client.postJson('/chat/messages/$messageId/delete', body: {'scope': 'everyone'});
+    await _client.postJson(
+      '/chat/messages/$messageId/delete',
+      body: {'scope': 'everyone'},
+    );
   }
 }
 
-final Provider<ChatRepository> chatRepositoryProvider = Provider<ChatRepository>((ref) {
-  return ChatRepository(ref.watch(apiClientProvider));
-});
+final Provider<ChatRepository> chatRepositoryProvider =
+    Provider<ChatRepository>((ref) {
+      return ChatRepository(ref.watch(apiClientProvider));
+    });

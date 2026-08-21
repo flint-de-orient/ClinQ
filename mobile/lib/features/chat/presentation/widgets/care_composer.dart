@@ -56,29 +56,30 @@ class _CareComposerState extends ConsumerState<CareComposer> {
     final choice = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take a photo'),
-              onTap: () => Navigator.pop(ctx, 'camera'),
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Take a photo'),
+                  onTap: () => Navigator.pop(ctx, 'camera'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Choose from gallery'),
+                  onTap: () => Navigator.pop(ctx, 'gallery'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.picture_as_pdf_outlined),
+                  title: const Text('Document'),
+                  subtitle: const Text('PDF, Word, Excel, text…'),
+                  onTap: () => Navigator.pop(ctx, 'document'),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(ctx, 'gallery'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf_outlined),
-              title: const Text('Document'),
-              subtitle: const Text('PDF, Word, Excel, text…'),
-              onTap: () => Navigator.pop(ctx, 'document'),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (choice == null) return;
 
@@ -88,7 +89,15 @@ class _CareComposerState extends ConsumerState<CareComposer> {
     if (choice == 'document') {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: const ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'csv'],
+        allowedExtensions: const [
+          'pdf',
+          'doc',
+          'docx',
+          'xls',
+          'xlsx',
+          'txt',
+          'csv',
+        ],
         withData: false,
       );
       final file = result?.files.singleOrNull;
@@ -109,15 +118,17 @@ class _CareComposerState extends ConsumerState<CareComposer> {
     await _upload(path, filename);
   }
 
-  Future<void> _upload(String path, String filename, {String kind = UploadKind.other}) async {
+  Future<void> _upload(
+    String path,
+    String filename, {
+    String kind = UploadKind.other,
+  }) async {
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _uploading = true);
     try {
-      final asset = await ref.read(uploadRepositoryProvider).uploadImage(
-        path: path,
-        filename: filename,
-        kind: kind,
-      );
+      final asset = await ref
+          .read(uploadRepositoryProvider)
+          .uploadImage(path: path, filename: filename, kind: kind);
       await widget.onSendAttachment(asset.id);
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
@@ -178,7 +189,9 @@ class _CareComposerState extends ConsumerState<CareComposer> {
                   hintText: widget.hint,
                   isDense: true,
                   filled: true,
-                  fillColor: scheme.surfaceContainerHigh.withValues(alpha: 0.55),
+                  fillColor: scheme.surfaceContainerHigh.withValues(
+                    alpha: 0.55,
+                  ),
                   border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20)),
                     borderSide: BorderSide.none,
@@ -198,13 +211,24 @@ class _CareComposerState extends ConsumerState<CareComposer> {
                   prefixIcon: IconButton(
                     tooltip: 'Attach',
                     onPressed: busy ? null : _attach,
-                    icon: Icon(Icons.attach_file_rounded, size: 22, color: scheme.onSurfaceVariant),
+                    icon: Icon(
+                      Icons.attach_file_rounded,
+                      size: 22,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 12,
+                  ),
                   suffixIcon: IconButton(
                     tooltip: 'Record a voice message',
-                    onPressed: busy ? null : () => setState(() => _recording = true),
-                    icon: Icon(Icons.mic_none_rounded, color: scheme.onSurfaceVariant),
+                    onPressed:
+                        busy ? null : () => setState(() => _recording = true),
+                    icon: Icon(
+                      Icons.mic_none_rounded,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -218,13 +242,21 @@ class _CareComposerState extends ConsumerState<CareComposer> {
                 onTap: busy ? null : widget.onSend,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: busy
-                      ? const SizedBox(
-                          width: 20,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                        )
-                      : const Icon(Icons.send_rounded, size: 22, color: Colors.white),
+                  child:
+                      busy
+                          ? const SizedBox(
+                            width: 20,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : const Icon(
+                            Icons.send_rounded,
+                            size: 22,
+                            color: Colors.white,
+                          ),
                 ),
               ),
             ),

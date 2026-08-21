@@ -36,7 +36,12 @@ Color healthBandColor(String? band) => switch (band) {
 
 /// Small filled pill used for risk/severity chips.
 class MiniPill extends StatelessWidget {
-  const MiniPill({super.key, required this.label, required this.color, this.filled = false});
+  const MiniPill({
+    super.key,
+    required this.label,
+    required this.color,
+    this.filled = false,
+  });
 
   final String label;
   final Color color;

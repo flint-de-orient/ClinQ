@@ -34,7 +34,8 @@ class Appointment {
   bool get isCompleted => status == 'completed';
 
   /// The doctor is with this patient right now (called in or mid-consult).
-  bool get isInProgress => status == 'checked_in' || status == 'in_consultation';
+  bool get isInProgress =>
+      status == 'checked_in' || status == 'in_consultation';
 
   bool get isCancelled => status == 'cancelled' || status == 'no_show';
 
@@ -69,10 +70,14 @@ class Appointment {
       patientId: j['patientId']?.toString() ?? '',
       patientName: j['patientName']?.toString() ?? 'Patient',
       scheduledFor:
-          DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0),
+          DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal() ??
+          DateTime.fromMillisecondsSinceEpoch(0),
       status: j['status']?.toString() ?? 'requested',
       mode: j['mode']?.toString() ?? 'in_clinic',
-      reason: (j['reason']?.toString().trim().isEmpty ?? true) ? null : j['reason'].toString().trim(),
+      reason:
+          (j['reason']?.toString().trim().isEmpty ?? true)
+              ? null
+              : j['reason'].toString().trim(),
       isPriority: j['isPriority'] == true,
     );
   }

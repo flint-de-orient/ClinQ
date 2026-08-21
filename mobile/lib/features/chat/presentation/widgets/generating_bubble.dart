@@ -22,7 +22,8 @@ class GeneratingBubble extends StatefulWidget {
   State<GeneratingBubble> createState() => _GeneratingBubbleState();
 }
 
-class _GeneratingBubbleState extends State<GeneratingBubble> with TickerProviderStateMixin {
+class _GeneratingBubbleState extends State<GeneratingBubble>
+    with TickerProviderStateMixin {
   late final AnimationController _sweep;
   late final AnimationController _shimmer;
 
@@ -31,8 +32,14 @@ class _GeneratingBubbleState extends State<GeneratingBubble> with TickerProvider
     super.initState();
     // Linear only. Any easing makes a continuous rotation look like it is
     // stuttering once per revolution.
-    _sweep = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
-    _shimmer = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+    _sweep = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _shimmer = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
   }
 
   @override
@@ -75,17 +82,18 @@ class _GeneratingBubbleState extends State<GeneratingBubble> with TickerProvider
             RepaintBoundary(
               child: AnimatedBuilder(
                 animation: _sweep,
-                builder: (context, child) => CustomPaint(
-                  painter: _BorderSweepPainter(
-                    progress: _sweep.value,
-                    radius: 20,
-                    // A static full outline when motion is reduced — the
-                    // bubble still reads as "pending", just without movement.
-                    stationary: reduceMotion,
-                    trackColor: scheme.outlineVariant,
-                  ),
-                  child: child,
-                ),
+                builder:
+                    (context, child) => CustomPaint(
+                      painter: _BorderSweepPainter(
+                        progress: _sweep.value,
+                        radius: 20,
+                        // A static full outline when motion is reduced — the
+                        // bubble still reads as "pending", just without movement.
+                        stationary: reduceMotion,
+                        trackColor: scheme.outlineVariant,
+                      ),
+                      child: child,
+                    ),
                 // Passed as AnimatedBuilder's `child` so the bubble subtree is
                 // built once, not rebuilt on every frame of the sweep.
                 child: Container(
@@ -101,11 +109,23 @@ class _GeneratingBubbleState extends State<GeneratingBubble> with TickerProvider
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _ShimmerLine(controller: _shimmer, widthFactor: 0.92, delay: 0),
+                      _ShimmerLine(
+                        controller: _shimmer,
+                        widthFactor: 0.92,
+                        delay: 0,
+                      ),
                       const SizedBox(height: 8),
-                      _ShimmerLine(controller: _shimmer, widthFactor: 0.74, delay: 0.22),
+                      _ShimmerLine(
+                        controller: _shimmer,
+                        widthFactor: 0.74,
+                        delay: 0.22,
+                      ),
                       const SizedBox(height: 8),
-                      _ShimmerLine(controller: _shimmer, widthFactor: 0.42, delay: 0.44),
+                      _ShimmerLine(
+                        controller: _shimmer,
+                        widthFactor: 0.42,
+                        delay: 0.44,
+                      ),
                     ],
                   ),
                 ),
@@ -194,12 +214,18 @@ class _BorderSweepPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BorderSweepPainter old) =>
-      old.progress != progress || old.stationary != stationary || old.trackColor != trackColor;
+      old.progress != progress ||
+      old.stationary != stationary ||
+      old.trackColor != trackColor;
 }
 
 /// One placeholder text line with a left-to-right shimmer highlight.
 class _ShimmerLine extends StatelessWidget {
-  const _ShimmerLine({required this.controller, required this.widthFactor, required this.delay});
+  const _ShimmerLine({
+    required this.controller,
+    required this.widthFactor,
+    required this.delay,
+  });
 
   final AnimationController controller;
   final double widthFactor;

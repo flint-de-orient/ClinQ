@@ -32,7 +32,8 @@ class DietPatient {
     if (dob == null) return null;
     final now = DateTime.now();
     var years = now.year - dob.year;
-    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) years -= 1;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day))
+      years -= 1;
     return years < 0 || years > 130 ? null : years;
   }
 
@@ -44,28 +45,39 @@ class DietPatient {
     final last = lastReviewAt;
     final every = reviewIntervalDays;
     if (last == null || every == null) return null;
-    final due = DateTime(last.year, last.month, last.day).add(Duration(days: every));
+    final due = DateTime(
+      last.year,
+      last.month,
+      last.day,
+    ).add(Duration(days: every));
     final now = DateTime.now();
     return due.difference(DateTime(now.year, now.month, now.day)).inDays;
   }
 
   factory DietPatient.fromJson(Map<String, dynamic> j) => DietPatient(
-        id: j['id']?.toString() ?? '',
-        name: j['name']?.toString() ?? '',
-        phone: j['phone']?.toString() ?? '',
-        avatarUrl: j['avatarUrl']?.toString(),
-        diabetesType: j['diabetesType']?.toString(),
-        riskBand: j['riskBand']?.toString() ?? 'low',
-        reviewIntervalDays: (j['reviewIntervalDays'] as num?)?.toInt(),
-        lastReviewAt: DateTime.tryParse(j['lastReviewAt']?.toString() ?? '')?.toLocal(),
-        reviewDue: j['reviewDue'] == true,
-        dateOfBirth: DateTime.tryParse(j['dateOfBirth']?.toString() ?? '')?.toLocal(),
-      );
+    id: j['id']?.toString() ?? '',
+    name: j['name']?.toString() ?? '',
+    phone: j['phone']?.toString() ?? '',
+    avatarUrl: j['avatarUrl']?.toString(),
+    diabetesType: j['diabetesType']?.toString(),
+    riskBand: j['riskBand']?.toString() ?? 'low',
+    reviewIntervalDays: (j['reviewIntervalDays'] as num?)?.toInt(),
+    lastReviewAt:
+        DateTime.tryParse(j['lastReviewAt']?.toString() ?? '')?.toLocal(),
+    reviewDue: j['reviewDue'] == true,
+    dateOfBirth:
+        DateTime.tryParse(j['dateOfBirth']?.toString() ?? '')?.toLocal(),
+  );
 }
 
 /// One medicine the doctor has the patient on (nutrition context).
 class DietMed {
-  const DietMed({required this.name, required this.strength, required this.dose, required this.times});
+  const DietMed({
+    required this.name,
+    required this.strength,
+    required this.dose,
+    required this.times,
+  });
 
   final String name;
   final String strength;
@@ -73,11 +85,11 @@ class DietMed {
   final List<String> times;
 
   factory DietMed.fromJson(Map<String, dynamic> j) => DietMed(
-        name: j['name']?.toString() ?? '',
-        strength: j['strength']?.toString() ?? '',
-        dose: j['dose']?.toString() ?? '',
-        times: (j['times'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      );
+    name: j['name']?.toString() ?? '',
+    strength: j['strength']?.toString() ?? '',
+    dose: j['dose']?.toString() ?? '',
+    times: (j['times'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+  );
 }
 
 /// The nutrition-relevant view of a patient (`.../overview`).
@@ -164,23 +176,54 @@ class DietPatientOverview {
       phone: p['phone']?.toString() ?? '',
       avatarUrl: p['avatarUrl']?.toString(),
       gender: p['gender']?.toString(),
-      dateOfBirth: DateTime.tryParse(p['dateOfBirth']?.toString() ?? '')?.toLocal(),
+      dateOfBirth:
+          DateTime.tryParse(p['dateOfBirth']?.toString() ?? '')?.toLocal(),
       diabetesType: m['diabetesType']?.toString(),
       riskBand: m['riskBand']?.toString() ?? 'low',
       heightCm: (m['heightCm'] as num?)?.toInt(),
-      diagnosedOn: DateTime.tryParse(m['diagnosedOn']?.toString() ?? '')?.toLocal(),
+      diagnosedOn:
+          DateTime.tryParse(m['diagnosedOn']?.toString() ?? '')?.toLocal(),
       chiefComplaint: complaint.isEmpty ? null : complaint,
-      allergies: (m['allergies'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      medications: (j['medications'] as List?)?.whereType<Map<String, dynamic>>().map(DietMed.fromJson).toList() ?? const [],
+      allergies:
+          (m['allergies'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
+      medications:
+          (j['medications'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(DietMed.fromJson)
+              .toList() ??
+          const [],
       reviewIntervalDays: (j['reviewIntervalDays'] as num?)?.toInt(),
-      vitals: j['vitals'] is Map<String, dynamic> ? DietVitals.fromJson(j['vitals'] as Map<String, dynamic>) : null,
-      advice: (j['advice'] as List?)?.whereType<Map<String, dynamic>>().map(DietAdvice.fromJson).toList() ?? const [],
-      advisedTests: (labs['advised'] as List?)?.whereType<Map<String, dynamic>>().map(AdvisedTest.fromJson).toList() ?? const [],
-      labReports: (labs['recent'] as List?)?.whereType<Map<String, dynamic>>().map(LabReport.fromJson).toList() ?? const [],
-      latestHba1c: (labs['latestHba1c'] as Map<String, dynamic>?)?['percentage'] as num?,
-      hba1cTestedOn: DateTime.tryParse(
-        (labs['latestHba1c'] as Map<String, dynamic>?)?['testedOn']?.toString() ?? '',
-      )?.toLocal(),
+      vitals:
+          j['vitals'] is Map<String, dynamic>
+              ? DietVitals.fromJson(j['vitals'] as Map<String, dynamic>)
+              : null,
+      advice:
+          (j['advice'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(DietAdvice.fromJson)
+              .toList() ??
+          const [],
+      advisedTests:
+          (labs['advised'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(AdvisedTest.fromJson)
+              .toList() ??
+          const [],
+      labReports:
+          (labs['recent'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(LabReport.fromJson)
+              .toList() ??
+          const [],
+      latestHba1c:
+          (labs['latestHba1c'] as Map<String, dynamic>?)?['percentage'] as num?,
+      hba1cTestedOn:
+          DateTime.tryParse(
+            (labs['latestHba1c'] as Map<String, dynamic>?)?['testedOn']
+                    ?.toString() ??
+                '',
+          )?.toLocal(),
     );
   }
 }
@@ -204,18 +247,25 @@ class VitalReading {
     return 0;
   }
 
-  static VitalReading? fromJson(Object? j) => j is Map<String, dynamic>
-      ? VitalReading(
-          value: (j['value'] as num?) ?? 0,
-          at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
-          previous: j['previous'] as num?,
-        )
-      : null;
+  static VitalReading? fromJson(Object? j) =>
+      j is Map<String, dynamic>
+          ? VitalReading(
+            value: (j['value'] as num?) ?? 0,
+            at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
+            previous: j['previous'] as num?,
+          )
+          : null;
 }
 
 /// The latest blood-pressure reading, with the doctor's flag if one was set.
 class DietBloodPressure {
-  const DietBloodPressure({this.systolic, this.diastolic, this.flag, this.at, this.previousSystolic});
+  const DietBloodPressure({
+    this.systolic,
+    this.diastolic,
+    this.flag,
+    this.at,
+    this.previousSystolic,
+  });
   final num? systolic;
   final num? diastolic;
   final num? previousSystolic;
@@ -229,41 +279,53 @@ class DietBloodPressure {
     if (now < prev) return -1;
     return 0;
   }
-  final String? flag; // normal | elevated | stage1 | stage2 | hypertensive_crisis | hypotension
+
+  final String?
+  flag; // normal | elevated | stage1 | stage2 | hypertensive_crisis | hypotension
   final DateTime? at;
 
   String get label => '${systolic ?? '—'}/${diastolic ?? '—'}';
-  bool get isHigh => flag == 'stage1' || flag == 'stage2' || flag == 'hypertensive_crisis';
+  bool get isHigh =>
+      flag == 'stage1' || flag == 'stage2' || flag == 'hypertensive_crisis';
 
-  static DietBloodPressure? fromJson(Object? j) => j is Map<String, dynamic>
-      ? DietBloodPressure(
-          systolic: j['systolic'] as num?,
-          diastolic: j['diastolic'] as num?,
-          flag: j['flag']?.toString(),
-          at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
-          previousSystolic: j['previousSystolic'] as num?,
-        )
-      : null;
+  static DietBloodPressure? fromJson(Object? j) =>
+      j is Map<String, dynamic>
+          ? DietBloodPressure(
+            systolic: j['systolic'] as num?,
+            diastolic: j['diastolic'] as num?,
+            flag: j['flag']?.toString(),
+            at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
+            previousSystolic: j['previousSystolic'] as num?,
+          )
+          : null;
 }
 
 /// The latest self-logged blood sugar.
 class DietGlucose {
-  const DietGlucose({required this.valueMgDl, this.context, this.flag, this.at});
+  const DietGlucose({
+    required this.valueMgDl,
+    this.context,
+    this.flag,
+    this.at,
+  });
   final num valueMgDl;
-  final String? context; // fasting | pre_meal | post_meal | bedtime | random | hypo_check
-  final String? flag; // severe_low | low | in_range | high | very_high | critical_high
+  final String?
+  context; // fasting | pre_meal | post_meal | bedtime | random | hypo_check
+  final String?
+  flag; // severe_low | low | in_range | high | very_high | critical_high
   final DateTime? at;
 
   bool get isAbnormal => flag != null && flag != 'in_range';
 
-  static DietGlucose? fromJson(Object? j) => j is Map<String, dynamic>
-      ? DietGlucose(
-          valueMgDl: (j['valueMgDl'] as num?) ?? 0,
-          context: j['context']?.toString(),
-          flag: j['flag']?.toString(),
-          at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
-        )
-      : null;
+  static DietGlucose? fromJson(Object? j) =>
+      j is Map<String, dynamic>
+          ? DietGlucose(
+            valueMgDl: (j['valueMgDl'] as num?) ?? 0,
+            context: j['context']?.toString(),
+            flag: j['flag']?.toString(),
+            at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
+          )
+          : null;
 }
 
 /// The patient's latest real vitals & measurements — each its own most-recent
@@ -300,15 +362,15 @@ class DietVitals {
       glucose != null;
 
   factory DietVitals.fromJson(Map<String, dynamic> j) => DietVitals(
-        bloodPressure: DietBloodPressure.fromJson(j['bloodPressure']),
-        pulse: VitalReading.fromJson(j['pulse']),
-        spo2: VitalReading.fromJson(j['spo2']),
-        weightKg: VitalReading.fromJson(j['weightKg']),
-        waistCm: VitalReading.fromJson(j['waistCm']),
-        temperatureC: VitalReading.fromJson(j['temperatureC']),
-        bmi: j['bmi'] as num?,
-        glucose: DietGlucose.fromJson(j['glucose']),
-      );
+    bloodPressure: DietBloodPressure.fromJson(j['bloodPressure']),
+    pulse: VitalReading.fromJson(j['pulse']),
+    spo2: VitalReading.fromJson(j['spo2']),
+    weightKg: VitalReading.fromJson(j['weightKg']),
+    waistCm: VitalReading.fromJson(j['waistCm']),
+    temperatureC: VitalReading.fromJson(j['temperatureC']),
+    bmi: j['bmi'] as num?,
+    glucose: DietGlucose.fromJson(j['glucose']),
+  );
 }
 
 /// One entry from the doctor's advice history — the diagnosis and general
@@ -329,12 +391,17 @@ class DietAdvice {
   final String? doctorName;
 
   factory DietAdvice.fromJson(Map<String, dynamic> j) => DietAdvice(
-        issuedOn: DateTime.tryParse(j['issuedOn']?.toString() ?? '')?.toLocal(),
-        diagnosis: (j['diagnosis'] as List?)?.map((e) => e.toString()).where((s) => s.isNotEmpty).toList() ?? const [],
-        generalAdvice: j['generalAdvice']?.toString() ?? '',
-        followUpOn: DateTime.tryParse(j['followUpOn']?.toString() ?? '')?.toLocal(),
-        doctorName: j['doctorName']?.toString(),
-      );
+    issuedOn: DateTime.tryParse(j['issuedOn']?.toString() ?? '')?.toLocal(),
+    diagnosis:
+        (j['diagnosis'] as List?)
+            ?.map((e) => e.toString())
+            .where((s) => s.isNotEmpty)
+            .toList() ??
+        const [],
+    generalAdvice: j['generalAdvice']?.toString() ?? '',
+    followUpOn: DateTime.tryParse(j['followUpOn']?.toString() ?? '')?.toLocal(),
+    doctorName: j['doctorName']?.toString(),
+  );
 }
 
 /// One meal in a diet plan. `name` and `time` are free text on purpose — an
@@ -353,14 +420,24 @@ class DietMeal {
   final List<String> items;
   final String notes;
 
-  DietMeal copyWith({String? name, String? time, List<String>? items, String? notes}) => DietMeal(
+  DietMeal copyWith({
+    String? name,
+    String? time,
+    List<String>? items,
+    String? notes,
+  }) => DietMeal(
     name: name ?? this.name,
     time: time ?? this.time,
     items: items ?? this.items,
     notes: notes ?? this.notes,
   );
 
-  Map<String, dynamic> toJson() => {'name': name, 'time': time, 'items': items, 'notes': notes};
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'time': time,
+    'items': items,
+    'notes': notes,
+  };
 
   factory DietMeal.fromJson(Map<String, dynamic> j) => DietMeal(
     name: j['name']?.toString() ?? '',
@@ -394,11 +471,14 @@ class DietPlan {
   final DateTime? sharedAt;
   final DateTime? updatedAt;
 
-  bool get isEmpty => goal.isEmpty && meals.isEmpty && avoid.isEmpty && notes.isEmpty;
+  bool get isEmpty =>
+      goal.isEmpty && meals.isEmpty && avoid.isEmpty && notes.isEmpty;
 
   /// True when the dietician has edited the plan since the patient last saw it.
   bool get hasUnsentChanges =>
-      !isEmpty && (sharedAt == null || (updatedAt != null && updatedAt!.isAfter(sharedAt!)));
+      !isEmpty &&
+      (sharedAt == null ||
+          (updatedAt != null && updatedAt!.isAfter(sharedAt!)));
 
   Map<String, dynamic> toJson() => {
     'goal': goal,
@@ -409,7 +489,12 @@ class DietPlan {
 
   factory DietPlan.fromJson(Map<String, dynamic> j) => DietPlan(
     goal: j['goal']?.toString() ?? '',
-    meals: (j['meals'] as List?)?.whereType<Map<String, dynamic>>().map(DietMeal.fromJson).toList() ?? const [],
+    meals:
+        (j['meals'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(DietMeal.fromJson)
+            .toList() ??
+        const [],
     avoid: (j['avoid'] as List?)?.map((e) => e.toString()).toList() ?? const [],
     notes: j['notes']?.toString() ?? '',
     dieticianName: j['dieticianName']?.toString(),
@@ -449,7 +534,8 @@ class DietPatientBrief {
     riskBand: j['riskBand']?.toString() ?? 'low',
     diabetesType: j['diabetesType']?.toString(),
     reviewIntervalDays: (j['reviewIntervalDays'] as num?)?.toInt(),
-    lastReviewAt: DateTime.tryParse(j['lastReviewAt']?.toString() ?? '')?.toLocal(),
+    lastReviewAt:
+        DateTime.tryParse(j['lastReviewAt']?.toString() ?? '')?.toLocal(),
     sinceDays: (j['sinceDays'] as num?)?.toInt() ?? 0,
   );
 }
@@ -549,22 +635,38 @@ class DietDashboard {
   /// appears once — as the plan they still do not have.
   List<DietQueueItem> get queue {
     final planIds = plansMissingList.map((p) => p.id).toSet();
-    final sortedReviews = [...reviewsDueList.where((p) => !planIds.contains(p.id))]
+    final sortedReviews = [
+      ...reviewsDueList.where((p) => !planIds.contains(p.id)),
+    ]..sort((a, b) => b.sinceDays.compareTo(a.sinceDays));
+    final sortedPlans = [...plansMissingList]
       ..sort((a, b) => b.sinceDays.compareTo(a.sinceDays));
-    final sortedPlans = [...plansMissingList]..sort((a, b) => b.sinceDays.compareTo(a.sinceDays));
 
     return [
       for (final p in sortedReviews)
-        DietQueueItem(patientId: p.id, name: p.name, days: p.sinceDays, needsPlan: false),
+        DietQueueItem(
+          patientId: p.id,
+          name: p.name,
+          days: p.sinceDays,
+          needsPlan: false,
+        ),
       for (final p in sortedPlans)
-        DietQueueItem(patientId: p.id, name: p.name, days: p.sinceDays, needsPlan: true),
+        DietQueueItem(
+          patientId: p.id,
+          name: p.name,
+          days: p.sinceDays,
+          needsPlan: true,
+        ),
     ];
   }
 
   factory DietDashboard.fromJson(Map<String, dynamic> j) {
     final counts = j['counts'] as Map<String, dynamic>? ?? const {};
     List<DietPatientBrief> briefs(String key) =>
-        (j[key] as List?)?.whereType<Map<String, dynamic>>().map(DietPatientBrief.fromJson).toList() ?? const [];
+        (j[key] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(DietPatientBrief.fromJson)
+            .toList() ??
+        const [];
     return DietDashboard(
       patients: (counts['patients'] as num?)?.toInt() ?? 0,
       newThisWeek: (counts['newThisWeek'] as num?)?.toInt() ?? 0,
@@ -574,7 +676,10 @@ class DietDashboard {
       reviewsDueList: briefs('reviewsDue'),
       plansMissingList: briefs('plansMissing'),
       recentLogs:
-          (j['recentLogs'] as List?)?.whereType<Map<String, dynamic>>().map(DietRecentLog.fromJson).toList() ??
+          (j['recentLogs'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(DietRecentLog.fromJson)
+              .toList() ??
           const [],
     );
   }
@@ -639,47 +744,55 @@ class DietMessage {
   bool get fromDietician => role == 'dietician';
 
   factory DietMessage.fromJson(Map<String, dynamic> j) => DietMessage(
-        id: j['id']?.toString() ?? '',
-        role: j['role']?.toString() ?? 'user',
-        content: j['content']?.toString() ?? '',
-        senderName: j['senderName']?.toString(),
-        createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? '')?.toLocal(),
-        pinned: j['pinned'] == true,
-        deletedForEveryone: j['deletedForEveryone'] == true,
-        replyToId: j['replyToId']?.toString(),
-        replyPreviewContent: j['replyPreview'] is Map
+    id: j['id']?.toString() ?? '',
+    role: j['role']?.toString() ?? 'user',
+    content: j['content']?.toString() ?? '',
+    senderName: j['senderName']?.toString(),
+    createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? '')?.toLocal(),
+    pinned: j['pinned'] == true,
+    deletedForEveryone: j['deletedForEveryone'] == true,
+    replyToId: j['replyToId']?.toString(),
+    replyPreviewContent:
+        j['replyPreview'] is Map
             ? (j['replyPreview'] as Map)['content']?.toString()
             : null,
-        imagePaths: _parts(j)
+    imagePaths:
+        _parts(j)
             .where(isImageAttachment)
             .map((a) => a['url']?.toString() ?? '')
             .where((s) => s.isNotEmpty)
             .toList(),
-        voiceNotes: _parts(j)
+    voiceNotes:
+        _parts(j)
             .where(isAudioAttachment)
-            .map((a) => VoiceNote(
-                  url: a['url']?.toString() ?? '',
-                  transcript: a['transcript']?.toString(),
-                  mimeType: a['mimeType']?.toString(),
-                ))
+            .map(
+              (a) => VoiceNote(
+                url: a['url']?.toString() ?? '',
+                transcript: a['transcript']?.toString(),
+                mimeType: a['mimeType']?.toString(),
+              ),
+            )
             .where((v) => v.url.isNotEmpty)
             .toList(),
-        documents: _parts(j)
+    documents:
+        _parts(j)
             .where(isDocumentAttachment)
-            .map((a) => DocumentAttachment(
-                  url: a['url']?.toString() ?? '',
-                  name: a['originalName']?.toString() ?? 'Document',
-                  mimeType: a['mimeType']?.toString(),
-                  sizeBytes: (a['sizeBytes'] as num?)?.toInt(),
-                ))
+            .map(
+              (a) => DocumentAttachment(
+                url: a['url']?.toString() ?? '',
+                name: a['originalName']?.toString() ?? 'Document',
+                mimeType: a['mimeType']?.toString(),
+                sizeBytes: (a['sizeBytes'] as num?)?.toInt(),
+              ),
+            )
             .where((d) => d.url.isNotEmpty)
             .toList(),
-      );
+  );
 
   static List<Map<String, dynamic>> _parts(Map<String, dynamic> j) =>
-      (j['attachments'] as List?)?.whereType<Map<String, dynamic>>().toList() ?? const [];
+      (j['attachments'] as List?)?.whereType<Map<String, dynamic>>().toList() ??
+      const [];
 }
-
 
 /// A plan the patient has been taken off, kept so the dietician can see what
 /// they were on before and for how long.
@@ -706,13 +819,12 @@ class DietPlanRevision {
   }
 
   factory DietPlanRevision.fromJson(Map<String, dynamic> j) => DietPlanRevision(
-        id: j['id']?.toString() ?? '',
-        plan: DietPlan.fromJson(j),
-        replacedAt: DateTime.tryParse(j['replacedAt']?.toString() ?? '')?.toLocal(),
-        startedAt: DateTime.tryParse(j['startedAt']?.toString() ?? '')?.toLocal(),
-      );
+    id: j['id']?.toString() ?? '',
+    plan: DietPlan.fromJson(j),
+    replacedAt: DateTime.tryParse(j['replacedAt']?.toString() ?? '')?.toLocal(),
+    startedAt: DateTime.tryParse(j['startedAt']?.toString() ?? '')?.toLocal(),
+  );
 }
-
 
 /// One thing waiting for the dietician: a patient's unread message, a lapsed
 /// review, or a patient with no plan yet.
@@ -740,15 +852,15 @@ class DietNotification {
   final bool unread;
 
   factory DietNotification.fromJson(Map<String, dynamic> j) => DietNotification(
-        id: j['id']?.toString() ?? '',
-        kind: j['kind']?.toString() ?? 'message',
-        patientId: j['patientId']?.toString() ?? '',
-        patientName: j['patientName']?.toString() ?? '',
-        text: j['text']?.toString() ?? '',
-        avatarUrl: j['avatarUrl']?.toString(),
-        at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
-        unread: j['unread'] == true,
-      );
+    id: j['id']?.toString() ?? '',
+    kind: j['kind']?.toString() ?? 'message',
+    patientId: j['patientId']?.toString() ?? '',
+    patientName: j['patientName']?.toString() ?? '',
+    text: j['text']?.toString() ?? '',
+    avatarUrl: j['avatarUrl']?.toString(),
+    at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal(),
+    unread: j['unread'] == true,
+  );
 }
 
 class DietNotifications {
@@ -757,11 +869,13 @@ class DietNotifications {
   final int unread;
   final List<DietNotification> items;
 
-  factory DietNotifications.fromJson(Map<String, dynamic> j) => DietNotifications(
+  factory DietNotifications.fromJson(Map<String, dynamic> j) =>
+      DietNotifications(
         unread: (j['unread'] as num?)?.toInt() ?? 0,
-        items: (j['items'] as List? ?? const [])
-            .whereType<Map<String, dynamic>>()
-            .map(DietNotification.fromJson)
-            .toList(),
+        items:
+            (j['items'] as List? ?? const [])
+                .whereType<Map<String, dynamic>>()
+                .map(DietNotification.fromJson)
+                .toList(),
       );
 }

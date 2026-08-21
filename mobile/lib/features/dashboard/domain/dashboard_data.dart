@@ -20,21 +20,35 @@ class DashboardData {
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
-      healthScore: HealthScore.fromJson(json['healthScore'] as Map<String, dynamic>? ?? const {}),
-      glucose: DashboardGlucose.fromJson(json['glucose'] as Map<String, dynamic>? ?? const {}),
+      healthScore: HealthScore.fromJson(
+        json['healthScore'] as Map<String, dynamic>? ?? const {},
+      ),
+      glucose: DashboardGlucose.fromJson(
+        json['glucose'] as Map<String, dynamic>? ?? const {},
+      ),
       adherence: DashboardAdherence.fromJson(
         json['adherence'] as Map<String, dynamic>? ?? const {},
       ),
-      nextAppointment: json['nextAppointment'] == null
-          ? null
-          : NextAppointment.fromJson(json['nextAppointment'] as Map<String, dynamic>),
-      openAlerts: (json['openAlerts'] as List<dynamic>? ?? const [])
-          .map((e) => DashboardAlert.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      recommendations: (json['recommendations'] as List<dynamic>? ?? const [])
-          .map((e) => DashboardRecommendation.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      reminders: DashboardReminders.fromJson(json['reminders'] as Map<String, dynamic>? ?? const {}),
+      nextAppointment:
+          json['nextAppointment'] == null
+              ? null
+              : NextAppointment.fromJson(
+                json['nextAppointment'] as Map<String, dynamic>,
+              ),
+      openAlerts:
+          (json['openAlerts'] as List<dynamic>? ?? const [])
+              .map((e) => DashboardAlert.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      recommendations:
+          (json['recommendations'] as List<dynamic>? ?? const [])
+              .map(
+                (e) =>
+                    DashboardRecommendation.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
+      reminders: DashboardReminders.fromJson(
+        json['reminders'] as Map<String, dynamic>? ?? const {},
+      ),
     );
   }
 }
@@ -53,7 +67,8 @@ class HealthScore {
   final Map<String, HealthScoreComponent> components;
 
   factory HealthScore.fromJson(Map<String, dynamic> json) {
-    final rawComponents = json['components'] as Map<String, dynamic>? ?? const {};
+    final rawComponents =
+        json['components'] as Map<String, dynamic>? ?? const {};
     return HealthScore(
       score: (json['score'] as num?)?.toInt() ?? 0,
       band: json['band']?.toString() ?? 'fair',
@@ -61,7 +76,9 @@ class HealthScore {
       components: rawComponents.map(
         (key, value) => MapEntry(
           key,
-          HealthScoreComponent.fromJson(value as Map<String, dynamic>? ?? const {}),
+          HealthScoreComponent.fromJson(
+            value as Map<String, dynamic>? ?? const {},
+          ),
         ),
       ),
     );
@@ -69,7 +86,11 @@ class HealthScore {
 }
 
 class HealthScoreComponent {
-  const HealthScoreComponent({required this.value, required this.score, required this.hasData});
+  const HealthScoreComponent({
+    required this.value,
+    required this.score,
+    required this.hasData,
+  });
 
   final num? value;
   final num? score;
@@ -99,20 +120,30 @@ class DashboardGlucose {
 
   factory DashboardGlucose.fromJson(Map<String, dynamic> json) {
     return DashboardGlucose(
-      latest: json['latest'] == null
-          ? null
-          : GlucoseLatest.fromJson(json['latest'] as Map<String, dynamic>),
+      latest:
+          json['latest'] == null
+              ? null
+              : GlucoseLatest.fromJson(json['latest'] as Map<String, dynamic>),
       sevenDayAverage: json['sevenDayAverage'] as num?,
       timeInRangePercent: json['timeInRangePercent'] as num?,
-      sparkline: (json['sparkline'] as List<dynamic>? ?? const [])
-          .map((e) => GlucoseSparklinePoint.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      sparkline:
+          (json['sparkline'] as List<dynamic>? ?? const [])
+              .map(
+                (e) =>
+                    GlucoseSparklinePoint.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 }
 
 class GlucoseLatest {
-  const GlucoseLatest({required this.value, required this.context, required this.at, required this.flag});
+  const GlucoseLatest({
+    required this.value,
+    required this.context,
+    required this.at,
+    required this.flag,
+  });
 
   final num value;
   final String context;
@@ -144,7 +175,10 @@ class GlucoseSparklinePoint {
 }
 
 class DashboardAdherence {
-  const DashboardAdherence({required this.percentage, required this.todayPending});
+  const DashboardAdherence({
+    required this.percentage,
+    required this.todayPending,
+  });
 
   final num percentage;
   final int todayPending;
@@ -173,9 +207,10 @@ class NextAppointment {
   factory NextAppointment.fromJson(Map<String, dynamic> json) {
     return NextAppointment(
       id: json['id']?.toString() ?? '',
-      scheduledFor: json['scheduledFor'] == null
-          ? null
-          : DateTime.tryParse(json['scheduledFor'].toString()),
+      scheduledFor:
+          json['scheduledFor'] == null
+              ? null
+              : DateTime.tryParse(json['scheduledFor'].toString()),
       mode: json['mode']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
     );
@@ -203,7 +238,10 @@ class DashboardAlert {
       severity: json['severity']?.toString() ?? 'routine',
       type: json['type']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
-      createdAt: json['createdAt'] == null ? null : DateTime.tryParse(json['createdAt'].toString()),
+      createdAt:
+          json['createdAt'] == null
+              ? null
+              : DateTime.tryParse(json['createdAt'].toString()),
     );
   }
 }

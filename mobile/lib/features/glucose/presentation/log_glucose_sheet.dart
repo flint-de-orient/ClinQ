@@ -73,7 +73,13 @@ class _LogGlucoseSheetState extends ConsumerState<_LogGlucoseSheet> {
     );
     if (time == null) return;
     setState(() {
-      _measuredAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _measuredAt = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
     });
   }
 
@@ -94,7 +100,7 @@ class _LogGlucoseSheetState extends ConsumerState<_LogGlucoseSheet> {
             notes: _notesController.text.trim(),
           );
       ref.invalidate(glucoseReadingsProvider);
-      ref.invalidate(glucoseTrendsProvider);
+      invalidateGlucoseTrends(ref);
       // Push the adaptive check-in nudge forward from this reading, so a patient
       // who logs on cadence never actually sees it.
       unawaited(syncCheckInReminder(ref, knownLast: _measuredAt));
@@ -127,33 +133,43 @@ class _LogGlucoseSheetState extends ConsumerState<_LogGlucoseSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.glucoseLogReading, style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              l10n.glucoseLogReading,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: AppSpacing.lg),
             TextFormField(
               controller: _valueController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               autofocus: true,
               decoration: InputDecoration(labelText: l10n.glucoseValueLabel),
               validator: (v) {
                 final parsed = num.tryParse((v ?? '').trim());
-                if (parsed == null || parsed <= 0) return l10n.commonRequiredField;
+                if (parsed == null || parsed <= 0)
+                  return l10n.commonRequiredField;
                 return null;
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(l10n.glucoseContextLabel, style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              l10n.glucoseContextLabel,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
-              children: _contextOptions.map((opt) {
-                final selected = opt.value == _context;
-                return ChoiceChip(
-                  label: Text(opt.labelBuilder(l10n)),
-                  selected: selected,
-                  onSelected: (_) => setState(() => _context = opt.value),
-                );
-              }).toList(),
+              children:
+                  _contextOptions.map((opt) {
+                    final selected = opt.value == _context;
+                    return ChoiceChip(
+                      label: Text(opt.labelBuilder(l10n)),
+                      selected: selected,
+                      onSelected: (_) => setState(() => _context = opt.value),
+                    );
+                  }).toList(),
             ),
             const SizedBox(height: AppSpacing.md),
             InkWell(
@@ -176,10 +192,17 @@ class _LogGlucoseSheetState extends ConsumerState<_LogGlucoseSheet> {
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(_errorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: AppSpacing.lg),
-            AppButton(label: l10n.glucoseSaveReading, isLoading: _isSubmitting, onPressed: _submit),
+            AppButton(
+              label: l10n.glucoseSaveReading,
+              isLoading: _isSubmitting,
+              onPressed: _submit,
+            ),
           ],
         ),
       ),

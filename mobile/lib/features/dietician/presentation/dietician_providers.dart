@@ -21,28 +21,28 @@ final dietPatientsProvider = FutureProvider.autoDispose<List<DietPatient>>(
 );
 
 /// One patient's nutrition view (medical status + the doctor's medicine list).
-final dietOverviewProvider =
-    FutureProvider.autoDispose.family<DietPatientOverview, String>(
-  (ref, id) => ref.watch(dieticianRepositoryProvider).overview(id),
-);
+final dietOverviewProvider = FutureProvider.autoDispose
+    .family<DietPatientOverview, String>(
+      (ref, id) => ref.watch(dieticianRepositoryProvider).overview(id),
+    );
 
 /// The patient's care thread, as the dietician sees it.
-final dietThreadProvider =
-    FutureProvider.autoDispose.family<List<DietMessage>, String>(
-  (ref, id) => ref.watch(dieticianRepositoryProvider).thread(id),
-);
+final dietThreadProvider = FutureProvider.autoDispose
+    .family<List<DietMessage>, String>(
+      (ref, id) => ref.watch(dieticianRepositoryProvider).thread(id),
+    );
 
 /// The patient's food log for the dietician to review.
-final dietFoodLogProvider =
-    FutureProvider.autoDispose.family<List<FoodLogEntry>, String>(
-  (ref, id) => ref.watch(dieticianRepositoryProvider).foodLog(id),
-);
+final dietFoodLogProvider = FutureProvider.autoDispose
+    .family<List<FoodLogEntry>, String>(
+      (ref, id) => ref.watch(dieticianRepositoryProvider).foodLog(id),
+    );
 
 /// Plans this patient has been taken off, newest first.
-final dietPlanHistoryProvider =
-    FutureProvider.autoDispose.family<List<DietPlanRevision>, String>(
-  (ref, id) => ref.watch(dieticianRepositoryProvider).dietPlanHistory(id),
-);
+final dietPlanHistoryProvider = FutureProvider.autoDispose
+    .family<List<DietPlanRevision>, String>(
+      (ref, id) => ref.watch(dieticianRepositoryProvider).dietPlanHistory(id),
+    );
 
 /// What is waiting for the dietician right now.
 final dietNotificationsProvider = FutureProvider.autoDispose<DietNotifications>(

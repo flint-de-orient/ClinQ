@@ -54,14 +54,25 @@ class Medication {
       form: json['form']?.toString() ?? '',
       strength: json['strength']?.toString() ?? '',
       dose: json['dose']?.toString() ?? '',
-      schedule: (json['schedule'] as List<dynamic>? ?? const [])
-          .map((e) => MedicationScheduleEntry.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      daysOfWeek: (json['daysOfWeek'] as List<dynamic>? ?? const [])
-          .map((e) => e.toString())
-          .toList(),
-      startDate: json['startDate'] == null ? null : DateTime.tryParse(json['startDate'].toString()),
-      endDate: json['endDate'] == null ? null : DateTime.tryParse(json['endDate'].toString()),
+      schedule:
+          (json['schedule'] as List<dynamic>? ?? const [])
+              .map(
+                (e) =>
+                    MedicationScheduleEntry.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
+      daysOfWeek:
+          (json['daysOfWeek'] as List<dynamic>? ?? const [])
+              .map((e) => e.toString())
+              .toList(),
+      startDate:
+          json['startDate'] == null
+              ? null
+              : DateTime.tryParse(json['startDate'].toString()),
+      endDate:
+          json['endDate'] == null
+              ? null
+              : DateTime.tryParse(json['endDate'].toString()),
       isActive: json['isActive'] as bool? ?? true,
       instructions: json['instructions'] as String?,
       route: json['route']?.toString() ?? 'oral',
@@ -76,7 +87,11 @@ class Medication {
 /// photo and created in the tracker. [readable] is false when the photo could
 /// not be read, so the UI can ask for a clearer one.
 class PrescriptionScanResult {
-  const PrescriptionScanResult({required this.readable, required this.created, this.note});
+  const PrescriptionScanResult({
+    required this.readable,
+    required this.created,
+    this.note,
+  });
 
   final bool readable;
   final List<Medication> created;
@@ -85,9 +100,10 @@ class PrescriptionScanResult {
   factory PrescriptionScanResult.fromJson(Map<String, dynamic> json) {
     return PrescriptionScanResult(
       readable: json['readable'] as bool? ?? false,
-      created: (json['created'] as List<dynamic>? ?? const [])
-          .map((e) => Medication.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      created:
+          (json['created'] as List<dynamic>? ?? const [])
+              .map((e) => Medication.fromJson(e as Map<String, dynamic>))
+              .toList(),
       note: json['note'] as String?,
     );
   }
@@ -109,7 +125,11 @@ extension MedicationDoseSummary on Medication {
 }
 
 class MedicationScheduleEntry {
-  const MedicationScheduleEntry({required this.time, required this.relationToMeal, this.slot});
+  const MedicationScheduleEntry({
+    required this.time,
+    required this.relationToMeal,
+    this.slot,
+  });
 
   /// "HH:mm".
   final String time;
@@ -186,9 +206,13 @@ class TodaySchedule {
   factory TodaySchedule.fromJson(Map<String, dynamic> json) {
     return TodaySchedule(
       date: json['date']?.toString() ?? '',
-      slots: (json['slots'] as List<dynamic>? ?? const [])
-          .map((e) => MedicationScheduleSlot.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      slots:
+          (json['slots'] as List<dynamic>? ?? const [])
+              .map(
+                (e) =>
+                    MedicationScheduleSlot.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 }
@@ -226,7 +250,8 @@ class DoseHistoryEntry {
     form: j['form']?.toString(),
     time: j['time']?.toString() ?? '',
     relationToMeal: j['relationToMeal']?.toString(),
-    scheduledFor: DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal(),
+    scheduledFor:
+        DateTime.tryParse(j['scheduledFor']?.toString() ?? '')?.toLocal(),
     takenAt: DateTime.tryParse(j['takenAt']?.toString() ?? '')?.toLocal(),
     status: j['status']?.toString() ?? 'missed',
   );
@@ -254,9 +279,13 @@ class MedicationAdherence {
       taken: (json['taken'] as num?)?.toInt() ?? 0,
       missed: (json['missed'] as num?)?.toInt() ?? 0,
       percentage: json['percentage'] as num? ?? 0,
-      perMedication: (json['perMedication'] as List<dynamic>? ?? const [])
-          .map((e) => PerMedicationAdherence.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      perMedication:
+          (json['perMedication'] as List<dynamic>? ?? const [])
+              .map(
+                (e) =>
+                    PerMedicationAdherence.fromJson(e as Map<String, dynamic>),
+              )
+              .toList(),
     );
   }
 }

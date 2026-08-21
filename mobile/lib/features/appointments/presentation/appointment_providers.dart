@@ -12,32 +12,39 @@ final clinicsProvider = FutureProvider.autoDispose<List<Clinic>>((ref) {
 });
 
 /// Bookable slots for one clinic on one clinic-local date ('YYYY-MM-DD').
-final slotDayProvider =
-    FutureProvider.autoDispose.family<SlotDay, ({String clinicId, String date})>((ref, args) {
-  return ref.watch(clinicRepositoryProvider).slots(args.clinicId, args.date);
-});
+final slotDayProvider = FutureProvider.autoDispose
+    .family<SlotDay, ({String clinicId, String date})>((ref, args) {
+      return ref
+          .watch(clinicRepositoryProvider)
+          .slots(args.clinicId, args.date);
+    });
 
 /// The signed-in patient's own appointments (server scopes by role). Split in
 /// the UI into upcoming and past.
-final myAppointmentsProvider = FutureProvider.autoDispose<List<Appointment>>((ref) async {
+final myAppointmentsProvider = FutureProvider.autoDispose<List<Appointment>>((
+  ref,
+) async {
   final paged = await ref.watch(appointmentRepositoryProvider).list(limit: 100);
   return paged.items;
 });
 
 /// Query parameters for the clinician appointment diary.
-typedef AppointmentQuery = ({DateTime? from, DateTime? to, String? status, String? clinicId});
+typedef AppointmentQuery =
+    ({DateTime? from, DateTime? to, String? status, String? clinicId});
 
 /// Clinician view of the diary for a date range / status.
-final appointmentDiaryProvider =
-    FutureProvider.autoDispose.family<Paged<Appointment>, AppointmentQuery>((ref, q) {
-  return ref.watch(appointmentRepositoryProvider).list(
-        from: q.from,
-        to: q.to,
-        status: q.status,
-        clinicId: q.clinicId,
-        limit: 100,
-      );
-});
+final appointmentDiaryProvider = FutureProvider.autoDispose
+    .family<Paged<Appointment>, AppointmentQuery>((ref, q) {
+      return ref
+          .watch(appointmentRepositoryProvider)
+          .list(
+            from: q.from,
+            to: q.to,
+            status: q.status,
+            clinicId: q.clinicId,
+            limit: 100,
+          );
+    });
 
 /// Local-day bounds for "today", stable within the day so the family key does
 /// not churn on every rebuild.

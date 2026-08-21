@@ -153,7 +153,9 @@ class ClinicExport {
             p.checkInIntervalDays ?? '',
           ],
       ];
-      blocks.add('# Patients (${patients.length})\n${rows.map(_csvRow).join('\n')}');
+      blocks.add(
+        '# Patients (${patients.length})\n${rows.map(_csvRow).join('\n')}',
+      );
     }
 
     if (datasets.contains(ExportDataset.alerts)) {
@@ -182,7 +184,9 @@ class ClinicExport {
             a.matchedRules.join(' | '),
           ],
       ];
-      blocks.add('# Clinical alerts (${alerts.length})\n${rows.map(_csvRow).join('\n')}');
+      blocks.add(
+        '# Clinical alerts (${alerts.length})\n${rows.map(_csvRow).join('\n')}',
+      );
     }
 
     final header =

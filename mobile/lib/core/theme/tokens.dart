@@ -61,6 +61,25 @@ abstract final class T {
     letterSpacing: -0.8,
   );
 
+  /// 28/1.15 — the patient's own name in the greeting. One per screen, and
+  /// only where a person is being addressed rather than a thing labelled.
+  static const TextStyle name = TextStyle(
+    fontSize: 28,
+    height: 1.15,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.6,
+  );
+
+  /// 30/1.0 — a health figure. Deliberately larger than [title]: on a clinical
+  /// dashboard the number is the content and its label is the caption, so the
+  /// reading has to win the page even when it sits in a small tile.
+  static const TextStyle metric = TextStyle(
+    fontSize: 30,
+    height: 1.0,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1.0,
+  );
+
   /// 20/1.25 — screen titles and the heading of a leading card.
   static const TextStyle title = TextStyle(
     fontSize: 20,
@@ -151,6 +170,15 @@ abstract final class T {
 
   /// 20 — the one leading card on a screen, if it needs to sit apart.
   static const double rLead = 20;
+
+  /// 24 — a main section card: the page's second level, and the only radius
+  /// a full-width card ever takes. Paired with [rControl] for the tiles inside
+  /// it, which is what gives a card depth without a second border.
+  static const double rSection = 24;
+
+  /// 28 — the navigation pill, one step above [rSection] so the bar reads as
+  /// floating over the page rather than as another card in the stack.
+  static const double rNav = 28;
 
   /// Avatars, pills, badges.
   static const BorderRadius rFull = BorderRadius.all(Radius.circular(999));

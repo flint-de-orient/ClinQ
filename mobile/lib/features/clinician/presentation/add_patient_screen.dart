@@ -80,7 +80,9 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
       _error = null;
     });
     try {
-      final id = await ref.read(clinicianRepositoryProvider).createPatient(
+      final id = await ref
+          .read(clinicianRepositoryProvider)
+          .createPatient(
             name: _name.text.trim(),
             phone: AuthValidators.toE164(_phone.text),
             password: _password.text.trim(),
@@ -105,7 +107,10 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
       // Replace the form with the freshly-created record, so Back lands on the
       // patient list rather than an empty form.
       if (id.isNotEmpty) {
-        context.pushReplacement('/clinician/patients/$id', extra: _name.text.trim());
+        context.pushReplacement(
+          '/clinician/patients/$id',
+          extra: _name.text.trim(),
+        );
       } else {
         context.pop();
       }
@@ -126,7 +131,12 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
           key: _formKey,
           autovalidateMode: _autovalidate,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xl),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.xl,
+            ),
             children: [
               const _SectionLabel('Patient details'),
               const SizedBox(height: AppSpacing.sm),
@@ -137,7 +147,11 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                   labelText: 'Full name',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
-                validator: (v) => (v == null || v.trim().length < 2) ? 'Enter the patient\'s name' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.trim().length < 2)
+                            ? 'Enter the patient\'s name'
+                            : null,
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
@@ -147,7 +161,10 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                     child: TextFormField(
                       controller: _age,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3),
+                      ],
                       decoration: const InputDecoration(
                         labelText: 'Age',
                         prefixIcon: Icon(Icons.cake_outlined),
@@ -171,7 +188,10 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                       ),
                       items: const [
                         DropdownMenuItem(value: 'male', child: Text('Male')),
-                        DropdownMenuItem(value: 'female', child: Text('Female')),
+                        DropdownMenuItem(
+                          value: 'female',
+                          child: Text('Female'),
+                        ),
                         DropdownMenuItem(value: 'other', child: Text('Other')),
                       ],
                       validator: (v) => v == null ? 'Required' : null,
@@ -184,13 +204,20 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
               TextFormField(
                 controller: _phone,
                 keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Phone',
                   prefixText: '+91 ',
                   prefixIcon: Icon(Icons.phone_outlined),
                 ),
-                validator: (v) => AuthValidators.isValidPhone(v ?? '') ? null : 'Enter a valid 10-digit number',
+                validator:
+                    (v) =>
+                        AuthValidators.isValidPhone(v ?? '')
+                            ? null
+                            : 'Enter a valid 10-digit number',
               ),
               const SizedBox(height: AppSpacing.md),
               TextFormField(
@@ -203,7 +230,11 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                   alignLabelWithHint: true,
                   prefixIcon: Icon(Icons.home_outlined),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter the address' : null,
+                validator:
+                    (v) =>
+                        (v == null || v.trim().isEmpty)
+                            ? 'Enter the address'
+                            : null,
               ),
 
               const SizedBox(height: AppSpacing.lg),
@@ -214,16 +245,25 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                 obscureText: _obscure,
                 decoration: InputDecoration(
                   labelText: 'Set a password',
-                  helperText: 'The patient signs in with their phone number and this password — share it with them.',
+                  helperText:
+                      'The patient signs in with their phone number and this password — share it with them.',
                   helperMaxLines: 2,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
                     tooltip: _obscure ? 'Show password' : 'Hide password',
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
-                validator: (v) => ((v ?? '').trim().length < 8) ? 'At least 8 characters' : null,
+                validator:
+                    (v) =>
+                        ((v ?? '').trim().length < 8)
+                            ? 'At least 8 characters'
+                            : null,
               ),
 
               const SizedBox(height: AppSpacing.lg),
@@ -231,22 +271,47 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  Expanded(child: _numField(_height, 'Height', 'cm', VitalsValidators.height)),
+                  Expanded(
+                    child: _numField(
+                      _height,
+                      'Height',
+                      'cm',
+                      VitalsValidators.height,
+                    ),
+                  ),
                   const SizedBox(width: AppSpacing.md),
-                  Expanded(child: _numField(_weight, 'Weight', 'kg', VitalsValidators.weight)),
+                  Expanded(
+                    child: _numField(
+                      _weight,
+                      'Weight',
+                      'kg',
+                      VitalsValidators.weight,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  Expanded(child: _numField(_systolic, 'BP systolic', 'mmHg', VitalsValidators.systolic, integer: true)),
+                  Expanded(
+                    child: _numField(
+                      _systolic,
+                      'BP systolic',
+                      'mmHg',
+                      VitalsValidators.systolic,
+                      integer: true,
+                    ),
+                  ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _numField(
                       _diastolic,
                       'BP diastolic',
                       'mmHg',
-                      (v) => VitalsValidators.diastolic(v, systolicText: _systolic.text),
+                      (v) => VitalsValidators.diastolic(
+                        v,
+                        systolicText: _systolic.text,
+                      ),
                       integer: true,
                     ),
                   ),
@@ -255,13 +320,35 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  Expanded(child: _numField(_pulse, 'Heart rate', 'bpm', VitalsValidators.pulse, integer: true)),
+                  Expanded(
+                    child: _numField(
+                      _pulse,
+                      'Heart rate',
+                      'bpm',
+                      VitalsValidators.pulse,
+                      integer: true,
+                    ),
+                  ),
                   const SizedBox(width: AppSpacing.md),
-                  Expanded(child: _numField(_spo2, 'SpO₂', '%', VitalsValidators.spo2, integer: true)),
+                  Expanded(
+                    child: _numField(
+                      _spo2,
+                      'SpO₂',
+                      '%',
+                      VitalsValidators.spo2,
+                      integer: true,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
-              _numField(_sugar, 'Blood sugar', 'mg/dL', VitalsValidators.sugar, integer: true),
+              _numField(
+                _sugar,
+                'Blood sugar',
+                'mg/dL',
+                VitalsValidators.sugar,
+                integer: true,
+              ),
 
               const SizedBox(height: AppSpacing.lg),
               const _SectionLabel('Complaints', trailing: 'optional'),
@@ -284,14 +371,23 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: AppColors.dangerBgOn(context),
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.buttonRadius,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.dangerOn(context), size: 20),
+                      Icon(
+                        Icons.error_outline,
+                        color: AppColors.dangerOn(context),
+                        size: 20,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
-                        child: Text(_error!, style: TextStyle(color: AppColors.dangerOn(context))),
+                        child: Text(
+                          _error!,
+                          style: TextStyle(color: AppColors.dangerOn(context)),
+                        ),
                       ),
                     ],
                   ),
@@ -301,13 +397,17 @@ class _AddPatientScreenState extends ConsumerState<AddPatientScreen> {
               const SizedBox(height: AppSpacing.lg),
               FilledButton.icon(
                 onPressed: _submitting ? null : _submit,
-                icon: _submitting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.person_add_alt_1_rounded),
+                icon:
+                    _submitting
+                        ? const SizedBox(
+                          width: 16,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Icon(Icons.person_add_alt_1_rounded),
                 label: Text(_submitting ? 'Registering…' : 'Register patient'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
@@ -358,13 +458,21 @@ class _SectionLabel extends StatelessWidget {
       children: [
         Text(
           text,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.2),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.2,
+          ),
         ),
         if (trailing != null) ...[
           const SizedBox(width: 8),
           Text(
             trailing!,
-            style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant, fontStyle: FontStyle.italic),
+            style: TextStyle(
+              fontSize: 12,
+              color: scheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
       ],

@@ -22,7 +22,10 @@ class AlertsBanner extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.dashboardOpenAlerts, style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          l10n.dashboardOpenAlerts,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         const SizedBox(height: AppSpacing.sm),
         ...alerts.map(
           (alert) => Padding(
@@ -60,13 +63,16 @@ class _AlertRow extends StatelessWidget {
               children: [
                 Text(
                   alert.title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700, color: color),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
                 ),
                 if (alert.createdAt != null)
                   Text(
-                    DateFormat('d MMM, h:mm a').format(alert.createdAt!.toLocal()),
+                    DateFormat(
+                      'd MMM, h:mm a',
+                    ).format(alert.createdAt!.toLocal()),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
               ],

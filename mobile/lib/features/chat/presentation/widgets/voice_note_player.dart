@@ -87,7 +87,8 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
           // note can be replayed as many times as you like. A plain resume()
           // would do nothing here because the source was freed on completion —
           // reloading is what makes replay reliable.
-          if (_cachedPath != null) await existing.play(DeviceFileSource(_cachedPath!));
+          if (_cachedPath != null)
+            await existing.play(DeviceFileSource(_cachedPath!));
       }
       return;
     }
@@ -202,15 +203,17 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
     final fg = widget.onDark ? Colors.white : AppColors.primary;
     // Same hue as the play glyph, half strength — the unplayed part of the
     // waveform reads as the same control rather than as grey filler.
-    final track = widget.onDark
-        ? Colors.white.withValues(alpha: 0.45)
-        : AppColors.primary.withValues(alpha: 0.42);
+    final track =
+        widget.onDark
+            ? Colors.white.withValues(alpha: 0.45)
+            : AppColors.primary.withValues(alpha: 0.42);
 
     final playing = _player?.state == PlayerState.playing;
     final total = _duration;
-    final progress = (total == null || total.inMilliseconds == 0)
-        ? 0.0
-        : (_position.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
+    final progress =
+        (total == null || total.inMilliseconds == 0)
+            ? 0.0
+            : (_position.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +224,10 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Material(
-              color: widget.onDark ? Colors.white24 : AppColors.accentSoftOn(context),
+              color:
+                  widget.onDark
+                      ? Colors.white24
+                      : AppColors.accentSoftOn(context),
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
@@ -230,14 +236,23 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
                   width: 40,
                   height: 40,
                   child: Center(
-                    child: _loading
-                        ? SizedBox(
-                            width: 16,
-                            height: 17,
-                            child: CircularProgressIndicator(strokeWidth: 2.2, color: fg),
-                          )
-                        : Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                            color: fg, size: 24),
+                    child:
+                        _loading
+                            ? SizedBox(
+                              width: 16,
+                              height: 17,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: fg,
+                              ),
+                            )
+                            : Icon(
+                              playing
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              color: fg,
+                              size: 24,
+                            ),
                   ),
                 ),
               ),
@@ -251,24 +266,32 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
               width: 132,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTapDown: total == null
-                    ? null
-                    : (d) => _seekTo(d.localPosition.dx / 132),
-                onHorizontalDragStart: total == null
-                    ? null
-                    : (_) => setState(() => _scrubbing = true),
-                onHorizontalDragUpdate: total == null
-                    ? null
-                    : (d) => _seekTo(d.localPosition.dx / 132),
-                onHorizontalDragEnd: total == null
-                    ? null
-                    : (_) => setState(() => _scrubbing = false),
+                onTapDown:
+                    total == null
+                        ? null
+                        : (d) => _seekTo(d.localPosition.dx / 132),
+                onHorizontalDragStart:
+                    total == null
+                        ? null
+                        : (_) => setState(() => _scrubbing = true),
+                onHorizontalDragUpdate:
+                    total == null
+                        ? null
+                        : (d) => _seekTo(d.localPosition.dx / 132),
+                onHorizontalDragEnd:
+                    total == null
+                        ? null
+                        : (_) => setState(() => _scrubbing = false),
                 child: _Waveform(progress: progress, colour: fg, track: track),
               ),
             ),
             if (total != null) ...[
               const SizedBox(width: 8),
-              _SpeedChip(speed: _speed, onTap: _cycleSpeed, onDark: widget.onDark),
+              _SpeedChip(
+                speed: _speed,
+                onTap: _cycleSpeed,
+                onDark: widget.onDark,
+              ),
             ],
           ],
         ),
@@ -293,7 +316,11 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
 /// Tap to cycle 1× → 1.5× → 2×. Only shown once the clip has loaded, because
 /// there is no speed to change until there is something playing.
 class _SpeedChip extends StatelessWidget {
-  const _SpeedChip({required this.speed, required this.onTap, required this.onDark});
+  const _SpeedChip({
+    required this.speed,
+    required this.onTap,
+    required this.onDark,
+  });
 
   final double speed;
   final VoidCallback onTap;
@@ -303,9 +330,10 @@ class _SpeedChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final fg = onDark ? Colors.white : AppColors.primary;
     // Drop the trailing zero: "1×" and "1.5×", never "1.0×".
-    final label = speed == speed.roundToDouble()
-        ? '${speed.toInt()}×'
-        : '${speed.toStringAsFixed(1)}×';
+    final label =
+        speed == speed.roundToDouble()
+            ? '${speed.toInt()}×'
+            : '${speed.toStringAsFixed(1)}×';
 
     return Material(
       color: onDark ? Colors.white24 : AppColors.accentSoftOn(context),
@@ -317,7 +345,11 @@ class _SpeedChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Text(
             label,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: fg),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
           ),
         ),
       ),
@@ -332,14 +364,39 @@ class _SpeedChip extends StatelessWidget {
 /// to draw something nobody reads for its shape. This says "audio, and how far
 /// through you are", which is all the bar is asked to do.
 class _Waveform extends StatelessWidget {
-  const _Waveform({required this.progress, required this.colour, required this.track});
+  const _Waveform({
+    required this.progress,
+    required this.colour,
+    required this.track,
+  });
 
   final double progress;
   final Color colour;
   final Color track;
 
   static const _heights = <double>[
-    10, 17, 26, 14, 31, 21, 12, 28, 36, 19, 11, 24, 33, 15, 27, 18, 35, 13, 22, 30, 16, 10,
+    10,
+    17,
+    26,
+    14,
+    31,
+    21,
+    12,
+    28,
+    36,
+    19,
+    11,
+    24,
+    33,
+    15,
+    27,
+    18,
+    35,
+    13,
+    22,
+    30,
+    16,
+    10,
   ];
 
   @override

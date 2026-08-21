@@ -23,20 +23,29 @@ class GlucoseTrends {
     return GlucoseTrends(
       days: (json['days'] as num?)?.toInt() ?? 30,
       count: (json['count'] as num?)?.toInt() ?? 0,
-      series: (json['series'] as List<dynamic>? ?? const [])
-          .map((e) => GlucoseTrendPoint.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      daily: (json['daily'] as List<dynamic>? ?? const [])
-          .map((e) => e as Map<String, dynamic>)
-          .toList(),
-      stats: GlucoseStats.fromJson(json['stats'] as Map<String, dynamic>? ?? const {}),
+      series:
+          (json['series'] as List<dynamic>? ?? const [])
+              .map((e) => GlucoseTrendPoint.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      daily:
+          (json['daily'] as List<dynamic>? ?? const [])
+              .map((e) => e as Map<String, dynamic>)
+              .toList(),
+      stats: GlucoseStats.fromJson(
+        json['stats'] as Map<String, dynamic>? ?? const {},
+      ),
       distribution: (json['distribution'] as Map<String, dynamic>?) ?? const {},
     );
   }
 }
 
 class GlucoseTrendPoint {
-  const GlucoseTrendPoint({required this.at, required this.value, this.flag, this.context});
+  const GlucoseTrendPoint({
+    required this.at,
+    required this.value,
+    this.flag,
+    this.context,
+  });
 
   final DateTime? at;
   final num value;

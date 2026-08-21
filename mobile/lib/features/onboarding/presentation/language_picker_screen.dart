@@ -27,7 +27,8 @@ class LanguagePickerScreen extends ConsumerStatefulWidget {
   const LanguagePickerScreen({super.key});
 
   @override
-  ConsumerState<LanguagePickerScreen> createState() => _LanguagePickerScreenState();
+  ConsumerState<LanguagePickerScreen> createState() =>
+      _LanguagePickerScreenState();
 }
 
 class _LanguagePickerScreenState extends ConsumerState<LanguagePickerScreen> {
@@ -57,24 +58,32 @@ class _LanguagePickerScreenState extends ConsumerState<LanguagePickerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.xl),
-              Icon(Icons.translate_rounded, size: 40, color: AppColors.accentOn(context)),
+              Icon(
+                Icons.translate_rounded,
+                size: 40,
+                color: AppColors.accentOn(context),
+              ),
               const SizedBox(height: AppSpacing.md),
               Text(
                 l10n.languagePickerTitle,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 l10n.languagePickerSubtitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
               Expanded(
                 child: ListView.separated(
                   itemCount: _options.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                  separatorBuilder:
+                      (_, _) => const SizedBox(height: AppSpacing.md),
                   itemBuilder: (context, index) {
                     final option = _options[index];
                     final isSelected = option.code == _selected;
@@ -90,7 +99,9 @@ class _LanguagePickerScreenState extends ConsumerState<LanguagePickerScreen> {
               AppButton(
                 label: l10n.continueButton,
                 onPressed: () async {
-                  await ref.read(localeControllerProvider.notifier).setLanguage(_selected);
+                  await ref
+                      .read(localeControllerProvider.notifier)
+                      .setLanguage(_selected);
                 },
               ),
             ],
@@ -102,7 +113,11 @@ class _LanguagePickerScreenState extends ConsumerState<LanguagePickerScreen> {
 }
 
 class _LanguageTile extends StatelessWidget {
-  const _LanguageTile({required this.option, required this.isSelected, required this.onTap});
+  const _LanguageTile({
+    required this.option,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   final _LanguageOption option;
   final bool isSelected;
@@ -118,8 +133,13 @@ class _LanguageTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
-          constraints: const BoxConstraints(minHeight: AppSpacing.minTapTarget + 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.minTapTarget + 20,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
             border: Border.all(
@@ -135,10 +155,16 @@ class _LanguageTile extends StatelessWidget {
                   children: [
                     Text(
                       option.label,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 0),
-                    Text(option.subLabel, style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      option.subLabel,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                   ],
                 ),
               ),

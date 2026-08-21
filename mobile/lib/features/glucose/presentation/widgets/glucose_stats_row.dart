@@ -23,10 +23,16 @@ class GlucoseStatsRow extends ConsumerWidget {
     // value and label room to read in full. (The estimate is derived from the
     // recent readings, so its label says so, to set it apart from a lab HbA1c.)
     final cards = <Widget>[
-      _StatCard(label: l10n.glucoseStatsAverage, value: _glucose(unit, stats.average)),
+      _StatCard(
+        label: l10n.glucoseStatsAverage,
+        value: _glucose(unit, stats.average),
+      ),
       _StatCard(label: l10n.glucoseStatsMin, value: _glucose(unit, stats.min)),
       _StatCard(label: l10n.glucoseStatsMax, value: _glucose(unit, stats.max)),
-      _StatCard(label: l10n.glucoseStatsHba1c, value: _estHba1c(stats.estimatedHba1c)),
+      _StatCard(
+        label: l10n.glucoseStatsHba1c,
+        value: _estHba1c(stats.estimatedHba1c),
+      ),
     ];
 
     return Column(
@@ -40,7 +46,10 @@ class GlucoseStatsRow extends ConsumerWidget {
                 Expanded(child: cards[i]),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: i + 1 < cards.length ? cards[i + 1] : const SizedBox.shrink(),
+                  child:
+                      i + 1 < cards.length
+                          ? cards[i + 1]
+                          : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -52,7 +61,8 @@ class GlucoseStatsRow extends ConsumerWidget {
 
   // HbA1c is a percentage, so it keeps its own formatter; the three glucose
   // stats follow the patient's chosen unit.
-  String _glucose(GlucoseUnit unit, num? value) => value == null ? '—' : unit.format(value);
+  String _glucose(GlucoseUnit unit, num? value) =>
+      value == null ? '—' : unit.format(value);
 
   // The "~" marks it as an ESTIMATE derived from recent glucose, so it reads
   // apart from the exact lab "Last HbA1c" on the home fact grid — the two used
@@ -69,15 +79,18 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(

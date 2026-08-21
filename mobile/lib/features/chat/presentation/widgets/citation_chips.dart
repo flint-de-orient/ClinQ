@@ -24,41 +24,56 @@ class CitationChips extends StatelessWidget {
       child: Wrap(
         spacing: AppSpacing.sm,
         runSpacing: AppSpacing.xs,
-        children: citations.map((c) {
-          final pill = Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: scheme.outlineVariant),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(c.title, style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant)),
+        children:
+            citations.map((c) {
+              final pill = Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                if (onTap != null) ...[
-                  const SizedBox(width: 4),
-                  Icon(Icons.north_east_rounded, size: 14, color: scheme.onSurfaceVariant),
-                ],
-              ],
-            ),
-          );
-          return Tooltip(
-            message: c.source,
-            child: onTap == null
-                ? pill
-                : Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => onTap!(c),
-                      child: pill,
+                decoration: BoxDecoration(
+                  color: scheme.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: scheme.outlineVariant),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        c.title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
-                  ),
-          );
-        }).toList(),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.north_east_rounded,
+                        size: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ],
+                ),
+              );
+              return Tooltip(
+                message: c.source,
+                child:
+                    onTap == null
+                        ? pill
+                        : Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () => onTap!(c),
+                            child: pill,
+                          ),
+                        ),
+              );
+            }).toList(),
       ),
     );
   }

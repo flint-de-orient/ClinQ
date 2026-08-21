@@ -17,7 +17,9 @@ final overviewProvider = FutureProvider.autoDispose<ClinicOverview>((ref) {
 
 /// Clinic-wide population analytics for the dashboard charts. Cached server-side
 /// (~2 min TTL), so the dashboard's poll re-fetches it cheaply.
-final clinicAnalyticsProvider = FutureProvider.autoDispose<ClinicAnalytics>((ref) {
+final clinicAnalyticsProvider = FutureProvider.autoDispose<ClinicAnalytics>((
+  ref,
+) {
   return ref.watch(clinicianRepositoryProvider).analytics();
 });
 
@@ -74,8 +76,8 @@ final patientPrescriptionsProvider = FutureProvider.autoDispose
 /// only one would cut them off from every other patient).
 final clinicDieticiansProvider =
     FutureProvider.autoDispose<List<({String id, String name})>>((ref) {
-  return ref.watch(clinicianRepositoryProvider).dieticians();
-});
+      return ref.watch(clinicianRepositoryProvider).dieticians();
+    });
 
 typedef AlertsQuery = ({String? status, String? severity});
 
@@ -91,10 +93,12 @@ final alertsProvider = FutureProvider.autoDispose
 /// autoDispose so reopening a patient always re-reads it — a list of what
 /// someone is currently taking is the last thing that should be served from a
 /// stale cache.
-final patientMedicationsProvider =
-    FutureProvider.autoDispose.family<List<Medication>, String>((ref, patientId) {
-  return ref.watch(clinicianRepositoryProvider).patientMedications(patientId);
-});
+final patientMedicationsProvider = FutureProvider.autoDispose
+    .family<List<Medication>, String>((ref, patientId) {
+      return ref
+          .watch(clinicianRepositoryProvider)
+          .patientMedications(patientId);
+    });
 
 // ---- Chat review --------------------------------------------------------
 
@@ -136,5 +140,5 @@ final knowledgeProvider = FutureProvider.autoDispose
 /// Everything waiting for the doctor, for the bell and its sheet.
 final clinicianNotificationsProvider =
     FutureProvider.autoDispose<({int unread, List<PanelNotification> items})>(
-  (ref) => ref.watch(clinicianRepositoryProvider).notifications(),
-);
+      (ref) => ref.watch(clinicianRepositoryProvider).notifications(),
+    );

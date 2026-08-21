@@ -23,18 +23,26 @@ class SendMessageResult {
   final List<Citation> citations;
 
   factory SendMessageResult.fromJson(Map<String, dynamic> json) {
-    final citations = (json['citations'] as List<dynamic>? ?? const [])
-        .map((e) => Citation.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final triage = Triage.fromJson(json['triage'] as Map<String, dynamic>? ?? const {});
+    final citations =
+        (json['citations'] as List<dynamic>? ?? const [])
+            .map((e) => Citation.fromJson(e as Map<String, dynamic>))
+            .toList();
+    final triage = Triage.fromJson(
+      json['triage'] as Map<String, dynamic>? ?? const {},
+    );
     return SendMessageResult(
       sessionId: json['sessionId']?.toString() ?? '',
-      userMessage: ChatMessage.fromJson(json['userMessage'] as Map<String, dynamic>),
+      userMessage: ChatMessage.fromJson(
+        json['userMessage'] as Map<String, dynamic>,
+      ),
       reply: ChatMessage.fromJson(
         json['reply'] as Map<String, dynamic>,
       ).copyWith(citations: citations, triage: triage),
       triage: triage,
-      alert: json['alert'] == null ? null : ChatAlert.fromJson(json['alert'] as Map<String, dynamic>),
+      alert:
+          json['alert'] == null
+              ? null
+              : ChatAlert.fromJson(json['alert'] as Map<String, dynamic>),
       citations: citations,
     );
   }

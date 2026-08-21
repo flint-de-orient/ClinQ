@@ -28,14 +28,29 @@ const List<AdviceSnippet> kAdviceCatalog = [
   AdviceSnippet(text: 'Avoid prolonged sitting', category: 'Activity'),
 
   // Monitoring
-  AdviceSnippet(text: 'Monitor fasting blood sugar every morning', category: 'Monitoring'),
+  AdviceSnippet(
+    text: 'Monitor fasting blood sugar every morning',
+    category: 'Monitoring',
+  ),
   AdviceSnippet(text: 'Maintain a blood-sugar log', category: 'Monitoring'),
-  AdviceSnippet(text: 'Take medicines regularly as prescribed', category: 'Monitoring'),
+  AdviceSnippet(
+    text: 'Take medicines regularly as prescribed',
+    category: 'Monitoring',
+  ),
 
   // Foot & precautions
-  AdviceSnippet(text: 'Daily foot care and inspection', category: 'Precautions'),
-  AdviceSnippet(text: 'Wear proper, well-fitting footwear', category: 'Precautions'),
-  AdviceSnippet(text: 'Report any wound or infection immediately', category: 'Precautions'),
+  AdviceSnippet(
+    text: 'Daily foot care and inspection',
+    category: 'Precautions',
+  ),
+  AdviceSnippet(
+    text: 'Wear proper, well-fitting footwear',
+    category: 'Precautions',
+  ),
+  AdviceSnippet(
+    text: 'Report any wound or infection immediately',
+    category: 'Precautions',
+  ),
 
   // Lifestyle
   AdviceSnippet(text: 'Drink adequate water', category: 'Lifestyle'),

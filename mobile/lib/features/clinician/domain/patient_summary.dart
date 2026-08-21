@@ -14,7 +14,12 @@ class Hba1cPoint {
 
 /// One medicine's dose adherence over the window — taken vs due doses.
 class MedAdherence {
-  const MedAdherence({required this.name, required this.taken, required this.expected, this.percentage});
+  const MedAdherence({
+    required this.name,
+    required this.taken,
+    required this.expected,
+    this.percentage,
+  });
   final String name;
   final int taken;
   final int expected;
@@ -31,7 +36,12 @@ class MedAdherence {
 /// Medication adherence for a chosen window — the tap-through sheet fetches this
 /// per period (week / month / year) via `/doctor/patients/:id/adherence`.
 class AdherenceReport {
-  const AdherenceReport({required this.taken, required this.expected, this.percentage, this.perMed = const []});
+  const AdherenceReport({
+    required this.taken,
+    required this.expected,
+    this.percentage,
+    this.perMed = const [],
+  });
   final int taken;
   final int expected;
   final int? percentage;
@@ -41,25 +51,37 @@ class AdherenceReport {
     taken: (j['taken'] as num?)?.toInt() ?? 0,
     expected: (j['expected'] as num?)?.toInt() ?? 0,
     percentage: (j['percentage'] as num?)?.toInt(),
-    perMed: (j['perMedication'] as List?)?.whereType<Map<String, dynamic>>().map(MedAdherence.fromJson).toList() ??
+    perMed:
+        (j['perMedication'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(MedAdherence.fromJson)
+            .toList() ??
         const [],
   );
 }
 
 /// One day's glucose summary — the point the continuous-monitoring graph plots.
 class GlucoseDailyPoint {
-  const GlucoseDailyPoint({required this.date, required this.average, required this.min, required this.max});
+  const GlucoseDailyPoint({
+    required this.date,
+    required this.average,
+    required this.min,
+    required this.max,
+  });
   final DateTime date;
   final int average;
   final int min;
   final int max;
 
-  factory GlucoseDailyPoint.fromJson(Map<String, dynamic> j) => GlucoseDailyPoint(
-    date: DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ?? DateTime.now(),
-    average: (j['average'] as num?)?.toInt() ?? 0,
-    min: (j['min'] as num?)?.toInt() ?? 0,
-    max: (j['max'] as num?)?.toInt() ?? 0,
-  );
+  factory GlucoseDailyPoint.fromJson(Map<String, dynamic> j) =>
+      GlucoseDailyPoint(
+        date:
+            DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ??
+            DateTime.now(),
+        average: (j['average'] as num?)?.toInt() ?? 0,
+        min: (j['min'] as num?)?.toInt() ?? 0,
+        max: (j['max'] as num?)?.toInt() ?? 0,
+      );
 }
 
 /// One structured reading transcribed from a report — value, unit, reference
@@ -87,8 +109,10 @@ class Analyte {
 
   /// A compact reference window, e.g. "70–130", "<100", ">40".
   String get rangeText {
-    String n(num v) => v == v.roundToDouble() ? v.toInt().toString() : v.toString();
-    if (refLow != null && refHigh != null) return '${n(refLow!)}–${n(refHigh!)}';
+    String n(num v) =>
+        v == v.roundToDouble() ? v.toInt().toString() : v.toString();
+    if (refLow != null && refHigh != null)
+      return '${n(refLow!)}–${n(refHigh!)}';
     if (refHigh != null) return '<${n(refHigh!)}';
     if (refLow != null) return '>${n(refLow!)}';
     return '';
@@ -144,13 +168,21 @@ class LabReport {
     id: j['id']?.toString() ?? '',
     testName: j['testName']?.toString() ?? '',
     note: j['note']?.toString() ?? '',
-    photoUrl: (j['photoUrl'] == null || j['photoUrl'].toString().isEmpty) ? null : j['photoUrl'].toString(),
+    photoUrl:
+        (j['photoUrl'] == null || j['photoUrl'].toString().isEmpty)
+            ? null
+            : j['photoUrl'].toString(),
     createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? '')?.toLocal(),
     mimeType: j['mimeType']?.toString(),
     originalName: j['originalName']?.toString(),
     analysisStatus: j['analysisStatus']?.toString(),
     analysisSummary: j['analysisSummary']?.toString(),
-    analytes: (j['analytes'] as List?)?.whereType<Map<String, dynamic>>().map(Analyte.fromJson).toList() ?? const [],
+    analytes:
+        (j['analytes'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(Analyte.fromJson)
+            .toList() ??
+        const [],
   );
 }
 
@@ -198,10 +230,15 @@ class PatientDetails {
   factory PatientDetails.fromJson(Map<String, dynamic> j) {
     final ec = j['emergencyContact'] as Map<String, dynamic>?;
     return PatientDetails(
-      diagnosedOn: DateTime.tryParse(j['diagnosedOn']?.toString() ?? '')?.toLocal(),
+      diagnosedOn:
+          DateTime.tryParse(j['diagnosedOn']?.toString() ?? '')?.toLocal(),
       heightCm: j['heightCm'] as num?,
-      comorbidities: (j['comorbidities'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-      allergies: (j['allergies'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      comorbidities:
+          (j['comorbidities'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
+      allergies:
+          (j['allergies'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
       footRiskCategory: j['footRiskCategory']?.toString(),
       emergencyName: ec?['name']?.toString(),
       emergencyPhone: ec?['phone']?.toString(),
@@ -344,7 +381,8 @@ class PatientSummary {
   }
 
   /// The latest lab HbA1c on record (the measured value, not the estimate).
-  num? get lastHba1c => hba1cHistory.isNotEmpty ? hba1cHistory.first.percentage : null;
+  num? get lastHba1c =>
+      hba1cHistory.isNotEmpty ? hba1cHistory.first.percentage : null;
 
   factory PatientSummary.fromJson(Map<String, dynamic> j) {
     final patient = j['patient'] as Map<String, dynamic>? ?? const {};
@@ -369,33 +407,47 @@ class PatientSummary {
       diabetesType: profile['diabetesType']?.toString(),
       riskBand: profile['riskBand']?.toString(),
       riskScore: (profile['riskScore'] as num?)?.toInt(),
-      assignedDieticianId: profile['assignedDietician'] is Map
-          ? (profile['assignedDietician'] as Map)['_id']?.toString()
-          : profile['assignedDietician']?.toString(),
-      assignedDieticianName: profile['assignedDietician'] is Map
-          ? (profile['assignedDietician'] as Map)['name']?.toString()
-          : null,
+      assignedDieticianId:
+          profile['assignedDietician'] is Map
+              ? (profile['assignedDietician'] as Map)['_id']?.toString()
+              : profile['assignedDietician']?.toString(),
+      assignedDieticianName:
+          profile['assignedDietician'] is Map
+              ? (profile['assignedDietician'] as Map)['name']?.toString()
+              : null,
       reviewIntervalDays: (profile['dietReviewIntervalDays'] as num?)?.toInt(),
-      labResults: (j['labResults'] as List?)?.whereType<Map<String, dynamic>>().map(LabReport.fromJson).toList() ?? const [],
-      details: PatientDetails.fromJson(j['details'] as Map<String, dynamic>? ?? const {}),
-      advisedTests: (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+      labResults:
+          (j['labResults'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(LabReport.fromJson)
+              .toList() ??
+          const [],
+      details: PatientDetails.fromJson(
+        j['details'] as Map<String, dynamic>? ?? const {},
+      ),
+      advisedTests:
+          (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ??
+          const [],
       healthScore: (health['score'] as num?)?.toInt(),
       healthBand: health['band']?.toString(),
       adherencePercent: (adherence['percentage'] as num?)?.toInt(),
       glucoseAverage: (stats?['average'] as num?)?.toInt(),
       timeInRangePercent: (stats?['timeInRangePercent'] as num?)?.toInt(),
       estimatedHba1c: (stats?['estimatedHba1c'] as num?)?.toDouble(),
-      hba1cHistory: (j['hba1cHistory'] as List?)
+      hba1cHistory:
+          (j['hba1cHistory'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(Hba1cPoint.fromJson)
               .toList() ??
           const [],
-      glucoseDaily: (trends['daily'] as List?)
+      glucoseDaily:
+          (trends['daily'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(GlucoseDailyPoint.fromJson)
               .toList() ??
           const [],
-      alerts: (j['alerts'] as List?)
+      alerts:
+          (j['alerts'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(ClinicalAlert.fromJson)
               .toList() ??
@@ -404,18 +456,27 @@ class PatientSummary {
       adherenceTaken: (adherence['taken'] as num?)?.toInt(),
       adherenceExpected: (adherence['expected'] as num?)?.toInt(),
       adherenceMissed: (adherence['missed'] as num?)?.toInt(),
-      adherencePerMed: (adherence['perMedication'] as List?)
+      adherencePerMed:
+          (adherence['perMedication'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(MedAdherence.fromJson)
               .toList() ??
           const [],
       medicationCount: (j['medicationCount'] as num?)?.toInt(),
-      lastFasting: j['lastFasting'] is Map ? ((j['lastFasting'] as Map)['value'] as num?)?.toInt() : null,
-      lastFastingAt: j['lastFasting'] is Map
-          ? DateTime.tryParse((j['lastFasting'] as Map)['at']?.toString() ?? '')?.toLocal()
-          : null,
+      lastFasting:
+          j['lastFasting'] is Map
+              ? ((j['lastFasting'] as Map)['value'] as num?)?.toInt()
+              : null,
+      lastFastingAt:
+          j['lastFasting'] is Map
+              ? DateTime.tryParse(
+                (j['lastFasting'] as Map)['at']?.toString() ?? '',
+              )?.toLocal()
+              : null,
       heightCm: (profile['heightCm'] as num?)?.toDouble(),
-      weightKg: (vitals['weightKg'] as num?)?.toDouble() ?? (profile['baselineWeightKg'] as num?)?.toDouble(),
+      weightKg:
+          (vitals['weightKg'] as num?)?.toDouble() ??
+          (profile['baselineWeightKg'] as num?)?.toDouble(),
       systolic: (vitals['systolic'] as num?)?.toInt(),
       diastolic: (vitals['diastolic'] as num?)?.toInt(),
       pulse: (vitals['pulse'] as num?)?.toInt(),

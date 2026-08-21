@@ -2,7 +2,12 @@
 /// `{ id, severity, type, title }`, or `null` when urgency is
 /// `routine`/`advice`.
 class ChatAlert {
-  const ChatAlert({required this.id, required this.severity, required this.type, required this.title});
+  const ChatAlert({
+    required this.id,
+    required this.severity,
+    required this.type,
+    required this.title,
+  });
 
   final String id;
   final String severity;

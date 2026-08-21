@@ -153,7 +153,9 @@ class ClinicAnalytics {
         if (p.total > 0)
           GlucoseDailyPoint(
             date: p.date,
-            average: ((p.low * 57 + p.inRange * 125 + p.high * 215) / p.total).round(),
+            average:
+                ((p.low * 57 + p.inRange * 125 + p.high * 215) / p.total)
+                    .round(),
             min: 0,
             max: 0,
           ),
@@ -164,17 +166,20 @@ class ClinicAnalytics {
     final m = j['monitoring'] as Map<String, dynamic>? ?? const {};
     int n(dynamic v) => (v as num?)?.toInt() ?? 0;
     return ClinicAnalytics(
-      controlTrend: (j['controlTrend'] as List?)
+      controlTrend:
+          (j['controlTrend'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(ControlPoint.fromJson)
               .toList() ??
           const [],
-      glucoseDaily: (j['glucoseDaily'] as List?)
+      glucoseDaily:
+          (j['glucoseDaily'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(GlucoseDailyPoint.fromJson)
               .toList() ??
           const [],
-      engagement: (j['engagement'] as List?)
+      engagement:
+          (j['engagement'] as List?)
               ?.whereType<Map<String, dynamic>>()
               .map(EngagementPoint.fromJson)
               .toList() ??
@@ -204,7 +209,9 @@ class ControlPoint {
   final int total;
 
   factory ControlPoint.fromJson(Map<String, dynamic> j) => ControlPoint(
-    date: DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ?? DateTime.now(),
+    date:
+        DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ??
+        DateTime.now(),
     low: (j['low'] as num?)?.toInt() ?? 0,
     inRange: (j['inRange'] as num?)?.toInt() ?? 0,
     high: (j['high'] as num?)?.toInt() ?? 0,
@@ -220,7 +227,9 @@ class EngagementPoint {
   final int patients;
 
   factory EngagementPoint.fromJson(Map<String, dynamic> j) => EngagementPoint(
-    date: DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ?? DateTime.now(),
+    date:
+        DateTime.tryParse(j['date']?.toString() ?? '')?.toLocal() ??
+        DateTime.now(),
     patients: (j['patients'] as num?)?.toInt() ?? 0,
   );
 }
@@ -228,7 +237,14 @@ class EngagementPoint {
 /// One medicine on a past prescription — enough detail to pre-fill a consult
 /// medicine row when the doctor reuses it.
 class PrescribedItem {
-  const PrescribedItem({required this.name, this.strength, this.frequency, this.durationDays, this.relationToMeal, this.route});
+  const PrescribedItem({
+    required this.name,
+    this.strength,
+    this.frequency,
+    this.durationDays,
+    this.relationToMeal,
+    this.route,
+  });
 
   final String name;
   final String? strength;
@@ -295,30 +311,48 @@ class PrescriptionSummary {
   /// Relative path to the downloadable PDF (`/api/v1/.../prescriptions/:id/pdf`).
   final String? pdfUrl;
 
-  factory PrescriptionSummary.fromJson(Map<String, dynamic> j) => PrescriptionSummary(
+  factory PrescriptionSummary.fromJson(
+    Map<String, dynamic> j,
+  ) => PrescriptionSummary(
     id: j['id']?.toString() ?? '',
     referenceNo: j['referenceNo']?.toString(),
     issuedOn: DateTime.tryParse(j['issuedOn']?.toString() ?? '')?.toLocal(),
     doctorName: j['doctorName']?.toString(),
-    complaint: (j['complaint'] == null || j['complaint'].toString().isEmpty) ? null : j['complaint'].toString(),
-    diagnosis: (j['diagnosis'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-    labTestsAdvised: (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ?? const [],
-    generalAdvice: (j['generalAdvice'] == null || j['generalAdvice'].toString().isEmpty)
-        ? null
-        : j['generalAdvice'].toString(),
+    complaint:
+        (j['complaint'] == null || j['complaint'].toString().isEmpty)
+            ? null
+            : j['complaint'].toString(),
+    diagnosis:
+        (j['diagnosis'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
+    labTestsAdvised:
+        (j['labTestsAdvised'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
+    generalAdvice:
+        (j['generalAdvice'] == null || j['generalAdvice'].toString().isEmpty)
+            ? null
+            : j['generalAdvice'].toString(),
     followUpOn: DateTime.tryParse(j['followUpOn']?.toString() ?? '')?.toLocal(),
     itemCount: (j['items'] as List?)?.length ?? 0,
-    medicines: (j['items'] as List?)
+    medicines:
+        (j['items'] as List?)
             ?.whereType<Map<String, dynamic>>()
             .map((it) {
               final name = it['name']?.toString() ?? '';
               final strength = it['strength']?.toString();
-              return (strength != null && strength.isNotEmpty) ? '$name ($strength)' : name;
+              return (strength != null && strength.isNotEmpty)
+                  ? '$name ($strength)'
+                  : name;
             })
             .where((s) => s.isNotEmpty)
             .toList() ??
         const [],
-    items: (j['items'] as List?)?.whereType<Map<String, dynamic>>().map(PrescribedItem.fromJson).toList() ?? const [],
+    items:
+        (j['items'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(PrescribedItem.fromJson)
+            .toList() ??
+        const [],
     pdfUrl: j['pdfUrl']?.toString(),
   );
 }
@@ -403,10 +437,16 @@ class DoctorWorklist {
       reviews: n(counts['reviews']),
       plans: n(counts['plans']),
       queue:
-          (j['queue'] as List?)?.whereType<Map<String, dynamic>>().map(WorklistItem.fromJson).toList() ??
+          (j['queue'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(WorklistItem.fromJson)
+              .toList() ??
           const [],
       recentMeals:
-          (j['recentMeals'] as List?)?.whereType<Map<String, dynamic>>().map(RecentMeal.fromJson).toList() ??
+          (j['recentMeals'] as List?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(RecentMeal.fromJson)
+              .toList() ??
           const [],
     );
   }
@@ -496,7 +536,9 @@ class MessagePreview {
   factory MessagePreview.fromJson(Map<String, dynamic> j) => MessagePreview(
     preview: j['preview']?.toString() ?? '',
     role: j['role']?.toString() ?? 'user',
-    at: DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal() ?? DateTime.now(),
+    at:
+        DateTime.tryParse(j['at']?.toString() ?? '')?.toLocal() ??
+        DateTime.now(),
     urgency: j['urgency']?.toString() ?? 'routine',
     mediaType: j['mediaType']?.toString(),
   );
@@ -575,21 +617,31 @@ class PatientListItem {
     // `is Map` rather than `is Map<String, dynamic>`: a nested object can decode
     // as Map<dynamic, dynamic> depending on the path it took, and the stricter
     // test would drop it silently. Defensive, not a fix for a known bug.
-    lastMessage: j['lastMessage'] is Map
-        ? MessagePreview.fromJson(Map<String, dynamic>.from(j['lastMessage'] as Map))
-        : null,
+    lastMessage:
+        j['lastMessage'] is Map
+            ? MessagePreview.fromJson(
+              Map<String, dynamic>.from(j['lastMessage'] as Map),
+            )
+            : null,
     unreadCount: (j['unreadCount'] as num?)?.toInt() ?? 0,
-    lastReadingAt: DateTime.tryParse(j['lastReadingAt']?.toString() ?? '')?.toLocal(),
+    lastReadingAt:
+        DateTime.tryParse(j['lastReadingAt']?.toString() ?? '')?.toLocal(),
     lastReadingValue: j['lastReadingValue'] as num?,
     openAlertCount: (j['openAlertCount'] as num?)?.toInt() ?? 0,
-    spark: (j['spark'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    spark:
+        (j['spark'] as List?)?.map((e) => (e as num).toDouble()).toList() ??
+        const [],
     trend: j['trend']?.toString() ?? 'flat',
     trendDelta: (j['trendDelta'] as num?)?.toInt(),
     checkInIntervalDays: (j['checkInIntervalDays'] as num?)?.toInt(),
     checkInOverdue: j['checkInOverdue'] == true,
     hba1c: j['hba1c'] as num?,
     hba1cAt: DateTime.tryParse(j['hba1cAt']?.toString() ?? '')?.toLocal(),
-    hba1cSpark: (j['hba1cSpark'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    hba1cSpark:
+        (j['hba1cSpark'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
   );
 }
 
@@ -658,9 +710,12 @@ class ClinicalAlert {
     patientGender: j['patientGender']?.toString(),
     patientPhone: j['patientPhone']?.toString(),
     detail: j['detail']?.toString(),
-    matchedRules: (j['matchedRules'] as List?)?.map((e) => e.toString()).toList() ?? const [],
+    matchedRules:
+        (j['matchedRules'] as List?)?.map((e) => e.toString()).toList() ??
+        const [],
     createdAt: DateTime.tryParse(j['createdAt']?.toString() ?? '')?.toLocal(),
-    acknowledgedAt: DateTime.tryParse(j['acknowledgedAt']?.toString() ?? '')?.toLocal(),
+    acknowledgedAt:
+        DateTime.tryParse(j['acknowledgedAt']?.toString() ?? '')?.toLocal(),
     resolvedAt: DateTime.tryParse(j['resolvedAt']?.toString() ?? '')?.toLocal(),
     resolutionNotes: j['resolutionNotes']?.toString(),
   );

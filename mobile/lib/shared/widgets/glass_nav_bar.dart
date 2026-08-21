@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import 'glass_surface.dart';
+import '../../core/theme/tokens.dart';
 
 /// A navigation bar that looks like it floats and behaves like it does not.
 ///
@@ -14,10 +12,8 @@ import 'glass_surface.dart';
 /// A navigation bar is not the place to spend that.
 ///
 /// So: side margins, a full radius and a soft shadow give the floating
-/// appearance, the Scaffold reserves the whole height so nothing can hide
-/// behind it, and the BackdropFilter is gone — with the body ending above the
-/// bar there was nothing left to blur, and it was costing a saveLayer per
-/// frame to prove it.
+/// appearance, while the Scaffold reserves the bar's whole height — including
+/// the safe-area inset it adds below itself — so nothing can hide behind it.
 class GlassNavBar extends StatelessWidget {
   const GlassNavBar({
     super.key,
@@ -30,52 +26,30 @@ class GlassNavBar extends StatelessWidget {
   final ValueChanged<int> onSelected;
   final List<GlassNavItem> items;
 
+  /// The pill itself. Trimmed from 68: with the selected item now carrying its
+  /// own pill, the bar no longer needs height to signal where you are.
+  static const double _barHeight = 62;
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    // The full gesture inset, not a fraction of it. Two thirds of a gesture bar
+    // is still a gesture bar, and the last tab row sat inside it.
+    final inset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
-      // Floating, not seated. The gap is what makes the content behind it
-      // visible, which is the entire point of frosting the thing.
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-        AppSpacing.md + MediaQuery.viewPaddingOf(context).bottom * 0.35,
-      ),
+      padding: EdgeInsets.fromLTRB(T.s3, 0, T.s3, T.s2 + inset),
       child: Container(
-        height: 68,
-        // The same specular pass the cards get, so the bar is made of the same
-        // material rather than merely the same colour.
-        foregroundDecoration: GlassSurface.sheen(
-          radius: AppSpacing.sheetRadius + 8,
-        ),
+        height: _barHeight,
         decoration: BoxDecoration(
-          // Translucent, not transparent — pure glass leaves the labels
-          // fighting whatever is behind them — and graded rather than flat so
-          // the pill reads as a slab with thickness.
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              (isDark ? const Color(0xFF10161F) : Colors.white).withValues(
-                alpha: isDark ? 0.72 : 0.86,
-              ),
-              (isDark ? const Color(0xFF10161F) : Colors.white).withValues(
-                alpha: isDark ? 0.58 : 0.70,
-              ),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(AppSpacing.sheetRadius + 8),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.85),
-            width: 1.2,
-          ),
-          boxShadow: [
+          color: dark ? const Color(0xFF141B26) : Colors.white,
+          borderRadius: BorderRadius.circular(T.rNav),
+          border: Border.all(color: dark ? const Color(0x1FFFFFFF) : T.line),
+          boxShadow: const [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.14),
+              color: Color(0x140B1B3A),
               blurRadius: 24,
-              offset: const Offset(0, 8),
+              offset: Offset(0, 8),
             ),
           ],
         ),
@@ -117,9 +91,11 @@ class _Tab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final tone =
-        selected ? AppColors.accentOn(context) : scheme.onSurfaceVariant;
+        selected
+            ? (dark ? const Color(0xFF7FB0FF) : T.primary)
+            : (dark ? const Color(0xFF8A94A6) : T.inkMuted);
 
     return Semantics(
       button: true,
@@ -128,26 +104,49 @@ class _Tab extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              selected ? item.selectedIcon : item.icon,
-              size: 23,
-              color: tone,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            // Fills the cell rather than hugging its label. Hugging made every
+            // pill a different width, and on a 360dp phone it left "Medicines"
+            // about 48dp to live in, which clipped it to "Medici...".
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: T.s1),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+            decoration: BoxDecoration(
+              // The whole selected state, and nothing else changes shape. A
+              // tint this faint is still unmistakable because it is the only
+              // fill in the bar.
+              color:
+                  selected
+                      ? (dark ? const Color(0x1F4890F0) : T.primaryTint)
+                      : Colors.transparent,
+              borderRadius: BorderRadius.circular(T.rControl),
             ),
-            const SizedBox(height: 4),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: tone,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  selected ? item.selectedIcon : item.icon,
+                  size: 22,
+                  color: tone,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.1,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: tone,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

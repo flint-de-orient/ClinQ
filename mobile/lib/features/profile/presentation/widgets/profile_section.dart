@@ -8,7 +8,11 @@ import '../../../../core/theme/app_spacing.dart';
 /// Grouping separates "how the app looks" from "my account" from "the clinic",
 /// which a flat list cannot do, and gives the screen somewhere to grow.
 class ProfileSection extends StatelessWidget {
-  const ProfileSection({super.key, required this.label, required this.children});
+  const ProfileSection({
+    super.key,
+    required this.label,
+    required this.children,
+  });
 
   final String label;
   final List<Widget> children;
@@ -36,7 +40,9 @@ class ProfileSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: scheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.7)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
             // A single soft shadow, not a stack of them: it lifts the group off
             // the background just enough to read as a card, without the drop
             // shadow that makes an interface look like a slide deck.
@@ -87,9 +93,10 @@ class ProfileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final accent = isDanger
-        ? AppColors.danger
-        : (isDark ? AppColors.primaryDark : AppColors.primary);
+    final accent =
+        isDanger
+            ? AppColors.danger
+            : (isDark ? AppColors.primaryDark : AppColors.primary);
 
     return Column(
       children: [
@@ -134,7 +141,11 @@ class ProfileRow extends StatelessWidget {
                         const SizedBox(height: 0),
                         Text(
                           subtitle!,
-                          style: TextStyle(fontSize: 14, height: 1.35, color: accent),
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.35,
+                            color: accent,
+                          ),
                         ),
                       ],
                     ],
@@ -144,7 +155,10 @@ class ProfileRow extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     value!,
-                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
                 if (onTap != null) ...[

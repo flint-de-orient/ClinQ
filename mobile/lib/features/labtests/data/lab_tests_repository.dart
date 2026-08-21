@@ -17,12 +17,19 @@ class LabTestsRepository {
     return LabTestsView.fromJson(json);
   }
 
-  Future<void> upload({required String testName, String note = '', String? photo}) async {
-    await _client.postJson(_base, body: {
-      'testName': testName,
-      if (note.isNotEmpty) 'note': note,
-      if (photo != null) 'photo': photo,
-    });
+  Future<void> upload({
+    required String testName,
+    String note = '',
+    String? photo,
+  }) async {
+    await _client.postJson(
+      _base,
+      body: {
+        'testName': testName,
+        if (note.isNotEmpty) 'note': note,
+        if (photo != null) 'photo': photo,
+      },
+    );
   }
 
   /// Removes a report the patient uploaded by mistake. The server also drops

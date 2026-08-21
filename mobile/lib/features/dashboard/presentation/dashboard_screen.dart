@@ -28,7 +28,10 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).user;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_greeting(l10n, user?.name)), automaticallyImplyLeading: false),
+      appBar: AppBar(
+        title: Text(_greeting(l10n, user?.name)),
+        automaticallyImplyLeading: false,
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(dashboardProvider);
@@ -36,18 +39,19 @@ class DashboardScreen extends ConsumerWidget {
         },
         child: dashboardAsync.when(
           loading: () => const LoadingView(),
-          error: (error, _) => ListView(
-            children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.7,
-                child: ErrorView(
-                  error: error,
-                  title: l10n.dashboardErrorTitle,
-                  onRetry: () => ref.invalidate(dashboardProvider),
-                ),
+          error:
+              (error, _) => ListView(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: ErrorView(
+                      error: error,
+                      title: l10n.dashboardErrorTitle,
+                      onRetry: () => ref.invalidate(dashboardProvider),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
           data: (data) => _DashboardContent(data: data),
         ),
       ),
@@ -56,7 +60,10 @@ class DashboardScreen extends ConsumerWidget {
 
   String _greeting(AppLocalizations l10n, String? name) {
     final hour = DateTime.now().hour;
-    final firstName = (name == null || name.trim().isEmpty) ? '' : name.trim().split(' ').first;
+    final firstName =
+        (name == null || name.trim().isEmpty)
+            ? ''
+            : name.trim().split(' ').first;
     if (hour < 12) return l10n.dashboardGreetingMorning(firstName);
     if (hour < 17) return l10n.dashboardGreetingAfternoon(firstName);
     return l10n.dashboardGreetingEvening(firstName);
@@ -98,11 +105,20 @@ class _DashboardContent extends StatelessWidget {
 
     final reminderChips = <Widget>[
       if (data.reminders.footScreeningDue)
-        _ReminderChip(label: l10n.dashboardFootScreeningDue, onTap: () => context.go('/care/foot')),
+        _ReminderChip(
+          label: l10n.dashboardFootScreeningDue,
+          onTap: () => context.go('/care/foot'),
+        ),
       if (data.reminders.eyeScreeningDue)
-        _ReminderChip(label: l10n.dashboardEyeScreeningDue, onTap: () => context.go('/care/eye')),
+        _ReminderChip(
+          label: l10n.dashboardEyeScreeningDue,
+          onTap: () => context.go('/care/eye'),
+        ),
       if (data.reminders.hba1cDue)
-        _ReminderChip(label: l10n.dashboardHba1cDue, onTap: () => context.go('/care/labs')),
+        _ReminderChip(
+          label: l10n.dashboardHba1cDue,
+          onTap: () => context.go('/care/labs'),
+        ),
     ];
 
     return ListView(
@@ -119,7 +135,11 @@ class _DashboardContent extends StatelessWidget {
         NextAppointmentCard(appointment: data.nextAppointment),
         if (reminderChips.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Wrap(spacing: AppSpacing.sm, runSpacing: AppSpacing.sm, children: reminderChips),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: reminderChips,
+          ),
         ],
         if (data.openAlerts.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.lg),
@@ -175,7 +195,12 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.color, required this.label, required this.onTap});
+  const _QuickAction({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
 
   final IconData icon;
   final Color color;
@@ -189,18 +214,26 @@ class _QuickAction extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.md,
+          horizontal: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.6)),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
         child: Column(
           children: [
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.14), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -209,7 +242,11 @@ class _QuickAction extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.2),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                height: 1.2,
+              ),
             ),
           ],
         ),
@@ -227,7 +264,11 @@ class _ReminderChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionChip(
-      avatar: Icon(Icons.notifications_active_outlined, size: 18, color: AppColors.warningOn(context)),
+      avatar: Icon(
+        Icons.notifications_active_outlined,
+        size: 18,
+        color: AppColors.warningOn(context),
+      ),
       label: Text(label),
       backgroundColor: AppColors.warningBgOn(context),
       onPressed: onTap,

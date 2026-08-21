@@ -29,7 +29,11 @@ class JumpToLatest extends StatelessWidget {
               onTap: onTap,
               child: const Padding(
                 padding: EdgeInsets.all(8),
-                child: Icon(Icons.keyboard_arrow_down_rounded, size: 26, color: Colors.white),
+                child: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 26,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

@@ -41,14 +41,16 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
 
     setState(() => _sending = true);
     try {
-      await ref.read(apiClientProvider).postJson(
-        '/feedback',
-        body: {
-          'about': _about,
-          if (_rating != null) 'rating': _rating,
-          if (text.isNotEmpty) 'message': text,
-        },
-      );
+      await ref
+          .read(apiClientProvider)
+          .postJson(
+            '/feedback',
+            body: {
+              'about': _about,
+              if (_rating != null) 'rating': _rating,
+              if (text.isNotEmpty) 'message': text,
+            },
+          );
       if (!mounted) return;
       setState(() {
         _sent = true;
@@ -57,7 +59,9 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -76,7 +80,11 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         children: [
           Text(
             'What is this about?',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -105,7 +113,11 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           const SizedBox(height: AppSpacing.lg),
           Text(
             'How would you rate it? (optional)',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -113,11 +125,17 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
             children: [
               for (var i = 1; i <= 5; i++)
                 IconButton(
-                  onPressed: () => setState(() => _rating = _rating == i ? null : i),
+                  onPressed:
+                      () => setState(() => _rating = _rating == i ? null : i),
                   iconSize: 38,
                   icon: Icon(
-                    (_rating ?? 0) >= i ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: (_rating ?? 0) >= i ? AppColors.warning : scheme.outline,
+                    (_rating ?? 0) >= i
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color:
+                        (_rating ?? 0) >= i
+                            ? AppColors.warning
+                            : scheme.outline,
                   ),
                 ),
             ],
@@ -131,9 +149,10 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
             textCapitalization: TextCapitalization.sentences,
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              hintText: _about == 'clinic'
-                  ? 'Tell Dr. Dey what went well, or what did not…'
-                  : 'Tell us what is broken or confusing…',
+              hintText:
+                  _about == 'clinic'
+                      ? 'Tell Dr. Dey what went well, or what did not…'
+                      : 'Tell us what is broken or confusing…',
               alignLabelWithHint: true,
             ),
           ),
@@ -144,13 +163,21 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded, size: 18, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 18,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   'Your name is sent with this so the clinic can follow up. '
                   'It is not part of your medical record.',
-                  style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -159,13 +186,17 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
           FilledButton(
             onPressed: (!canSend || _sending) ? null : _send,
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
-            child: _sending
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
-                  )
-                : const Text('Send feedback'),
+            child:
+                _sending
+                    ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: Colors.white,
+                      ),
+                    )
+                    : const Text('Send feedback'),
           ),
         ],
       ),
@@ -197,7 +228,10 @@ class _SubjectCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: selected ? AppColors.accentSoftOn(context) : scheme.surfaceContainerLowest,
+          color:
+              selected
+                  ? AppColors.accentSoftOn(context)
+                  : scheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected ? AppColors.primary : scheme.outlineVariant,
@@ -207,7 +241,11 @@ class _SubjectCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 22, color: selected ? AppColors.primary : scheme.onSurfaceVariant),
+            Icon(
+              icon,
+              size: 22,
+              color: selected ? AppColors.primary : scheme.onSurfaceVariant,
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               label,
@@ -220,7 +258,11 @@ class _SubjectCard extends StatelessWidget {
             const SizedBox(height: 0),
             Text(
               detail,
-              style: TextStyle(fontSize: 12, height: 1.35, color: scheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.35,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -247,8 +289,15 @@ class _ThankYou extends StatelessWidget {
             Container(
               width: 84,
               height: 84,
-              decoration: BoxDecoration(color: AppColors.accentSoftOn(context), shape: BoxShape.circle),
-              child: Icon(Icons.check_rounded, size: 42, color: AppColors.accentOn(context)),
+              decoration: BoxDecoration(
+                color: AppColors.accentSoftOn(context),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.check_rounded,
+                size: 42,
+                color: AppColors.accentOn(context),
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             const Text(
@@ -260,14 +309,20 @@ class _ThankYou extends StatelessWidget {
               'The clinic has received this. If it needs a reply, someone will '
               'message you in your care thread.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, height: 1.45, color: scheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.45,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: onDone,
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
                 child: const Text('Done'),
               ),
             ),

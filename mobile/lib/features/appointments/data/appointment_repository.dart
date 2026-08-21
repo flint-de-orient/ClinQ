@@ -21,15 +21,18 @@ class AppointmentRepository {
     int page = 1,
     int limit = 50,
   }) async {
-    final json = await _client.getJson('/appointments', query: {
-      'page': page,
-      'limit': limit,
-      if (from != null) 'from': from.toUtc().toIso8601String(),
-      if (to != null) 'to': to.toUtc().toIso8601String(),
-      if (status != null) 'status': status,
-      if (clinicId != null) 'clinicId': clinicId,
-      if (patientId != null) 'patientId': patientId,
-    });
+    final json = await _client.getJson(
+      '/appointments',
+      query: {
+        'page': page,
+        'limit': limit,
+        if (from != null) 'from': from.toUtc().toIso8601String(),
+        if (to != null) 'to': to.toUtc().toIso8601String(),
+        if (status != null) 'status': status,
+        if (clinicId != null) 'clinicId': clinicId,
+        if (patientId != null) 'patientId': patientId,
+      },
+    );
     return Paged.fromJson(json, Appointment.fromJson);
   }
 
@@ -41,48 +44,67 @@ class AppointmentRepository {
     String mode = 'in_clinic',
     String? reason,
   }) async {
-    final json = await _client.postJson('/appointments', body: {
-      'clinicId': clinicId,
-      'scheduledFor': scheduledForIso,
-      'mode': mode,
-      if (reason != null && reason.isNotEmpty) 'reason': reason,
-    });
+    final json = await _client.postJson(
+      '/appointments',
+      body: {
+        'clinicId': clinicId,
+        'scheduledFor': scheduledForIso,
+        'mode': mode,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      },
+    );
     return Appointment.fromJson(json['appointment'] as Map<String, dynamic>);
   }
 
   Future<Appointment> reschedule(String id, String scheduledForIso) async {
-    final json = await _client.patchJson('/appointments/$id/reschedule', body: {'scheduledFor': scheduledForIso});
+    final json = await _client.patchJson(
+      '/appointments/$id/reschedule',
+      body: {'scheduledFor': scheduledForIso},
+    );
     return Appointment.fromJson(json['appointment'] as Map<String, dynamic>);
   }
 
   Future<Appointment> cancel(String id, {String? reason}) async {
-    final json = await _client.patchJson('/appointments/$id/cancel', body: {
-      if (reason != null && reason.isNotEmpty) 'reason': reason,
-    });
+    final json = await _client.patchJson(
+      '/appointments/$id/cancel',
+      body: {if (reason != null && reason.isNotEmpty) 'reason': reason},
+    );
     return Appointment.fromJson(json['appointment'] as Map<String, dynamic>);
   }
 
   /// Ask to be told when a slot frees up on a day that is currently full.
   /// [dateKey] is `yyyy-MM-dd`; the server records the request and pushes the
   /// patient the moment a slot on that day opens.
-  Future<void> joinWaitlist({required String clinicId, required String dateKey}) async {
-    await _client.postJson('/appointments/waitlist', body: {
-      'clinicId': clinicId,
-      'date': dateKey,
-    });
+  Future<void> joinWaitlist({
+    required String clinicId,
+    required String dateKey,
+  }) async {
+    await _client.postJson(
+      '/appointments/waitlist',
+      body: {'clinicId': clinicId, 'date': dateKey},
+    );
   }
 
   /// Clinician-only: advance the appointment's status (confirm, complete, …)
   /// and optionally attach consultation notes.
-  Future<Appointment> setStatus(String id, String status, {String? consultationNotes}) async {
-    final json = await _client.patchJson('/appointments/$id/status', body: {
-      'status': status,
-      if (consultationNotes != null && consultationNotes.isNotEmpty) 'consultationNotes': consultationNotes,
-    });
+  Future<Appointment> setStatus(
+    String id,
+    String status, {
+    String? consultationNotes,
+  }) async {
+    final json = await _client.patchJson(
+      '/appointments/$id/status',
+      body: {
+        'status': status,
+        if (consultationNotes != null && consultationNotes.isNotEmpty)
+          'consultationNotes': consultationNotes,
+      },
+    );
     return Appointment.fromJson(json['appointment'] as Map<String, dynamic>);
   }
 }
 
-final Provider<AppointmentRepository> appointmentRepositoryProvider = Provider<AppointmentRepository>((ref) {
-  return AppointmentRepository(ref.watch(apiClientProvider));
-});
+final Provider<AppointmentRepository> appointmentRepositoryProvider =
+    Provider<AppointmentRepository>((ref) {
+      return AppointmentRepository(ref.watch(apiClientProvider));
+    });

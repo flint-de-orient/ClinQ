@@ -32,10 +32,12 @@ class PrescriptionsRepository {
 }
 
 final Provider<PrescriptionsRepository> prescriptionsRepositoryProvider =
-    Provider<PrescriptionsRepository>((ref) => PrescriptionsRepository(ref.watch(apiClientProvider)));
+    Provider<PrescriptionsRepository>(
+      (ref) => PrescriptionsRepository(ref.watch(apiClientProvider)),
+    );
 
 /// The patient's prescriptions, newest first.
 final patientPrescriptionsProvider =
     FutureProvider.autoDispose<List<PatientPrescription>>(
-  (ref) => ref.watch(prescriptionsRepositoryProvider).list(),
-);
+      (ref) => ref.watch(prescriptionsRepositoryProvider).list(),
+    );

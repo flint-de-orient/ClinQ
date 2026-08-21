@@ -47,6 +47,7 @@ class GlassSurface {
     BuildContext context, {
     double? radius,
     double opacity = 0.40,
+    bool bordered = true,
   }) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final tint = dark ? const Color(0xFF121A26) : Colors.white;
@@ -66,10 +67,16 @@ class GlassSurface {
         stops: const [0, 0.55, 1],
       ),
       borderRadius: BorderRadius.circular(radius ?? AppSpacing.sheetRadius),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: dark ? 0.14 : 0.85),
-        width: 1.2,
-      ),
+      // The header reads as congested with an edge on it: it is a short bar
+      // holding a round photo and a round button, and a hard outline around
+      // that is one line too many. The sheen still gives it a lit top.
+      border:
+          bordered
+              ? Border.all(
+                color: Colors.white.withValues(alpha: dark ? 0.14 : 0.85),
+                width: 1.2,
+              )
+              : null,
       boxShadow: [
         BoxShadow(
           color: AppColors.primary.withValues(alpha: dark ? 0.30 : 0.08),
@@ -124,13 +131,18 @@ class GlassSurface {
   }
 }
 
-/// The coloured ground the glass sits on.
+/// The ground the whole app stands on.
 ///
-/// Three soft blooms on a tinted base — smooth on purpose, so translucent cards
-/// reveal colour rather than noise, and so no card needs a real blur to read as
-/// glass. Painted with positioned circles rather than a shader: three of them
-/// cost nothing, and a fragment shader costs a pipeline compile on the first
-/// frame, which is the worst moment to spend it.
+/// It used to be three saturated blooms on a deep tint, and over a short hero
+/// that looked rich. Over a long scrolling page it competed with the content:
+/// every card had a different colour behind it, so no two cards looked like
+/// the same component, and the eye kept being pulled to the background instead
+/// of the readings printed on top of it.
+///
+/// So it is now a very light blue-grey with a single, almost imperceptible
+/// warm-to-cool tilt down the page. White cards do the contrast work. A
+/// background on a clinical dashboard has one job — to make the cards legible —
+/// and the moment it is interesting it has stopped doing that job.
 class GlassGround extends StatelessWidget {
   const GlassGround({super.key, required this.child});
 
@@ -139,52 +151,26 @@ class GlassGround extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    // A touch deeper than the cards, so there is a real difference between
-    // looking at the ground and looking through the glass at it.
-    final base = dark ? const Color(0xFF070C16) : const Color(0xFFDCE6F6);
-
-    Widget bloom(Color c, double opacity, double size) => Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            c.withValues(alpha: dark ? opacity * 1.6 : opacity),
-            c.withValues(alpha: 0),
-          ],
-          stops: const [0, 0.72],
-        ),
-      ),
-    );
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: base),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -120,
-            left: -90,
-            child: bloom(AppColors.primary, 0.48, 380),
-          ),
-          Positioned(
-            top: 180,
-            right: -130,
-            child: bloom(AppColors.accent, 0.44, 360),
-          ),
-          Positioned(
-            bottom: -140,
-            left: 20,
-            child: bloom(const Color(0xFF38BDF8), 0.38, 400),
-          ),
-          child,
-        ],
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors:
+              dark
+                  ? const [Color(0xFF0A0F1A), Color(0xFF070C16)]
+                  // ~2 points of lightness between the ends. Enough that the
+                  // page is not a flat fill, far too little to read as a
+                  // gradient, which is exactly the amount wanted.
+                  : const [Color(0xFFEFF3FA), Color(0xFFF5F7FC)],
+        ),
       ),
+      child: child,
     );
   }
 }
 
-/// A card on glass. One definition, so the panels cannot drift apart.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,

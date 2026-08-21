@@ -45,6 +45,7 @@ class DieticianChatScreen extends ConsumerStatefulWidget {
 class _DieticianChatScreenState extends ConsumerState<DieticianChatScreen>
     with WidgetsBindingObserver {
   final _controller = TextEditingController();
+
   /// A positioned list, not a plain one: scrolling to a message that has not
   /// been built is something only this can do, and both the pinned banner and a
   /// reply quote need exactly that.
@@ -65,7 +66,6 @@ class _DieticianChatScreenState extends ConsumerState<DieticianChatScreen>
   /// Which pinned message the banner is showing. Tapping cycles through them
   /// when the dietician has pinned more than one.
   int _pinnedIndex = 0;
-
 
   /// The other side of this conversation is a person, not a form. Without a
   /// poll their reply sat on the server until the screen happened to be rebuilt
@@ -211,22 +211,24 @@ class _DieticianChatScreenState extends ConsumerState<DieticianChatScreen>
   /// The banner for whichever message is currently being shown, or null when
   /// nothing is pinned.
   List<Widget> _pinnedBanner(List<DietMessage> messages) {
-    final pinned = messages.where((m) => m.pinned && !m.deletedForEveryone).toList();
+    final pinned =
+        messages.where((m) => m.pinned && !m.deletedForEveryone).toList();
     if (pinned.isEmpty) return const [];
     final shown = pinned[_pinnedIndex.clamp(0, pinned.length - 1)];
 
     return [
       PinnedBanner(
-      preview: shown.content.trim().isEmpty ? 'Attachment' : shown.content.trim(),
-      count: pinned.length,
-      // Jump to it, and with several pinned move on to the next one.
-      onTap: () {
-        _scrollToMessage(shown.id);
-        if (pinned.length > 1) {
-          setState(() => _pinnedIndex = (_pinnedIndex + 1) % pinned.length);
-        }
-      },
-      onUnpin: () => _togglePin(shown),
+        preview:
+            shown.content.trim().isEmpty ? 'Attachment' : shown.content.trim(),
+        count: pinned.length,
+        // Jump to it, and with several pinned move on to the next one.
+        onTap: () {
+          _scrollToMessage(shown.id);
+          if (pinned.length > 1) {
+            setState(() => _pinnedIndex = (_pinnedIndex + 1) % pinned.length);
+          }
+        },
+        onUnpin: () => _togglePin(shown),
       ),
     ];
   }
@@ -339,7 +341,8 @@ class _DieticianChatScreenState extends ConsumerState<DieticianChatScreen>
                       // rather than in build so it always matches the list that
                       // was actually rendered.
                       _order = [
-                        for (var i = 0; i < shown.length; i++) shown[shown.length - 1 - i].id,
+                        for (var i = 0; i < shown.length; i++)
+                          shown[shown.length - 1 - i].id,
                       ];
                       return ScrollablePositionedList.builder(
                         itemScrollController: _itemScroll,
@@ -362,9 +365,10 @@ class _DieticianChatScreenState extends ConsumerState<DieticianChatScreen>
                                     : shown
                                         .where((x) => x.id == m.replyToId)
                                         .firstOrNull,
-                            onQuoteTap: m.replyToId == null
-                                ? null
-                                : () => _scrollToMessage(m.replyToId),
+                            onQuoteTap:
+                                m.replyToId == null
+                                    ? null
+                                    : () => _scrollToMessage(m.replyToId),
                             onReply: () => setState(() => _replyingTo = m),
                             onTogglePin: () => _togglePin(m),
                             onHide: () => _hide(m),
@@ -590,7 +594,10 @@ class _Bubble extends StatelessWidget {
       // of a dozen things a phone runs; this one answers from the clinic's own
       // nutrition protocols, and a dietician reading the thread needs to know
       // that a machine wrote it before they act on it.
-      'assistant' => (Icons.smart_toy_rounded, 'MedPin AI · nutrition assistant'),
+      'assistant' => (
+        Icons.smart_toy_rounded,
+        'MedPin AI · nutrition assistant',
+      ),
       _ => (Icons.restaurant_rounded, message.senderName ?? 'Dietician'),
     };
 
@@ -627,33 +634,38 @@ class _Bubble extends StatelessWidget {
                     // already in the app bar, and repeating it down the thread
                     // said nothing the header had not said, and said it worse.
                     if (message.role != 'user')
-                    Container(
-                      width: 24,
-                      height: 24,
-                      padding: message.role == 'assistant' ? const EdgeInsets.all(4) : null,
-                      decoration: BoxDecoration(
-                        color: AppColors.accentSoftOn(context),
-                        shape: BoxShape.circle,
+                      Container(
+                        width: 24,
+                        height: 24,
+                        padding:
+                            message.role == 'assistant'
+                                ? const EdgeInsets.all(4)
+                                : null,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentSoftOn(context),
+                          shape: BoxShape.circle,
+                        ),
+                        // The assistant carries the app's own mark, the way it
+                        // does in the patient's threads. A generic robot icon read
+                        // as decoration; the emblem says which system is speaking,
+                        // which is the whole point of marking these turns at all.
+                        child:
+                            message.role == 'assistant'
+                                ? Image.asset(
+                                  'assets/brand/medpin_emblem.png',
+                                  errorBuilder:
+                                      (_, _, _) => Icon(
+                                        icon,
+                                        size: 14,
+                                        color: AppColors.accentOn(context),
+                                      ),
+                                )
+                                : Icon(
+                                  icon,
+                                  size: 14,
+                                  color: AppColors.accentOn(context),
+                                ),
                       ),
-                      // The assistant carries the app's own mark, the way it
-                      // does in the patient's threads. A generic robot icon read
-                      // as decoration; the emblem says which system is speaking,
-                      // which is the whole point of marking these turns at all.
-                      child: message.role == 'assistant'
-                          ? Image.asset(
-                              'assets/brand/medpin_emblem.png',
-                              errorBuilder: (_, _, _) => Icon(
-                                icon,
-                                size: 14,
-                                color: AppColors.accentOn(context),
-                              ),
-                            )
-                          : Icon(
-                              icon,
-                              size: 14,
-                              color: AppColors.accentOn(context),
-                            ),
-                    ),
                     if (message.role != 'user') const SizedBox(width: 8),
                     Flexible(
                       child: Text(
@@ -698,33 +710,33 @@ class _Bubble extends StatelessWidget {
               GestureDetector(
                 onTap: onQuoteTap,
                 child: Container(
-                margin: const EdgeInsets.only(bottom: 4),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 8,
-                ),
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.82,
-                ),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border(
-                    left: BorderSide(
-                      color: AppColors.accentOn(context),
-                      width: 3,
+                  margin: const EdgeInsets.only(bottom: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.82,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border(
+                      left: BorderSide(
+                        color: AppColors.accentOn(context),
+                        width: 3,
+                      ),
                     ),
                   ),
-                ),
-                child: Text(
-                  repliedTo?.content ?? message.replyPreviewContent!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: scheme.onSurfaceVariant,
+                  child: Text(
+                    repliedTo?.content ?? message.replyPreviewContent!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
                 ),
               ),
             GestureDetector(
@@ -768,7 +780,8 @@ class _Bubble extends StatelessWidget {
                           height: 1.5,
                           color: mine ? Colors.white : scheme.onSurface,
                         ),
-                        bulletColor: mine ? Colors.white : AppColors.accentOn(context),
+                        bulletColor:
+                            mine ? Colors.white : AppColors.accentOn(context),
                       ),
                     // The meal itself, not a count of it. This is the thread the
                     // patient photographs their food into, so "1 attachment" was

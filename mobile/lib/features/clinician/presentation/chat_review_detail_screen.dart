@@ -229,107 +229,113 @@ class _ChatReviewDetailScreenState
       // A live conversation. The doctor reading a flagged thread should see a
       // message that arrives while they are reading it.
       body: AutoRefresh(
-        onTick: (ref) => ref.invalidate(chatReviewDetailProvider(widget.sessionId)),
+        onTick:
+            (ref) => ref.invalidate(chatReviewDetailProvider(widget.sessionId)),
         child: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (_, _) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Could not load conversation'),
-                  const SizedBox(height: AppSpacing.sm),
-                  OutlinedButton(
-                    onPressed: _refresh,
-                    child: const Text('Retry'),
-                  ),
-                ],
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error:
+              (_, _) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Could not load conversation'),
+                    const SizedBox(height: AppSpacing.sm),
+                    OutlinedButton(
+                      onPressed: _refresh,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-        data: (detail) {
-          _autoScroll(detail.messages);
-          final pinned =
-              detail.messages
-                  .where((m) => m.pinned && !m.deletedForEveryone)
-                  .toList();
-          return Column(
-            children: [
-              // The old session banner is gone: it repeated the patient's name
-              // — now in the app bar with their photo — and stamped ROUTINE on
-              // a thread where almost every message is routine, which told the
-              // doctor nothing and cost a strip of the conversation.
-              if (pinned.isNotEmpty) _PinnedBanner(messages: pinned),
-              Expanded(
-                // Same WhatsApp-style wallpaper as the Patients-tab thread.
-                child: ChatBackground(
-                  child: Stack(
-                    children: [
-                      ListView.builder(
-                        controller: _scroll,
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        itemCount: detail.messages.length,
-                        itemBuilder: (context, i) {
-                          final m = detail.messages[i];
-                          final dietician = detail.messages
-                              .lastWhere(
-                                (x) => x.role == 'dietician' && (x.senderName ?? '').isNotEmpty,
-                                orElse: () => m,
-                              )
-                              .senderName;
-                          return _MessageBubble(
-                            isNutrition: detail.session.kind == 'nutrition',
-                            dieticianName:
-                                detail.session.kind == 'nutrition' ? dietician : null,
-                            message: m,
-                            repliedTo:
-                                m.replyToId == null
-                                    ? null
-                                    : detail.messages
-                                        .where((x) => x.id == m.replyToId)
-                                        .firstOrNull,
-                            onReply: () => setState(() => _replyingTo = m),
-                            onTogglePin: () => _togglePin(m),
-                            onHide: () => _hide(m),
-                            // Only the doctor's own clinician turns are theirs to
-                            // delete for everyone; the server enforces the same rule.
-                            onDeleteForEveryone:
-                                m.isClinician
-                                    ? () => _deleteForEveryone(m)
-                                    : null,
-                          );
-                        },
-                      ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: JumpToLatest(
-                          visible: _showJump,
-                          onTap: _toLatest,
+          data: (detail) {
+            _autoScroll(detail.messages);
+            final pinned =
+                detail.messages
+                    .where((m) => m.pinned && !m.deletedForEveryone)
+                    .toList();
+            return Column(
+              children: [
+                // The old session banner is gone: it repeated the patient's name
+                // — now in the app bar with their photo — and stamped ROUTINE on
+                // a thread where almost every message is routine, which told the
+                // doctor nothing and cost a strip of the conversation.
+                if (pinned.isNotEmpty) _PinnedBanner(messages: pinned),
+                Expanded(
+                  // Same WhatsApp-style wallpaper as the Patients-tab thread.
+                  child: ChatBackground(
+                    child: Stack(
+                      children: [
+                        ListView.builder(
+                          controller: _scroll,
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          itemCount: detail.messages.length,
+                          itemBuilder: (context, i) {
+                            final m = detail.messages[i];
+                            final dietician =
+                                detail.messages
+                                    .lastWhere(
+                                      (x) =>
+                                          x.role == 'dietician' &&
+                                          (x.senderName ?? '').isNotEmpty,
+                                      orElse: () => m,
+                                    )
+                                    .senderName;
+                            return _MessageBubble(
+                              isNutrition: detail.session.kind == 'nutrition',
+                              dieticianName:
+                                  detail.session.kind == 'nutrition'
+                                      ? dietician
+                                      : null,
+                              message: m,
+                              repliedTo:
+                                  m.replyToId == null
+                                      ? null
+                                      : detail.messages
+                                          .where((x) => x.id == m.replyToId)
+                                          .firstOrNull,
+                              onReply: () => setState(() => _replyingTo = m),
+                              onTogglePin: () => _togglePin(m),
+                              onHide: () => _hide(m),
+                              // Only the doctor's own clinician turns are theirs to
+                              // delete for everyone; the server enforces the same rule.
+                              onDeleteForEveryone:
+                                  m.isClinician
+                                      ? () => _deleteForEveryone(m)
+                                      : null,
+                            );
+                          },
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: JumpToLatest(
+                            visible: _showJump,
+                            onTap: _toLatest,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if (_replyingTo != null)
-                _ReplyBar(
-                  message: _replyingTo!,
-                  onCancel: () => setState(() => _replyingTo = null),
+                if (_replyingTo != null)
+                  _ReplyBar(
+                    message: _replyingTo!,
+                    onCancel: () => setState(() => _replyingTo = null),
+                  ),
+                // The real chat box — text, photos, documents and voice — posting
+                // as role:'clinician' into the patient's own thread (by session id,
+                // so this works for a nutrition thread the doctor is guiding too).
+                CareComposer(
+                  controller: _controller,
+                  hint: 'Reply to this patient…',
+                  sending: _sending,
+                  onSend: _send,
+                  onSendAttachment: _sendAttachment,
                 ),
-              // The real chat box — text, photos, documents and voice — posting
-              // as role:'clinician' into the patient's own thread (by session id,
-              // so this works for a nutrition thread the doctor is guiding too).
-              CareComposer(
-                controller: _controller,
-                hint: 'Reply to this patient…',
-                sending: _sending,
-                onSend: _send,
-                onSendAttachment: _sendAttachment,
-              ),
-            ],
-          );
-        },
-      ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -457,12 +463,14 @@ class _ChatHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final id = session.patientId;
-    final summary = id == null ? null : ref.watch(patientSummaryProvider(id)).valueOrNull;
+    final summary =
+        id == null ? null : ref.watch(patientSummaryProvider(id)).valueOrNull;
 
     return Row(
       children: [
         GestureDetector(
-          onTap: id == null ? null : () => context.push('/clinician/patients/$id'),
+          onTap:
+              id == null ? null : () => context.push('/clinician/patients/$id'),
           child: UserAvatar(
             name: session.patientName ?? '',
             avatarUrl: summary?.avatarUrl,
@@ -473,7 +481,10 @@ class _ChatHeader extends ConsumerWidget {
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: GestureDetector(
-            onTap: id == null ? null : () => context.push('/clinician/patients/$id'),
+            onTap:
+                id == null
+                    ? null
+                    : () => context.push('/clinician/patients/$id'),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -482,11 +493,17 @@ class _ChatHeader extends ConsumerWidget {
                   session.patientName ?? 'Patient',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   session.kind == 'nutrition' ? 'Nutrition chat' : 'Care chat',
-                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -504,7 +521,8 @@ class _ChatHeader extends ConsumerWidget {
         if (summary?.phone.isNotEmpty == true)
           IconButton(
             tooltip: 'Call patient',
-            onPressed: () => launchUrl(Uri(scheme: 'tel', path: summary!.phone)),
+            onPressed:
+                () => launchUrl(Uri(scheme: 'tel', path: summary!.phone)),
             icon: const Icon(Icons.call_rounded),
           ),
       ],
@@ -701,9 +719,8 @@ class _MessageBubble extends StatelessWidget {
     // which read as though the doctor were looking at the patient's phone.
     final isMine = isClinician;
     final align = isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final bubbleColor = isMine
-        ? AppColors.bubbleMine(context)
-        : scheme.surfaceContainerHighest;
+    final bubbleColor =
+        isMine ? AppColors.bubbleMine(context) : scheme.surfaceContainerHighest;
     final onBubble = isMine ? Colors.white : scheme.onSurface;
 
     return Padding(
@@ -743,11 +760,12 @@ class _MessageBubble extends StatelessWidget {
                   ),
                   child: Image.asset(
                     'assets/brand/medpin_emblem.png',
-                    errorBuilder: (_, _, _) => Icon(
-                      Icons.smart_toy_outlined,
-                      size: 13,
-                      color: AppColors.accentOn(context),
-                    ),
+                    errorBuilder:
+                        (_, _, _) => Icon(
+                          Icons.smart_toy_outlined,
+                          size: 13,
+                          color: AppColors.accentOn(context),
+                        ),
                   ),
                 ),
               if (!isUser) const SizedBox(width: 4),
@@ -771,9 +789,10 @@ class _MessageBubble extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isPerson
-                        ? AppColors.accentOn(context)
-                        : scheme.onSurfaceVariant,
+                    color:
+                        isPerson
+                            ? AppColors.accentOn(context)
+                            : scheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -851,7 +870,11 @@ class _MessageBubble extends StatelessWidget {
                     isUser || isClinician
                         ? Text(
                           m.content,
-                          style: TextStyle(fontSize: 14, height: 1.4, color: onBubble),
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: onBubble,
+                          ),
                         )
                         : MarkdownText(
                           data: m.content,
@@ -918,11 +941,7 @@ class _MessageBubble extends StatelessWidget {
     ),
     child: Text(
       label,
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        color: color,
-      ),
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
     ),
   );
 }

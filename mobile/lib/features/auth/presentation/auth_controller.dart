@@ -34,7 +34,8 @@ class AuthState {
 /// tokens, login/register, logout, and reacting to a silent-refresh
 /// failure raised by [ApiClient] (see [sessionExpired]).
 class AuthController extends StateNotifier<AuthState> {
-  AuthController(this._repository, this._secureStore) : super(const AuthState.unknown()) {
+  AuthController(this._repository, this._secureStore)
+    : super(const AuthState.unknown()) {
     _bootstrap();
   }
 
@@ -59,7 +60,10 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
-  Future<ApiException?> login({required String phone, required String password}) async {
+  Future<ApiException?> login({
+    required String phone,
+    required String password,
+  }) async {
     _busy = true;
     try {
       final result = await _repository.login(phone: phone, password: password);
@@ -152,11 +156,18 @@ class AuthController extends StateNotifier<AuthState> {
   }
 }
 
-final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(apiClientProvider), ref.watch(secureStoreProvider));
-});
+final Provider<AuthRepository> authRepositoryProvider =
+    Provider<AuthRepository>((ref) {
+      return AuthRepository(
+        ref.watch(apiClientProvider),
+        ref.watch(secureStoreProvider),
+      );
+    });
 
 final StateNotifierProvider<AuthController, AuthState> authControllerProvider =
     StateNotifierProvider<AuthController, AuthState>((ref) {
-      return AuthController(ref.watch(authRepositoryProvider), ref.watch(secureStoreProvider));
+      return AuthController(
+        ref.watch(authRepositoryProvider),
+        ref.watch(secureStoreProvider),
+      );
     });

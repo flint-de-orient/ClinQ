@@ -9,7 +9,12 @@ import '../../../../l10n/gen/app_localizations.dart';
 /// One photo queued for sending. [assetId] is null until `POST /uploads`
 /// returns, which is what the spinner overlay indicates.
 class PendingAttachment {
-  const PendingAttachment({required this.localPath, this.assetId, this.failed = false, this.documentName});
+  const PendingAttachment({
+    required this.localPath,
+    this.assetId,
+    this.failed = false,
+    this.documentName,
+  });
 
   final String localPath;
   final String? assetId;
@@ -22,17 +27,22 @@ class PendingAttachment {
   bool get isUploading => assetId == null && !failed;
   bool get isDocument => documentName != null;
 
-  PendingAttachment copyWith({String? assetId, bool? failed}) => PendingAttachment(
-    localPath: localPath,
-    assetId: assetId ?? this.assetId,
-    failed: failed ?? this.failed,
-    documentName: documentName,
-  );
+  PendingAttachment copyWith({String? assetId, bool? failed}) =>
+      PendingAttachment(
+        localPath: localPath,
+        assetId: assetId ?? this.assetId,
+        failed: failed ?? this.failed,
+        documentName: documentName,
+      );
 }
 
 /// Horizontal strip of thumbnails above the composer.
 class ChatAttachmentStrip extends StatelessWidget {
-  const ChatAttachmentStrip({super.key, required this.attachments, required this.onRemove});
+  const ChatAttachmentStrip({
+    super.key,
+    required this.attachments,
+    required this.onRemove,
+  });
 
   final List<PendingAttachment> attachments;
   final ValueChanged<int> onRemove;
@@ -47,7 +57,12 @@ class ChatAttachmentStrip extends StatelessWidget {
       height: 88,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          0,
+        ),
         itemCount: attachments.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (context, index) {
@@ -61,46 +76,62 @@ class ChatAttachmentStrip extends StatelessWidget {
                   width: 72,
                   height: 72,
                   color: scheme.surfaceContainerHighest,
-                  padding: a.isDocument ? const EdgeInsets.all(4) : EdgeInsets.zero,
-                  child: a.isDocument
-                      // A document shows a file chip, not a photo thumbnail.
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.insert_drive_file_rounded, color: AppColors.accentOn(context), size: 26),
-                            const SizedBox(height: 4),
-                            Text(
-                              a.documentName!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12, height: 1.1, color: scheme.onSurfaceVariant),
-                            ),
-                          ],
-                        )
-                      : Image.file(
-                          File(a.localPath),
-                          fit: BoxFit.cover,
-                          // A picked file can vanish (cache eviction, permission
-                          // revoked); a broken image must not take down the composer.
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.broken_image_outlined,
-                            color: scheme.onSurfaceVariant,
+                  padding:
+                      a.isDocument ? const EdgeInsets.all(4) : EdgeInsets.zero,
+                  child:
+                      a.isDocument
+                          // A document shows a file chip, not a photo thumbnail.
+                          ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.insert_drive_file_rounded,
+                                color: AppColors.accentOn(context),
+                                size: 26,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                a.documentName!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.1,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          )
+                          : Image.file(
+                            File(a.localPath),
+                            fit: BoxFit.cover,
+                            // A picked file can vanish (cache eviction, permission
+                            // revoked); a broken image must not take down the composer.
+                            errorBuilder:
+                                (_, _, _) => Icon(
+                                  Icons.broken_image_outlined,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                           ),
-                        ),
                 ),
               ),
               if (a.isUploading)
                 Positioned.fill(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.buttonRadius,
+                    ),
                     child: Container(
                       color: Colors.black54,
                       child: const Center(
                         child: SizedBox(
                           width: 20,
                           height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -109,11 +140,19 @@ class ChatAttachmentStrip extends StatelessWidget {
               if (a.failed)
                 Positioned.fill(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.buttonRadius,
+                    ),
                     child: Container(
-                      color: AppColors.dangerOn(context).withValues(alpha: 0.75),
+                      color: AppColors.dangerOn(
+                        context,
+                      ).withValues(alpha: 0.75),
                       child: const Center(
-                        child: Icon(Icons.error_outline_rounded, color: Colors.white, size: 26),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
                     ),
                   ),
@@ -135,7 +174,11 @@ class ChatAttachmentStrip extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: scheme.outlineVariant),
                       ),
-                      child: Icon(Icons.close_rounded, size: 16, color: scheme.onSurface),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 16,
+                        color: scheme.onSurface,
+                      ),
                     ),
                   ),
                 ),

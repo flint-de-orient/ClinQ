@@ -18,7 +18,9 @@ import '../../auth/presentation/auth_controller.dart';
 /// the server enforces that split, so a clinician cannot post one and a patient
 /// cannot read anyone else's.
 final _feedbackProvider = FutureProvider.autoDispose<List<_Entry>>((ref) async {
-  final data = await ref.read(apiClientProvider).getJson('/feedback', query: {'limit': 100});
+  final data = await ref
+      .read(apiClientProvider)
+      .getJson('/feedback', query: {'limit': 100});
   final items = (data['items'] as List?) ?? const [];
   return items.map((e) => _Entry.fromJson(e as Map<String, dynamic>)).toList();
 });
@@ -27,16 +29,23 @@ class FeedbackInboxScreen extends ConsumerStatefulWidget {
   const FeedbackInboxScreen({super.key});
 
   @override
-  ConsumerState<FeedbackInboxScreen> createState() => _FeedbackInboxScreenState();
+  ConsumerState<FeedbackInboxScreen> createState() =>
+      _FeedbackInboxScreenState();
 }
 
 class _FeedbackInboxScreenState extends ConsumerState<FeedbackInboxScreen> {
   String? _about;
 
-  static const _filters = [(null, 'All'), ('clinic', 'The clinic'), ('app', 'The app')];
+  static const _filters = [
+    (null, 'All'),
+    ('clinic', 'The clinic'),
+    ('app', 'The app'),
+  ];
 
   Future<void> _markReviewed(_Entry entry) async {
-    await ref.read(apiClientProvider).postJson('/feedback/${entry.id}/reviewed');
+    await ref
+        .read(apiClientProvider)
+        .postJson('/feedback/${entry.id}/reviewed');
     ref.invalidate(_feedbackProvider);
   }
 
@@ -57,24 +66,28 @@ class _FeedbackInboxScreenState extends ConsumerState<FeedbackInboxScreen> {
               child: RefreshIndicator(
                 onRefresh: () async => ref.invalidate(_feedbackProvider),
                 child: async.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => ListView(
-                    children: [
-                      const SizedBox(height: 140),
-                      const Center(child: Text('Could not load feedback')),
-                      const SizedBox(height: AppSpacing.md),
-                      Center(
-                        child: OutlinedButton(
-                          onPressed: () => ref.invalidate(_feedbackProvider),
-                          child: const Text('Retry'),
-                        ),
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error:
+                      (_, _) => ListView(
+                        children: [
+                          const SizedBox(height: 140),
+                          const Center(child: Text('Could not load feedback')),
+                          const SizedBox(height: AppSpacing.md),
+                          Center(
+                            child: OutlinedButton(
+                              onPressed:
+                                  () => ref.invalidate(_feedbackProvider),
+                              child: const Text('Retry'),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
                   data: (all) {
-                    final items = _about == null
-                        ? all
-                        : all.where((e) => e.about == _about).toList();
+                    final items =
+                        _about == null
+                            ? all
+                            : all.where((e) => e.about == _about).toList();
 
                     return ListView(
                       padding: const EdgeInsets.fromLTRB(
@@ -86,12 +99,20 @@ class _FeedbackInboxScreenState extends ConsumerState<FeedbackInboxScreen> {
                       children: [
                         const Text(
                           'Patient Feedback',
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, height: 1.15),
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           'Review and manage recent experiences reported by your patients.',
-                          style: TextStyle(fontSize: 16, height: 1.4, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.4,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
                         Row(
@@ -119,21 +140,32 @@ class _FeedbackInboxScreenState extends ConsumerState<FeedbackInboxScreen> {
                                 ),
                                 const SizedBox(height: AppSpacing.md),
                                 Text(
-                                  _about == null ? 'Nothing here yet' : 'Nothing under this filter',
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                                  _about == null
+                                      ? 'Nothing here yet'
+                                      : 'Nothing under this filter',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Feedback patients send from their profile appears here.',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: scheme.onSurfaceVariant,
+                                  ),
                                 ),
                               ],
                             ),
                           )
                         else
                           for (final entry in items)
-                            _FeedbackCard(entry: entry, onReviewed: () => _markReviewed(entry)),
+                            _FeedbackCard(
+                              entry: entry,
+                              onReviewed: () => _markReviewed(entry),
+                            ),
                       ],
                     );
                   },
@@ -157,9 +189,18 @@ class _BrandHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.md, AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5))),
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -170,16 +211,29 @@ class _BrandHeader extends StatelessWidget {
           Image.asset(
             'assets/brand/medpin_emblem.png',
             height: 28,
-            errorBuilder: (_, _, _) =>
-                Icon(Icons.rate_review_rounded, size: 24, color: AppColors.accentOn(context)),
+            errorBuilder:
+                (_, _, _) => Icon(
+                  Icons.rate_review_rounded,
+                  size: 24,
+                  color: AppColors.accentOn(context),
+                ),
           ),
           const SizedBox(width: 8),
           Text(
             'MedPin',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.accentOn(context)),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppColors.accentOn(context),
+            ),
           ),
           const Spacer(),
-          UserAvatar(name: name, avatarUrl: avatarUrl, accent: AppColors.accentOn(context), size: 38),
+          UserAvatar(
+            name: name,
+            avatarUrl: avatarUrl,
+            accent: AppColors.accentOn(context),
+            size: 38,
+          ),
         ],
       ),
     );
@@ -187,7 +241,11 @@ class _BrandHeader extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -244,7 +302,10 @@ class _FeedbackCard extends StatelessWidget {
             // The unread marker. A stripe rather than a dot: it runs the height
             // of the card, so a long list shows at a glance how much is still
             // outstanding without reading a word of it.
-            Container(width: 5, color: unread ? AppColors.primary : Colors.transparent),
+            Container(
+              width: 5,
+              color: unread ? AppColors.primary : Colors.transparent,
+            ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -275,9 +336,14 @@ class _FeedbackCard extends StatelessWidget {
                             children: [
                               for (var i = 1; i <= 5; i++)
                                 Icon(
-                                  entry.rating! >= i ? Icons.star_rounded : Icons.star_outline_rounded,
+                                  entry.rating! >= i
+                                      ? Icons.star_rounded
+                                      : Icons.star_outline_rounded,
                                   size: 20,
-                                  color: unread ? AppColors.primary : scheme.onSurfaceVariant,
+                                  color:
+                                      unread
+                                          ? AppColors.primary
+                                          : scheme.onSurfaceVariant,
                                 ),
                             ],
                           ),
@@ -288,11 +354,18 @@ class _FeedbackCard extends StatelessWidget {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         entry.message,
-                        style: TextStyle(fontSize: 14, height: 1.45, color: ink),
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.45,
+                          color: ink,
+                        ),
                       ),
                     ],
                     const SizedBox(height: AppSpacing.md),
-                    Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.7)),
+                    Divider(
+                      height: 1,
+                      color: scheme.outlineVariant.withValues(alpha: 0.7),
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
@@ -325,7 +398,10 @@ class _FeedbackCard extends StatelessWidget {
                                     (entry.createdAt != null
                                         ? '  ·  ${DateFormat('d MMM yyyy, h:mm a').format(entry.createdAt!.toLocal())}'
                                         : ''),
-                                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           ),
@@ -339,12 +415,18 @@ class _FeedbackCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                               onTap: onReviewed,
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.check_circle_outline_rounded,
-                                        size: 17, color: AppColors.accentOn(context)),
+                                    Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      size: 17,
+                                      color: AppColors.accentOn(context),
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       'Mark reviewed',
@@ -361,7 +443,10 @@ class _FeedbackCard extends StatelessWidget {
                           )
                         else
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: scheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(20),
@@ -369,7 +454,11 @@ class _FeedbackCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.done_all_rounded, size: 17, color: scheme.onSurfaceVariant),
+                                Icon(
+                                  Icons.done_all_rounded,
+                                  size: 17,
+                                  color: scheme.onSurfaceVariant,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Reviewed',
@@ -424,7 +513,8 @@ class _Entry {
   /// first clause is almost always what the note is about anyway.
   String get heading {
     final text = message.trim();
-    if (text.isEmpty) return rating != null ? 'Rated $rating out of 5' : aboutLabel;
+    if (text.isEmpty)
+      return rating != null ? 'Rated $rating out of 5' : aboutLabel;
 
     final stop = text.indexOf(RegExp(r'[.!?\n]'));
     var head = stop > 0 ? text.substring(0, stop) : text;

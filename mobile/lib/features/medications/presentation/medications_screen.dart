@@ -115,7 +115,6 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
     final medsAsyncRaw = ref.watch(medicationsListProvider);
     // Hold the last list while a background poll is in flight, or the screen
     // would drop to a spinner every thirty seconds.
@@ -159,7 +158,10 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
     });
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _onScan(context, ref),
         backgroundColor: AppColors.primary,

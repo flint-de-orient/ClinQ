@@ -52,7 +52,9 @@ class NotificationsScreen extends ConsumerWidget {
                   onChanged: (v) {
                     controller.setMedicationReminders(v);
                     if (v) {
-                      refreshAndScheduleMedicationReminders(ref).catchError((_) {});
+                      refreshAndScheduleMedicationReminders(
+                        ref,
+                      ).catchError((_) {});
                     } else {
                       NotificationService.instance.cancelMedicationReminders();
                     }
@@ -85,16 +87,31 @@ class NotificationsScreen extends ConsumerWidget {
                   value: prefs.clinicAlerts,
                   onChanged: controller.setClinicAlerts,
                 ),
-                Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
+                Divider(
+                  height: 1,
+                  color: scheme.outlineVariant.withValues(alpha: 0.5),
+                ),
                 // Not a toggle — opens the reliability setup (battery exemption +
                 // permissions) so a patient can (re)fix silenced dose alarms.
                 ListTile(
                   leading: Icon(Icons.alarm_on_rounded, color: accent),
-                  title: const Text('Reminder reliability', style: TextStyle(fontSize: 16)),
-                  subtitle: const Text('Keep dose alarms firing when the phone sleeps', style: TextStyle(fontSize: 14)),
-                  trailing: Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
+                  title: const Text(
+                    'Reminder reliability',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  subtitle: const Text(
+                    'Keep dose alarms firing when the phone sleeps',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right_rounded,
+                    color: scheme.onSurfaceVariant,
+                  ),
                   onTap: () => showReminderSetupSheet(context, ref),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: 4,
+                  ),
                 ),
               ],
             ),
@@ -103,12 +120,20 @@ class NotificationsScreen extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline_rounded, size: 18, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 18,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   l10n.notifDeliveryNote,
-                  style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurfaceVariant),
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ],
@@ -134,8 +159,10 @@ class NotificationsScreen extends ConsumerWidget {
       secondary: Icon(icon, color: accent),
       title: Text(title, style: const TextStyle(fontSize: 16)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 14)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 4,
+      ),
     );
   }
-
 }

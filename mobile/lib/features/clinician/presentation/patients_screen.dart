@@ -119,7 +119,10 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen>
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surface,
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       // Desk intake: register a walk-in patient without leaving the directory.
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/clinician/patients/new'),

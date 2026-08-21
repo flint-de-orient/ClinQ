@@ -25,7 +25,10 @@ class GlucoseTrendChart extends StatelessWidget {
     }
 
     final values = points.map((p) => p.value.toDouble()).toList();
-    final minY = (values.reduce((a, b) => a < b ? a : b) - 30).clamp(0, double.infinity).toDouble();
+    final minY =
+        (values.reduce((a, b) => a < b ? a : b) - 30)
+            .clamp(0, double.infinity)
+            .toDouble();
     final maxY = values.reduce((a, b) => a > b ? a : b) + 30;
 
     return SizedBox(
@@ -38,8 +41,11 @@ class GlucoseTrendChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             horizontalInterval: 50,
-            getDrawingHorizontalLine: (value) =>
-                FlLine(color: Theme.of(context).colorScheme.outlineVariant, strokeWidth: 0.5),
+            getDrawingHorizontalLine:
+                (value) => FlLine(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  strokeWidth: 0.5,
+                ),
           ),
           rangeAnnotations: RangeAnnotations(
             horizontalRangeAnnotations: [
@@ -51,30 +57,42 @@ class GlucoseTrendChart extends StatelessWidget {
             ],
           ),
           titlesData: FlTitlesData(
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 36,
                 interval: 50,
-                getTitlesWidget: (value, meta) =>
-                    Text(value.toInt().toString(), style: const TextStyle(fontSize: 12)),
+                getTitlesWidget:
+                    (value, meta) => Text(
+                      value.toInt().toString(),
+                      style: const TextStyle(fontSize: 12),
+                    ),
               ),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 26,
-                interval: (points.length / 4).clamp(1, double.infinity).toDouble(),
+                interval:
+                    (points.length / 4).clamp(1, double.infinity).toDouble(),
                 getTitlesWidget: (value, meta) {
                   final i = value.toInt();
-                  if (i < 0 || i >= points.length) return const SizedBox.shrink();
+                  if (i < 0 || i >= points.length)
+                    return const SizedBox.shrink();
                   final at = points[i].at;
                   if (at == null) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(DateFormat('d/M').format(at.toLocal()), style: const TextStyle(fontSize: 12)),
+                    child: Text(
+                      DateFormat('d/M').format(at.toLocal()),
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   );
                 },
               ),
@@ -83,14 +101,22 @@ class GlucoseTrendChart extends StatelessWidget {
           borderData: FlBorderData(show: false),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
-              getTooltipItems: (spots) => spots.map((s) {
-                return LineTooltipItem('${s.y.toInt()} mg/dL', const TextStyle(color: Colors.white));
-              }).toList(),
+              getTooltipItems:
+                  (spots) =>
+                      spots.map((s) {
+                        return LineTooltipItem(
+                          '${s.y.toInt()} mg/dL',
+                          const TextStyle(color: Colors.white),
+                        );
+                      }).toList(),
             ),
           ),
           lineBarsData: [
             LineChartBarData(
-              spots: [for (var i = 0; i < points.length; i++) FlSpot(i.toDouble(), points[i].value.toDouble())],
+              spots: [
+                for (var i = 0; i < points.length; i++)
+                  FlSpot(i.toDouble(), points[i].value.toDouble()),
+              ],
               isCurved: true,
               curveSmoothness: 0.2,
               color: AppColors.accentOn(context),

@@ -46,6 +46,7 @@ class NutritionChatScreen extends ConsumerStatefulWidget {
 class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
     with WidgetsBindingObserver {
   final _controller = TextEditingController();
+
   /// A positioned list, not a plain one: scrolling to a message that has not
   /// been built is something only this can do, and both the pinned banner and a
   /// reply quote need exactly that.
@@ -102,7 +103,6 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
     appLocale: ref.read(localeControllerProvider)?.languageCode,
     accountLanguage: ref.read(authControllerProvider).user?.language,
   );
-
 
   /// The other side of this conversation is a person, not a form. Without a
   /// poll their reply sat on the server until the screen happened to be rebuilt
@@ -200,13 +200,15 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
   /// The banner for whichever pinned message is showing, or nothing when none
   /// is pinned.
   List<Widget> _pinnedBanner(List<ChatMessage> messages) {
-    final pinned = messages.where((m) => m.pinned && !m.deletedForEveryone).toList();
+    final pinned =
+        messages.where((m) => m.pinned && !m.deletedForEveryone).toList();
     if (pinned.isEmpty) return const [];
     final shown = pinned[_pinnedIndex.clamp(0, pinned.length - 1)];
 
     return [
       PinnedBanner(
-        preview: shown.content.trim().isEmpty ? 'Attachment' : shown.content.trim(),
+        preview:
+            shown.content.trim().isEmpty ? 'Attachment' : shown.content.trim(),
         count: pinned.length,
         // Jump to it, and with several pinned move on to the next one — the
         // same two-in-one tap the care thread has.
@@ -252,7 +254,10 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
     try {
       await ref
           .read(apiClientProvider)
-          .postJson('/chat/messages/${m.id}/delete', body: {'scope': 'everyone'});
+          .postJson(
+            '/chat/messages/${m.id}/delete',
+            body: {'scope': 'everyone'},
+          );
       ref.invalidate(nutritionThreadProvider);
     } on ApiException catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
@@ -318,13 +323,20 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
     // messages rather than fetched separately: the thread is already loaded,
     // and a clinic with two dieticians should show whichever one is actually
     // answering this patient.
-    final dieticianTurn = async.valueOrNull
-        ?.where((m) => m.role == 'dietician' && (m.senderName ?? '').isNotEmpty)
-        .lastOrNull;
+    final dieticianTurn =
+        async.valueOrNull
+            ?.where(
+              (m) => m.role == 'dietician' && (m.senderName ?? '').isNotEmpty,
+            )
+            .lastOrNull;
     final dieticianName = dieticianTurn?.senderName;
     final dieticianAvatar = dieticianTurn?.senderAvatarUrl;
 
     return Scaffold(
+      // Transparent so the shell's ground runs unbroken behind this
+      // screen and the navigation bar alike. An opaque page here left a
+      // visible band of ground around the pill and nowhere else.
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         titleSpacing: 0,
         // The dietician's own name and face, taken from the last thing they
@@ -352,7 +364,10 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
                     dieticianName ?? 'Your dietician',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   Text(
                     dieticianName == null
@@ -360,7 +375,10 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
                         : 'Your dietician · Food and nutrition',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -472,7 +490,8 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
                       // rather than in build so it always matches the list that
                       // was actually rendered.
                       _order = [
-                        for (var i = 0; i < shown.length; i++) shown[shown.length - 1 - i].id,
+                        for (var i = 0; i < shown.length; i++)
+                          shown[shown.length - 1 - i].id,
                       ];
                       return ScrollablePositionedList.builder(
                         itemScrollController: _itemScroll,
@@ -493,20 +512,22 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
                             onTogglePin: () => _setPinned(m, !m.pinned),
                             onHide: () => _hide(m),
                             // Tapping the quote goes to what was answered.
-                            onQuoteTap: m.replyToId == null
-                                ? null
-                                : () => _scrollToMessage(m.replyToId),
+                            onQuoteTap:
+                                m.replyToId == null
+                                    ? null
+                                    : () => _scrollToMessage(m.replyToId),
                             // Delete-for-everyone only on the patient's own turns.
                             onDeleteForEveryone:
                                 m.isUser ? () => _deleteForEveryone(m) : null,
                             // Resolve the quoted turn locally when it is still
                             // loaded; the bubble falls back to the server-sent
                             // preview when it is not.
-                            repliedTo: m.replyToId == null
-                                ? null
-                                : shown
-                                      .where((x) => x.id == m.replyToId)
-                                      .firstOrNull,
+                            repliedTo:
+                                m.replyToId == null
+                                    ? null
+                                    : shown
+                                        .where((x) => x.id == m.replyToId)
+                                        .firstOrNull,
                           );
                         },
                       );
@@ -524,11 +545,20 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
             // quote is never a surprise after sending.
             if (_replyingTo != null)
               Container(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.md, 8, AppSpacing.sm, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  8,
+                  AppSpacing.sm,
+                  8,
+                ),
                 color: scheme.surfaceContainerHighest,
                 child: Row(
                   children: [
-                    Container(width: 3, height: 34, color: AppColors.accentOn(context)),
+                    Container(
+                      width: 3,
+                      height: 34,
+                      color: AppColors.accentOn(context),
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
@@ -537,7 +567,10 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
                             : _replyingTo!.content,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -579,7 +612,8 @@ class _MealLogIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     // The badge sits on a disc of the bar's own colour so the fork reads as a
     // separate mark instead of merging into the book's edge.
-    final barColor = Theme.of(context).appBarTheme.backgroundColor ??
+    final barColor =
+        Theme.of(context).appBarTheme.backgroundColor ??
         Theme.of(context).colorScheme.surface;
 
     return SizedBox(
@@ -598,7 +632,10 @@ class _MealLogIcon extends StatelessWidget {
             bottom: -2,
             child: Container(
               padding: const EdgeInsets.all(0),
-              decoration: BoxDecoration(color: barColor, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: barColor,
+                shape: BoxShape.circle,
+              ),
               child: const Icon(Icons.restaurant_rounded, size: 11),
             ),
           ),

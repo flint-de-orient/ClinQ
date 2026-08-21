@@ -53,32 +53,36 @@ class PanelCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: background ?? scheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: const Color(0xFF0B1B33).withValues(alpha: 0.05),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        border: Border.all(
+          color: scheme.outlineVariant.withValues(alpha: 0.55),
+        ),
+        boxShadow:
+            isDark
+                ? null
+                : [
+                  BoxShadow(
+                    color: const Color(0xFF0B1B33).withValues(alpha: 0.05),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: accentEdge == null
-              ? content
-              : IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      Container(width: 4, color: accentEdge),
-                      Expanded(child: content),
-                    ],
+          child:
+              accentEdge == null
+                  ? content
+                  : IntrinsicHeight(
+                    child: Row(
+                      children: [
+                        Container(width: 4, color: accentEdge),
+                        Expanded(child: content),
+                      ],
+                    ),
                   ),
-                ),
         ),
       ),
     );
@@ -130,7 +134,10 @@ class PanelSectionHeader extends StatelessWidget {
                   const SizedBox(height: 0),
                   Text(
                     subtitle!,
-                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ],
@@ -148,7 +155,10 @@ class PanelSectionHeader extends StatelessWidget {
               onPressed: onAction,
               child: Text(
                 actionLabel!,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
         ],
@@ -219,7 +229,10 @@ class PanelPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final fg = filled ? Colors.white : color;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: icon == null ? 10 : 8, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: icon == null ? 10 : 8,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: filled ? color : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
@@ -271,7 +284,11 @@ class PanelNotificationBell extends ConsumerWidget {
         IconButton(
           tooltip: count == 0 ? 'Notifications' : '$count waiting',
           onPressed: onTap,
-          icon: Icon(Icons.notifications_none_rounded, size: 24, color: scheme.onSurfaceVariant),
+          icon: Icon(
+            Icons.notifications_none_rounded,
+            size: 24,
+            color: scheme.onSurfaceVariant,
+          ),
           visualDensity: VisualDensity.compact,
         ),
         if (count > 0)

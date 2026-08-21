@@ -16,7 +16,8 @@ class HealthDetailsScreen extends ConsumerStatefulWidget {
   const HealthDetailsScreen({super.key});
 
   @override
-  ConsumerState<HealthDetailsScreen> createState() => _HealthDetailsScreenState();
+  ConsumerState<HealthDetailsScreen> createState() =>
+      _HealthDetailsScreenState();
 }
 
 class _HealthDetailsScreenState extends ConsumerState<HealthDetailsScreen> {
@@ -89,39 +90,47 @@ class _HealthDetailsScreenState extends ConsumerState<HealthDetailsScreen> {
     final navigator = Navigator.of(context);
     setState(() => _saving = true);
 
-    final allergies = _allergies.text
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-    final contactFilled = _contactName.text.trim().isNotEmpty ||
+    final allergies =
+        _allergies.text
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+    final contactFilled =
+        _contactName.text.trim().isNotEmpty ||
         _contactPhone.text.trim().isNotEmpty ||
         _contactRelation.text.trim().isNotEmpty;
 
     try {
-      await ref.read(authRepositoryProvider).updateProfile(
-        heightCm: double.tryParse(_height.text.trim()),
-        chiefComplaint: _complaint.text.trim(),
-        diagnosedOn: _diagnosedOn == null
-            ? null
-            : '${_diagnosedOn!.year.toString().padLeft(4, '0')}-'
-                  '${_diagnosedOn!.month.toString().padLeft(2, '0')}-'
-                  '${_diagnosedOn!.day.toString().padLeft(2, '0')}',
-        allergies: allergies,
-        emergencyContact: contactFilled
-            ? {
-                'name': _contactName.text.trim(),
-                'phone': _contactPhone.text.trim(),
-                'relation': _contactRelation.text.trim(),
-              }
-            : null,
-      );
+      await ref
+          .read(authRepositoryProvider)
+          .updateProfile(
+            heightCm: double.tryParse(_height.text.trim()),
+            chiefComplaint: _complaint.text.trim(),
+            diagnosedOn:
+                _diagnosedOn == null
+                    ? null
+                    : '${_diagnosedOn!.year.toString().padLeft(4, '0')}-'
+                        '${_diagnosedOn!.month.toString().padLeft(2, '0')}-'
+                        '${_diagnosedOn!.day.toString().padLeft(2, '0')}',
+            allergies: allergies,
+            emergencyContact:
+                contactFilled
+                    ? {
+                      'name': _contactName.text.trim(),
+                      'phone': _contactPhone.text.trim(),
+                      'relation': _contactRelation.text.trim(),
+                    }
+                    : null,
+          );
       messenger.showSnackBar(SnackBar(content: Text(l10n.profileSaved)));
       navigator.pop();
     } on ApiException {
       if (!mounted) return;
       setState(() => _saving = false);
-      messenger.showSnackBar(SnackBar(content: Text(l10n.commonSomethingWentWrong)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonSomethingWentWrong)),
+      );
     }
   }
 
@@ -144,96 +153,124 @@ class _HealthDetailsScreenState extends ConsumerState<HealthDetailsScreen> {
                 backgroundColor: accent,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: accent.withValues(alpha: 0.4),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white),
-                    )
-                  : Text(l10n.profileSave,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              child:
+                  _saving
+                      ? const SizedBox(
+                        width: 16,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : Text(
+                        l10n.profileSave,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
             ),
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                children: [
-                  _field(
-                    controller: _height,
-                    label: l10n.healthHeight,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) return null;
-                      final h = double.tryParse(v.trim());
-                      if (h == null || h < 50 || h > 250) return '50–250';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _field(
-                    controller: _complaint,
-                    label: l10n.healthMainConcern,
-                    hint: l10n.healthMainConcernHint,
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  InkWell(
-                    onTap: _pickDiagnosedOn,
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: l10n.healthDiagnosedOn,
-                        prefixIcon: const Icon(Icons.event_outlined),
+      body:
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  children: [
+                    _field(
+                      controller: _height,
+                      label: l10n.healthHeight,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return null;
+                        final h = double.tryParse(v.trim());
+                        if (h == null || h < 50 || h > 250) return '50–250';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _field(
+                      controller: _complaint,
+                      label: l10n.healthMainConcern,
+                      hint: l10n.healthMainConcernHint,
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    InkWell(
+                      onTap: _pickDiagnosedOn,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.buttonRadius,
                       ),
-                      child: Text(
-                        _diagnosedOn == null
-                            ? l10n.healthNotSet
-                            : '${_diagnosedOn!.day.toString().padLeft(2, '0')}/'
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: l10n.healthDiagnosedOn,
+                          prefixIcon: const Icon(Icons.event_outlined),
+                        ),
+                        child: Text(
+                          _diagnosedOn == null
+                              ? l10n.healthNotSet
+                              : '${_diagnosedOn!.day.toString().padLeft(2, '0')}/'
                                   '${_diagnosedOn!.month.toString().padLeft(2, '0')}/${_diagnosedOn!.year}',
-                        style: TextStyle(
-                          color: _diagnosedOn == null ? scheme.onSurfaceVariant : scheme.onSurface,
+                          style: TextStyle(
+                            color:
+                                _diagnosedOn == null
+                                    ? scheme.onSurfaceVariant
+                                    : scheme.onSurface,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _field(
-                    controller: _allergies,
-                    label: l10n.healthAllergies,
-                    hint: l10n.healthAllergiesHint,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    l10n.healthEmergencyContact.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.8,
-                      color: scheme.onSurfaceVariant,
+                    const SizedBox(height: AppSpacing.md),
+                    _field(
+                      controller: _allergies,
+                      label: l10n.healthAllergies,
+                      hint: l10n.healthAllergiesHint,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  _field(controller: _contactName, label: l10n.healthContactName),
-                  const SizedBox(height: AppSpacing.md),
-                  _field(
-                    controller: _contactPhone,
-                    label: l10n.healthContactPhone,
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _field(controller: _contactRelation, label: l10n.healthContactRelation),
-                ],
+                    const SizedBox(height: AppSpacing.xl),
+                    Text(
+                      l10n.healthEmergencyContact.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.8,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    _field(
+                      controller: _contactName,
+                      label: l10n.healthContactName,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _field(
+                      controller: _contactPhone,
+                      label: l10n.healthContactPhone,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _field(
+                      controller: _contactRelation,
+                      label: l10n.healthContactRelation,
+                    ),
+                  ],
+                ),
               ),
-            ),
     );
   }
 

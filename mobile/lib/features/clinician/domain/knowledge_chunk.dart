@@ -37,9 +37,21 @@ class KnowledgeChunk {
 
   /// Categories the backend's zod enum accepts.
   static const categories = [
-    'diabetes_basics', 'hypoglycaemia', 'hyperglycaemia', 'insulin', 'oral_medication',
-    'diet', 'exercise', 'foot_care', 'eye_care', 'kidney', 'hypertension',
-    'sick_day_rules', 'emergency', 'clinic_info', 'general',
+    'diabetes_basics',
+    'hypoglycaemia',
+    'hyperglycaemia',
+    'insulin',
+    'oral_medication',
+    'diet',
+    'exercise',
+    'foot_care',
+    'eye_care',
+    'kidney',
+    'hypertension',
+    'sick_day_rules',
+    'emergency',
+    'clinic_info',
+    'general',
   ];
 
   factory KnowledgeChunk.fromJson(Map<String, dynamic> j) => KnowledgeChunk(

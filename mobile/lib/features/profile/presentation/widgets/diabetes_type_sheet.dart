@@ -24,7 +24,9 @@ class DiabetesTypeSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
       builder: (_) => DiabetesTypeSheet(initial: initial),
     );
   }
@@ -52,8 +54,16 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
     // Every value the server's enum accepts, each with a one-line explanation —
     // "Type 2" means nothing to a newly diagnosed patient.
     final options = <({String code, String label, String desc})>[
-      (code: 'type1', label: l10n.authDiabetesType1, desc: l10n.profileDiabetesType1Desc),
-      (code: 'type2', label: l10n.authDiabetesType2, desc: l10n.profileDiabetesType2Desc),
+      (
+        code: 'type1',
+        label: l10n.authDiabetesType1,
+        desc: l10n.profileDiabetesType1Desc,
+      ),
+      (
+        code: 'type2',
+        label: l10n.authDiabetesType2,
+        desc: l10n.profileDiabetesType2Desc,
+      ),
       (
         code: 'gestational',
         label: l10n.authDiabetesTypeGestational,
@@ -64,7 +74,11 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
         label: l10n.authDiabetesTypePrediabetes,
         desc: l10n.profileDiabetesPrediabetesDesc,
       ),
-      (code: 'none', label: l10n.authDiabetesTypeNone, desc: l10n.profileDiabetesNoneDesc),
+      (
+        code: 'none',
+        label: l10n.authDiabetesTypeNone,
+        desc: l10n.profileDiabetesNoneDesc,
+      ),
     ];
 
     return Container(
@@ -98,12 +112,20 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
               const SizedBox(height: AppSpacing.lg),
               Text(
                 l10n.profileDiabetesSheetTitle,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, height: 1.3),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  height: 1.3,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 l10n.profileDiabetesSheetBody,
-                style: TextStyle(fontSize: 14, height: 1.45, color: scheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               Container(
@@ -120,7 +142,8 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
                         description: options[i].desc,
                         selected: _selected == options[i].code,
                         accent: accent,
-                        onTap: () => setState(() => _selected = options[i].code),
+                        onTap:
+                            () => setState(() => _selected = options[i].code),
                       ),
                       if (i != options.length - 1)
                         Divider(
@@ -139,17 +162,23 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
                 child: ElevatedButton(
                   // Disabled until a choice is made — saving "whatever was
                   // already there" is how the wrong default gets confirmed.
-                  onPressed: _selected == null
-                      ? null
-                      : () => Navigator.of(context).pop(_selected),
+                  onPressed:
+                      _selected == null
+                          ? null
+                          : () => Navigator.of(context).pop(_selected),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accent,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
                   child: Text(
                     l10n.profileSave,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -161,7 +190,10 @@ class _DiabetesTypeSheetState extends State<DiabetesTypeSheet> {
                     minimumSize: const Size.fromHeight(AppSpacing.minTapTarget),
                     foregroundColor: scheme.onSurfaceVariant,
                   ),
-                  child: Text(l10n.commonCancel, style: const TextStyle(fontSize: 16)),
+                  child: Text(
+                    l10n.commonCancel,
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ),
               ),
             ],
@@ -199,7 +231,10 @@ class _Option extends StatelessWidget {
         onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 64),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: 12,
+          ),
           color: selected ? accent.withValues(alpha: 0.10) : null,
           child: Row(
             children: [
@@ -211,21 +246,28 @@ class _Option extends StatelessWidget {
                       label,
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w500,
                         color: scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 0),
                     Text(
                       description,
-                      style: TextStyle(fontSize: 14, height: 1.35, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.35,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Icon(
-                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_off_rounded,
                 size: 24,
                 color: selected ? accent : scheme.outlineVariant,
               ),

@@ -42,7 +42,10 @@ class FoodLogScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Meal history')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _logMeal(context, ref),
-        backgroundColor: AppColors.primary,
+        // Transparent so the shell's ground runs unbroken behind this
+        // screen and the navigation bar alike. An opaque page here left a
+        // visible band of ground around the pill and nowhere else.
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_a_photo_outlined),
         label: const Text('Log a meal'),

@@ -31,7 +31,8 @@ class ChatReviewScreen extends ConsumerStatefulWidget {
 enum _ReviewTab { flagged, all }
 
 class _ChatReviewScreenState extends ConsumerState<ChatReviewScreen> {
-  late _ReviewTab _tab = widget.initialTab == 'all' ? _ReviewTab.all : _ReviewTab.flagged;
+  late _ReviewTab _tab =
+      widget.initialTab == 'all' ? _ReviewTab.all : _ReviewTab.flagged;
 
   ChatReviewQuery get _query => (
     flagged: _tab == _ReviewTab.flagged,
@@ -76,78 +77,84 @@ class _ChatReviewScreenState extends ConsumerState<ChatReviewScreen> {
       body: AutoRefresh(
         onTick: (ref) => ref.invalidate(chatReviewProvider(_query)),
         child: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(chatReviewProvider(_query)),
-        child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error:
-              (_, _) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Could not load conversations'),
-                    const SizedBox(height: AppSpacing.sm),
-                    OutlinedButton(
-                      onPressed:
-                          () => ref.invalidate(chatReviewProvider(_query)),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-          data: (paged) {
-            if (paged.items.isEmpty) {
-              return ListView(
-                children: [
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                  Icon(
-                    Icons.forum_outlined,
-                    size: 56,
-                    color: scheme.outlineVariant,
+          onRefresh: () async => ref.invalidate(chatReviewProvider(_query)),
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error:
+                (_, _) => Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Could not load conversations'),
+                      const SizedBox(height: AppSpacing.sm),
+                      OutlinedButton(
+                        onPressed:
+                            () => ref.invalidate(chatReviewProvider(_query)),
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  Center(
-                    child: Text(
-                      switch (_tab) {
-                        _ReviewTab.flagged => 'No flagged conversations',
-                        _ReviewTab.all => 'No conversations',
-                      },
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                ),
+            data: (paged) {
+              if (paged.items.isEmpty) {
+                return ListView(
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                    Icon(
+                      Icons.forum_outlined,
+                      size: 56,
+                      color: scheme.outlineVariant,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Center(
+                      child: Text(
+                        switch (_tab) {
+                          _ReviewTab.flagged => 'No flagged conversations',
+                          _ReviewTab.all => 'No conversations',
+                        },
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                );
+              }
+              return ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: paged.items.length,
+                separatorBuilder:
+                    (_, _) => Divider(
+                      height: 1,
+                      indent: 76,
+                      color: scheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                itemBuilder:
+                    (context, i) => _SessionRow(
+                      session: paged.items[i],
+                      onTap:
+                          () => context.push(
+                            '/clinician/chat-review/${paged.items[i].id}',
+                          ),
+                      onCleared:
+                          () => ref.invalidate(chatReviewProvider(_query)),
+                    ),
               );
-            }
-            return ListView.separated(
-              padding: EdgeInsets.zero,
-              itemCount: paged.items.length,
-              separatorBuilder: (_, _) => Divider(
-                height: 1,
-                indent: 76,
-                color: scheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-              itemBuilder:
-                  (context, i) => _SessionRow(
-                    session: paged.items[i],
-                    onTap:
-                        () => context.push(
-                          '/clinician/chat-review/${paged.items[i].id}',
-                        ),
-                    onCleared: () => ref.invalidate(chatReviewProvider(_query)),
-                  ),
-            );
-          },
+            },
+          ),
         ),
-      ),
       ),
     );
   }
 }
 
 class _SessionRow extends ConsumerWidget {
-  const _SessionRow({required this.session, required this.onTap, required this.onCleared});
+  const _SessionRow({
+    required this.session,
+    required this.onTap,
+    required this.onCleared,
+  });
 
   final ChatReviewSession session;
   final VoidCallback onTap;
@@ -184,8 +191,22 @@ class _SessionRow extends ConsumerWidget {
       return '$h:${at.minute.toString().padLeft(2, '0')} ${at.hour < 12 ? 'AM' : 'PM'}';
     }
     if (diff == 1) return 'Yesterday';
-    if (diff < 7) return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][at.weekday - 1];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (diff < 7)
+      return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][at.weekday - 1];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${at.day} ${months[at.month - 1]}';
   }
 
@@ -195,7 +216,8 @@ class _SessionRow extends ConsumerWidget {
     final s = session;
     final msg = s.lastMessage;
     final unread = s.unreadCount > 0;
-    final urgent = s.highestUrgency == 'emergency' || s.highestUrgency == 'urgent';
+    final urgent =
+        s.highestUrgency == 'emergency' || s.highestUrgency == 'urgent';
     final urgencyColor = AppColors.forUrgencyOn(context, s.highestUrgency);
 
     // The same row the Patients tab uses: a face, the last thing said (and by
@@ -203,7 +225,10 @@ class _SessionRow extends ConsumerWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 12),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: 12,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -227,7 +252,8 @@ class _SessionRow extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: unread ? FontWeight.w800 : FontWeight.w600,
+                            fontWeight:
+                                unread ? FontWeight.w800 : FontWeight.w600,
                           ),
                         ),
                       ),
@@ -237,8 +263,12 @@ class _SessionRow extends ConsumerWidget {
                           _stamp(msg.at),
                           style: TextStyle(
                             fontSize: 14,
-                            color: unread ? AppColors.primary : scheme.onSurfaceVariant,
-                            fontWeight: unread ? FontWeight.w700 : FontWeight.w400,
+                            color:
+                                unread
+                                    ? AppColors.primary
+                                    : scheme.onSurfaceVariant,
+                            fontWeight:
+                                unread ? FontWeight.w700 : FontWeight.w400,
                           ),
                         ),
                     ],
@@ -253,7 +283,8 @@ class _SessionRow extends ConsumerWidget {
                               if (msg == null)
                                 const TextSpan(text: 'No messages yet')
                               else ...[
-                                if (!msg.fromPatient) const TextSpan(text: 'You: '),
+                                if (!msg.fromPatient)
+                                  const TextSpan(text: 'You: '),
                                 if (msg.mediaType != null)
                                   WidgetSpan(
                                     alignment: PlaceholderAlignment.middle,
@@ -262,11 +293,16 @@ class _SessionRow extends ConsumerWidget {
                                       child: Icon(
                                         _mediaIcon(msg.mediaType!),
                                         size: 15,
-                                        color: unread ? scheme.onSurface : scheme.onSurfaceVariant,
+                                        color:
+                                            unread
+                                                ? scheme.onSurface
+                                                : scheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),
-                                TextSpan(text: MarkdownText.toPreview(msg.preview)),
+                                TextSpan(
+                                  text: MarkdownText.toPreview(msg.preview),
+                                ),
                               ],
                             ],
                           ),
@@ -275,12 +311,14 @@ class _SessionRow extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 14,
                             height: 1.35,
-                            color: msg == null
-                                ? scheme.outline
-                                : unread
-                                ? scheme.onSurface
-                                : scheme.onSurfaceVariant,
-                            fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
+                            color:
+                                msg == null
+                                    ? scheme.outline
+                                    : unread
+                                    ? scheme.onSurface
+                                    : scheme.onSurfaceVariant,
+                            fontWeight:
+                                unread ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
                       ),
@@ -293,11 +331,17 @@ class _SessionRow extends ConsumerWidget {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: AppColors.accentOn(context),
-                            borderRadius: const BorderRadius.all(Radius.circular(12)),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(12),
+                            ),
                           ),
                           child: Text(
                             s.unreadCount > 99 ? '99+' : '${s.unreadCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ],
@@ -309,10 +353,17 @@ class _SessionRow extends ConsumerWidget {
                   Row(
                     children: [
                       if (s.highestUrgency != 'routine')
-                        MiniPill(label: s.highestUrgency.toUpperCase(), color: urgencyColor),
+                        MiniPill(
+                          label: s.highestUrgency.toUpperCase(),
+                          color: urgencyColor,
+                        ),
                       if (s.flaggedForReview) ...[
                         const SizedBox(width: 4),
-                        Icon(Icons.flag_rounded, size: 16, color: AppColors.warningOn(context)),
+                        Icon(
+                          Icons.flag_rounded,
+                          size: 16,
+                          color: AppColors.warningOn(context),
+                        ),
                       ],
                       const Spacer(),
                       if (s.flaggedForReview)
@@ -324,14 +375,30 @@ class _SessionRow extends ConsumerWidget {
                           ),
                           onPressed: () => _clearFlag(context, ref),
                           icon: const Icon(Icons.flag_outlined, size: 15),
-                          label: const Text('Clear flag', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                          label: const Text(
+                            'Clear flag',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         )
                       else if (s.reviewedAt != null)
                         Row(
                           children: [
-                            Icon(Icons.check_circle_rounded, size: 13, color: AppColors.successOn(context)),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 13,
+                              color: AppColors.successOn(context),
+                            ),
                             const SizedBox(width: 4),
-                            Text('Reviewed', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                            Text(
+                              'Reviewed',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                     ],

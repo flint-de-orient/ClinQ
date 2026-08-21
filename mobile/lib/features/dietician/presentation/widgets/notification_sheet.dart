@@ -68,74 +68,94 @@ class _NotificationSheetState extends ConsumerState<_NotificationSheet> {
       initialChildSize: 0.62,
       minChildSize: 0.35,
       maxChildSize: 0.92,
-      builder: (context, controller) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.md, AppSpacing.sm),
-            child: Row(
-              children: [
-                const Text(
-                  'Notifications',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(width: 8),
-                if ((view?.unread ?? 0) > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentOn(context),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${view!.unread}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => ref.invalidate(dietNotificationsProvider),
-                  icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'Refresh',
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: scheme.outlineVariant.withValues(alpha: 0.5)),
-          Expanded(
-            child: switch ((view, async.isLoading)) {
-              (null, true) => const Center(child: CircularProgressIndicator()),
-              (null, _) => _Empty(
-                icon: Icons.cloud_off_rounded,
-                title: 'Could not load notifications',
-                body: 'Check your connection and pull to try again.',
-              ),
-              (final v, _) when v!.items.isEmpty => const _Empty(
-                icon: Icons.done_all_rounded,
-                title: 'Nothing waiting',
-                body: 'No unread messages, no lapsed reviews, and every patient has a plan.',
-              ),
-              (final v, _) => ListView.separated(
-                controller: controller,
+      builder:
+          (context, controller) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
                 padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  0,
                   AppSpacing.md,
                   AppSpacing.sm,
-                  AppSpacing.md,
-                  AppSpacing.xl,
                 ),
-                itemCount: v!.items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 4),
-                itemBuilder: (context, i) => _NotificationRow(item: v.items[i]),
+                child: Row(
+                  children: [
+                    const Text(
+                      'Notifications',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if ((view?.unread ?? 0) > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentOn(context),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${view!.unread}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed:
+                          () => ref.invalidate(dietNotificationsProvider),
+                      icon: const Icon(Icons.refresh_rounded),
+                      tooltip: 'Refresh',
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
               ),
-            },
+              Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              Expanded(
+                child: switch ((view, async.isLoading)) {
+                  (null, true) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  (null, _) => _Empty(
+                    icon: Icons.cloud_off_rounded,
+                    title: 'Could not load notifications',
+                    body: 'Check your connection and pull to try again.',
+                  ),
+                  (final v, _) when v!.items.isEmpty => const _Empty(
+                    icon: Icons.done_all_rounded,
+                    title: 'Nothing waiting',
+                    body:
+                        'No unread messages, no lapsed reviews, and every patient has a plan.',
+                  ),
+                  (final v, _) => ListView.separated(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.sm,
+                      AppSpacing.md,
+                      AppSpacing.xl,
+                    ),
+                    itemCount: v!.items.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 4),
+                    itemBuilder:
+                        (context, i) => _NotificationRow(item: v.items[i]),
+                  ),
+                },
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -174,16 +194,28 @@ class _NotificationRow extends StatelessWidget {
     void open() {
       Navigator.of(context).pop();
       if (item.kind == 'message') {
-        context.push('/dietician/patients/${item.patientId}/chat', extra: item.patientName);
+        context.push(
+          '/dietician/patients/${item.patientId}/chat',
+          extra: item.patientName,
+        );
       } else if (item.kind == 'plan') {
-        context.push('/dietician/patients/${item.patientId}/diet', extra: item.patientName);
+        context.push(
+          '/dietician/patients/${item.patientId}/diet',
+          extra: item.patientName,
+        );
       } else {
-        context.push('/dietician/patients/${item.patientId}', extra: item.patientName);
+        context.push(
+          '/dietician/patients/${item.patientId}',
+          extra: item.patientName,
+        );
       }
     }
 
     return Material(
-      color: item.unread ? accent.withValues(alpha: 0.06) : scheme.surfaceContainerLowest,
+      color:
+          item.unread
+              ? accent.withValues(alpha: 0.06)
+              : scheme.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -193,9 +225,10 @@ class _NotificationRow extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: item.unread
-                  ? accent.withValues(alpha: 0.25)
-                  : scheme.outlineVariant.withValues(alpha: 0.55),
+              color:
+                  item.unread
+                      ? accent.withValues(alpha: 0.25)
+                      : scheme.outlineVariant.withValues(alpha: 0.55),
             ),
           ),
           child: Row(
@@ -240,14 +273,20 @@ class _NotificationRow extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: item.unread ? FontWeight.w800 : FontWeight.w700,
+                              fontWeight:
+                                  item.unread
+                                      ? FontWeight.w800
+                                      : FontWeight.w700,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _ago(item.at),
-                          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -259,7 +298,10 @@ class _NotificationRow extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         height: 1.35,
-                        color: item.unread ? scheme.onSurface : scheme.onSurfaceVariant,
+                        color:
+                            item.unread
+                                ? scheme.onSurface
+                                : scheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -291,12 +333,19 @@ class _Empty extends StatelessWidget {
           children: [
             Icon(icon, size: 42, color: scheme.outlineVariant),
             const SizedBox(height: AppSpacing.md),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
             const SizedBox(height: 4),
             Text(
               body,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, height: 1.4, color: scheme.onSurfaceVariant),
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.4,
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),

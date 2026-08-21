@@ -25,12 +25,14 @@ class Triage {
     return Triage(
       urgency: json['urgency']?.toString() ?? 'routine',
       ruleDriven: json['ruleDriven'] as bool? ?? false,
-      redFlags: (json['redFlags'] as List<dynamic>? ?? const [])
-          .map((e) => RedFlag.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      findings: (json['findings'] as List<dynamic>? ?? const [])
-          .map((e) => e.toString())
-          .toList(),
+      redFlags:
+          (json['redFlags'] as List<dynamic>? ?? const [])
+              .map((e) => RedFlag.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      findings:
+          (json['findings'] as List<dynamic>? ?? const [])
+              .map((e) => e.toString())
+              .toList(),
       extracted: (json['extracted'] as Map<String, dynamic>?) ?? const {},
     );
   }
@@ -43,6 +45,9 @@ class RedFlag {
   final String label;
 
   factory RedFlag.fromJson(Map<String, dynamic> json) {
-    return RedFlag(id: json['id']?.toString() ?? '', label: json['label']?.toString() ?? '');
+    return RedFlag(
+      id: json['id']?.toString() ?? '',
+      label: json['label']?.toString() ?? '',
+    );
   }
 }

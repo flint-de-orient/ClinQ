@@ -17,7 +17,9 @@ class MedicationsRepository {
   Future<List<Medication>> getMedications() async {
     final json = await _client.getJson(_base);
     final items = json['items'] as List<dynamic>? ?? const [];
-    return items.map((e) => Medication.fromJson(e as Map<String, dynamic>)).toList();
+    return items
+        .map((e) => Medication.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<TodaySchedule> getTodaySchedule() async {
@@ -28,9 +30,14 @@ class MedicationsRepository {
   /// The patient's past doses (taken/skipped/missed) over [days] days, newest
   /// first — powers the medicine-taking history screen.
   Future<List<DoseHistoryEntry>> getDoseHistory({int days = 14}) async {
-    final json = await _client.getJson('$_base/schedule/history', query: {'days': days});
+    final json = await _client.getJson(
+      '$_base/schedule/history',
+      query: {'days': days},
+    );
     final items = json['doses'] as List<dynamic>? ?? const [];
-    return items.map((e) => DoseHistoryEntry.fromJson(e as Map<String, dynamic>)).toList();
+    return items
+        .map((e) => DoseHistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Adds a medicine to the patient's tracker. [schedule] is a list of
@@ -52,7 +59,8 @@ class MedicationsRepository {
         if (strength != null && strength.isNotEmpty) 'strength': strength,
         if (dose != null && dose.isNotEmpty) 'dose': dose,
         'schedule': schedule,
-        if (instructions != null && instructions.isNotEmpty) 'instructions': instructions,
+        if (instructions != null && instructions.isNotEmpty)
+          'instructions': instructions,
       },
     );
     return Medication.fromJson(json['medication'] as Map<String, dynamic>);
@@ -67,14 +75,20 @@ class MedicationsRepository {
   /// Overrides a medicine's reminder times by hand. Each entry is
   /// `{time: "HH:mm", relationToMeal}`. The server marks it customised so a later
   /// meal-time change won't move it.
-  Future<void> updateSchedule(String id, List<Map<String, String>> schedule) async {
+  Future<void> updateSchedule(
+    String id,
+    List<Map<String, String>> schedule,
+  ) async {
     await _client.patchJson('$_base/$id', body: {'schedule': schedule});
   }
 
   /// Uploads a photo of a prescription; the server reads it and creates the
   /// medicines it finds. Returns what was created (or `readable: false` if the
   /// photo couldn't be read).
-  Future<PrescriptionScanResult> scanPrescription({required String path, required String filename}) async {
+  Future<PrescriptionScanResult> scanPrescription({
+    required String path,
+    required String filename,
+  }) async {
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(
         path,
@@ -120,7 +134,10 @@ class MedicationsRepository {
   }
 
   Future<MedicationAdherence> getAdherence({int days = 30}) async {
-    final json = await _client.getJson('$_base/adherence', query: {'days': days});
+    final json = await _client.getJson(
+      '$_base/adherence',
+      query: {'days': days},
+    );
     return MedicationAdherence.fromJson(json);
   }
 }

@@ -86,7 +86,11 @@ class ChatMessageBubble extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(4),
-          child: Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          child: Icon(
+            icon,
+            size: 16,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -104,87 +108,103 @@ class ChatMessageBubble extends StatelessWidget {
 
     await showModalBottomSheet<void>(
       context: context,
-      builder: (sheet) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.copy_rounded),
-              title: Text(l10n.chatCopy),
-              onTap: () async {
-                Navigator.pop(sheet);
-                await Clipboard.setData(ClipboardData(text: message.content));
-                messenger.showSnackBar(SnackBar(content: Text(l10n.chatCopied)));
-              },
-            ),
-            if (onReply != null)
-              ListTile(
-                leading: const Icon(Icons.reply_rounded),
-                title: Text(l10n.chatReply),
-                onTap: () {
-                  Navigator.pop(sheet);
-                  onReply!();
-                },
-              ),
-            if (onTogglePin != null)
-              ListTile(
-                leading: Icon(message.pinned ? Icons.push_pin : Icons.push_pin_outlined),
-                title: Text(message.pinned ? l10n.chatUnpin : l10n.chatPin),
-                onTap: () {
-                  Navigator.pop(sheet);
-                  onTogglePin!();
-                },
-              ),
-            if (onHide != null)
-              ListTile(
-                leading: const Icon(Icons.visibility_off_outlined),
-                // Named "hide", not "delete", because that is what it does: the
-                // message stays in the medical record and only leaves this
-                // reader's view.
-                title: Text(l10n.chatHide),
-                subtitle: Text(
-                  l10n.chatHideNote,
-                  style: const TextStyle(fontSize: 12),
+      builder:
+          (sheet) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.copy_rounded),
+                  title: Text(l10n.chatCopy),
+                  onTap: () async {
+                    Navigator.pop(sheet);
+                    await Clipboard.setData(
+                      ClipboardData(text: message.content),
+                    );
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(l10n.chatCopied)),
+                    );
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(sheet);
-                  onHide!();
-                },
-              ),
-            // Delete for everyone — only ever offered on the reader's own,
-            // non-emergency message (the caller decides), and confirmed once,
-            // because unlike Hide the other person loses it too.
-            if (onDeleteForEveryone != null)
-              ListTile(
-                leading: Icon(Icons.delete_outline_rounded, color: AppColors.danger),
-                title: Text(l10n.chatDeleteForEveryone, style: TextStyle(color: AppColors.danger)),
-                onTap: () async {
-                  Navigator.pop(sheet);
-                  if (!context.mounted) return;
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (dialog) => AlertDialog(
-                      title: Text(l10n.chatDeleteForEveryone),
-                      content: Text(l10n.chatDeleteForEveryoneConfirm),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialog, false),
-                          child: Text(l10n.commonCancel),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialog, true),
-                          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-                          child: Text(l10n.chatDeleteForEveryone),
-                        ),
-                      ],
+                if (onReply != null)
+                  ListTile(
+                    leading: const Icon(Icons.reply_rounded),
+                    title: Text(l10n.chatReply),
+                    onTap: () {
+                      Navigator.pop(sheet);
+                      onReply!();
+                    },
+                  ),
+                if (onTogglePin != null)
+                  ListTile(
+                    leading: Icon(
+                      message.pinned ? Icons.push_pin : Icons.push_pin_outlined,
                     ),
-                  );
-                  if (confirmed == true) onDeleteForEveryone!();
-                },
-              ),
-          ],
-        ),
-      ),
+                    title: Text(message.pinned ? l10n.chatUnpin : l10n.chatPin),
+                    onTap: () {
+                      Navigator.pop(sheet);
+                      onTogglePin!();
+                    },
+                  ),
+                if (onHide != null)
+                  ListTile(
+                    leading: const Icon(Icons.visibility_off_outlined),
+                    // Named "hide", not "delete", because that is what it does: the
+                    // message stays in the medical record and only leaves this
+                    // reader's view.
+                    title: Text(l10n.chatHide),
+                    subtitle: Text(
+                      l10n.chatHideNote,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheet);
+                      onHide!();
+                    },
+                  ),
+                // Delete for everyone — only ever offered on the reader's own,
+                // non-emergency message (the caller decides), and confirmed once,
+                // because unlike Hide the other person loses it too.
+                if (onDeleteForEveryone != null)
+                  ListTile(
+                    leading: Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.danger,
+                    ),
+                    title: Text(
+                      l10n.chatDeleteForEveryone,
+                      style: TextStyle(color: AppColors.danger),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(sheet);
+                      if (!context.mounted) return;
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder:
+                            (dialog) => AlertDialog(
+                              title: Text(l10n.chatDeleteForEveryone),
+                              content: Text(l10n.chatDeleteForEveryoneConfirm),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialog, false),
+                                  child: Text(l10n.commonCancel),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(dialog, true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.danger,
+                                  ),
+                                  child: Text(l10n.chatDeleteForEveryone),
+                                ),
+                              ],
+                            ),
+                      );
+                      if (confirmed == true) onDeleteForEveryone!();
+                    },
+                  ),
+              ],
+            ),
+          ),
     );
   }
 
@@ -214,16 +234,26 @@ class ChatMessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: scheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.3),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.block_rounded, size: 15, color: scheme.onSurfaceVariant),
+              Icon(
+                Icons.block_rounded,
+                size: 15,
+                color: scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 8),
               Text(
                 l10n.chatDeletedForEveryone,
-                style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic, color: scheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -267,9 +297,12 @@ class ChatMessageBubble extends StatelessWidget {
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.82,
+        ),
         child: Column(
-          crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             // Photos the patient attached, shown above their text.
             if (message.attachmentPaths.isNotEmpty)
@@ -303,11 +336,18 @@ class ChatMessageBubble extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.push_pin_rounded, size: 13, color: scheme.onSurfaceVariant),
+                    Icon(
+                      Icons.push_pin_rounded,
+                      size: 13,
+                      color: scheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       l10n.chatPinned,
-                      style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -321,90 +361,115 @@ class ChatMessageBubble extends StatelessWidget {
                 onTap: onQuoteTap,
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: scheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border(left: BorderSide(color: AppColors.accentOn(context), width: 3)),
+                    border: Border(
+                      left: BorderSide(
+                        color: AppColors.accentOn(context),
+                        width: 3,
+                      ),
+                    ),
                   ),
                   child: Text(
                     repliedTo?.content ?? message.replyPreviewContent!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
             // Skip the text bubble entirely for a photo-only message. With no
             // words and no voice note there is nothing to put in it, and an
             // empty rounded box read as a bug ("why the empty section").
-            if (message.voiceNotes.isNotEmpty || message.content.trim().isNotEmpty)
-            GestureDetector(
-              onLongPress: () => _showActions(context),
-              child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isMine
-                    ? AppColors.bubbleMine(context)
-                    : isClinician
-                    // Tinted, not grey: the doctor's own words carry more
-                    // weight than the assistant's and should look like it.
-                    ? AppColors.bubbleClinician(context)
-                    : scheme.surfaceContainerLow,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: Radius.circular(isMine ? 20 : 6),
-                  bottomRight: Radius.circular(isMine ? 6 : 20),
-                ),
-                // Barely-there outline. A heavy stroke round every bubble read
-                // as clutter over the wallpaper; the fill alone carries the
-                // shape now, with just a whisper of an edge.
-                border: isMine
-                    ? null
-                    : Border.all(
-                        color: isClinician
+            if (message.voiceNotes.isNotEmpty ||
+                message.content.trim().isNotEmpty)
+              GestureDetector(
+                onLongPress: () => _showActions(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color:
+                        isMine
+                            ? AppColors.bubbleMine(context)
+                            : isClinician
+                            // Tinted, not grey: the doctor's own words carry more
+                            // weight than the assistant's and should look like it.
                             ? AppColors.bubbleClinician(context)
-                            : scheme.outlineVariant.withValues(alpha: 0.20),
-                      ),
-              ),
-              child: message.voiceNotes.isNotEmpty
-                  // A spoken message renders as a player, not as its own
-                  // transcript repeated â€” the player already shows the words.
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final note in message.voiceNotes)
-                          VoiceNotePlayer(note: note, onDark: isMine),
-                      ],
-                    )
-                  : (isUser || isClinician)
-                  // The patient's own text is never Markdown â€” render it plain.
-                  ? Text(
-                      message.content,
-                      style: TextStyle(fontSize: 16, height: 1.5, color: isMine ? Colors.white : scheme.onSurface),
-                    )
-                  // Assistant replies carry **bold** and `- ` bullets; render
-                  // them rather than showing the raw marks.
-                  //
-                  // Not selectable: long-press now opens the action sheet, and
-                  // text selection would swallow that gesture on assistant
-                  // replies only â€” the same press doing different things
-                  // depending on who spoke. Copy is in the sheet instead.
-                  : MarkdownText(
-                      data: message.content,
-                      selectable: false,
-                      style: TextStyle(
-                        fontSize: 16,
-                        // 1.5 gives Bengali conjuncts and Devanagari matras room
-                        // to breathe; 1.4 clips their upper marks at this size.
-                        height: 1.5,
-                        color: isMine ? Colors.white : scheme.onSurface,
-                      ),
+                            : scheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: Radius.circular(isMine ? 20 : 6),
+                      bottomRight: Radius.circular(isMine ? 6 : 20),
                     ),
-            ),
-            ),
+                    // Barely-there outline. A heavy stroke round every bubble read
+                    // as clutter over the wallpaper; the fill alone carries the
+                    // shape now, with just a whisper of an edge.
+                    border:
+                        isMine
+                            ? null
+                            : Border.all(
+                              color:
+                                  isClinician
+                                      ? AppColors.bubbleClinician(context)
+                                      : scheme.outlineVariant.withValues(
+                                        alpha: 0.20,
+                                      ),
+                            ),
+                  ),
+                  child:
+                      message.voiceNotes.isNotEmpty
+                          // A spoken message renders as a player, not as its own
+                          // transcript repeated â€” the player already shows the words.
+                          ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (final note in message.voiceNotes)
+                                VoiceNotePlayer(note: note, onDark: isMine),
+                            ],
+                          )
+                          : (isUser || isClinician)
+                          // The patient's own text is never Markdown â€” render it plain.
+                          ? Text(
+                            message.content,
+                            style: TextStyle(
+                              fontSize: 16,
+                              height: 1.5,
+                              color: isMine ? Colors.white : scheme.onSurface,
+                            ),
+                          )
+                          // Assistant replies carry **bold** and `- ` bullets; render
+                          // them rather than showing the raw marks.
+                          //
+                          // Not selectable: long-press now opens the action sheet, and
+                          // text selection would swallow that gesture on assistant
+                          // replies only â€” the same press doing different things
+                          // depending on who spoke. Copy is in the sheet instead.
+                          : MarkdownText(
+                            data: message.content,
+                            selectable: false,
+                            style: TextStyle(
+                              fontSize: 16,
+                              // 1.5 gives Bengali conjuncts and Devanagari matras room
+                              // to breathe; 1.4 clips their upper marks at this size.
+                              height: 1.5,
+                              color: isMine ? Colors.white : scheme.onSurface,
+                            ),
+                          ),
+                ),
+              ),
             if (message.createdAt != null) ...[
               const SizedBox(height: 4),
               Padding(
@@ -414,18 +479,30 @@ class ChatMessageBubble extends StatelessWidget {
                   children: [
                     Text(
                       _timestamp(message.createdAt!),
-                      style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                     // Only on the patient's own turns, and only once a person
                     // from the clinic has opened the thread. Says their message
                     // was read without implying a reply is seconds away.
-                    if (isMine && !isClinicianView && message.seenByClinicAt != null) ...[
+                    if (isMine &&
+                        !isClinicianView &&
+                        message.seenByClinicAt != null) ...[
                       const SizedBox(width: 4),
-                      Icon(Icons.done_all_rounded, size: 15, color: AppColors.accentOn(context)),
+                      Icon(
+                        Icons.done_all_rounded,
+                        size: 15,
+                        color: AppColors.accentOn(context),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         l10n.chatSeenByClinic,
-                        style: TextStyle(fontSize: 12, color: AppColors.accentOn(context)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.accentOn(context),
+                        ),
                       ),
                     ],
                   ],
@@ -437,7 +514,10 @@ class ChatMessageBubble extends StatelessWidget {
             // and the disclaimer would actively misrepresent it.
             if (!isUser && !isClinician) ...[
               if (message.citations != null && message.citations!.isNotEmpty)
-                CitationChips(citations: message.citations!, onTap: onCitationTap),
+                CitationChips(
+                  citations: message.citations!,
+                  onTap: onCitationTap,
+                ),
               // A fallback reply is the scripted "service unavailable" text â€”
               // offer to resend the question rather than leaving a dead end.
               if (message.isFallback == true && onRetry != null) ...[
@@ -449,7 +529,10 @@ class ChatMessageBubble extends StatelessWidget {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primary,
                       side: BorderSide(color: scheme.outlineVariant),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       visualDensity: VisualDensity.compact,
                     ),
                     icon: const Icon(Icons.refresh_rounded, size: 18),
@@ -467,12 +550,16 @@ class ChatMessageBubble extends StatelessWidget {
                     label: l10n.chatCopy,
                     onTap: () async {
                       await Clipboard.setData(
-                        ClipboardData(text: MarkdownText.toPlainText(message.content)),
+                        ClipboardData(
+                          text: MarkdownText.toPlainText(message.content),
+                        ),
                       );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context)
                           ..hideCurrentSnackBar()
-                          ..showSnackBar(SnackBar(content: Text(l10n.chatCopied)));
+                          ..showSnackBar(
+                            SnackBar(content: Text(l10n.chatCopied)),
+                          );
                       }
                     },
                   ),
@@ -561,7 +648,10 @@ class _SenderRow extends StatelessWidget {
         Icons.restaurant_rounded,
         name == null ? 'Your dietician' : '$name · Dietician',
       ),
-      _ when isClinician => (Icons.medical_information_rounded, name ?? fallback),
+      _ when isClinician => (
+        Icons.medical_information_rounded,
+        name ?? fallback,
+      ),
       // The patient's own words, read by a clinician.
       _ when isUser => (Icons.person_rounded, name ?? 'Patient'),
       // Named for the clinic it answers on behalf of, because that is what it
@@ -587,7 +677,12 @@ class _SenderRow extends StatelessWidget {
           // in this screen's header, so a second copy beside every message
           // only repeats it.
           if (isClinician)
-            UserAvatar(name: name ?? '', avatarUrl: avatarUrl, accent: AppColors.accentOn(context), size: 24)
+            UserAvatar(
+              name: name ?? '',
+              avatarUrl: avatarUrl,
+              accent: AppColors.accentOn(context),
+              size: 24,
+            )
           // The patient's own turns carry no avatar. This row is only ever
           // shown to a clinician, whose screen already has the patient's photo
           // and name in the app bar — a generic grey silhouette repeated down
@@ -605,10 +700,18 @@ class _SenderRow extends StatelessWidget {
               width: 24,
               height: 24,
               padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: AppColors.accentSoftOn(context), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: AppColors.accentSoftOn(context),
+                shape: BoxShape.circle,
+              ),
               child: Image.asset(
                 'assets/brand/medpin_emblem.png',
-                errorBuilder: (_, _, _) => Icon(icon, size: 14, color: AppColors.accentOn(context)),
+                errorBuilder:
+                    (_, _, _) => Icon(
+                      icon,
+                      size: 14,
+                      color: AppColors.accentOn(context),
+                    ),
               ),
             ),
           if (!isUser && !isDietician) const SizedBox(width: 8),
@@ -619,7 +722,10 @@ class _SenderRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: isClinician || isDietician ? AppColors.primary : scheme.onSurfaceVariant,
+                color:
+                    isClinician || isDietician
+                        ? AppColors.primary
+                        : scheme.onSurfaceVariant,
               ),
             ),
           ),
