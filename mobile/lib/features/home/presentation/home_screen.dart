@@ -963,67 +963,82 @@ class _GlucoseStats extends StatelessWidget {
 
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _StatTile(
-                label: 'Average',
-                value:
-                    s.average == null
-                        ? '—'
-                        : unit.format(s.average!, withUnit: false),
-                unit: s.average == null ? null : unit.label,
-                pill: s.average == null ? null : avgVerdict.label,
-                status: avgVerdict.status,
+        // IntrinsicHeight, not a bare stretch. A Row asking its children to
+        // stretch needs a bounded height to stretch them *to*, and inside a
+        // ListView the vertical constraint is unbounded — so the Row laid out
+        // to a broken height and took every section below it off the page with
+        // it. IntrinsicHeight measures the taller tile and gives the Row that,
+        // which is the equal-height pair the layout was after.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatTile(
+                  label: 'Average',
+                  value:
+                      s.average == null
+                          ? '—'
+                          : unit.format(s.average!, withUnit: false),
+                  unit: s.average == null ? null : unit.label,
+                  pill: s.average == null ? null : avgVerdict.label,
+                  status: avgVerdict.status,
+                ),
               ),
-            ),
-            const SizedBox(width: T.s3),
-            Expanded(
-              child: _StatTile(
-                label: 'Lowest',
-                value:
-                    s.min == null ? '—' : unit.format(s.min!, withUnit: false),
-                unit: s.min == null ? null : unit.label,
-                pill: s.min == null ? null : _flagVerdict(lowest?.flag).label,
-                status: _flagVerdict(lowest?.flag).status,
-                at: lowest?.at,
+              const SizedBox(width: T.s3),
+              Expanded(
+                child: _StatTile(
+                  label: 'Lowest',
+                  value:
+                      s.min == null
+                          ? '—'
+                          : unit.format(s.min!, withUnit: false),
+                  unit: s.min == null ? null : unit.label,
+                  pill: s.min == null ? null : _flagVerdict(lowest?.flag).label,
+                  status: _flagVerdict(lowest?.flag).status,
+                  at: lowest?.at,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: T.s3),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _StatTile(
-                label: 'Highest',
-                value:
-                    s.max == null ? '—' : unit.format(s.max!, withUnit: false),
-                unit: s.max == null ? null : unit.label,
-                pill: s.max == null ? null : _flagVerdict(highest?.flag).label,
-                status: _flagVerdict(highest?.flag).status,
-                at: highest?.at,
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatTile(
+                  label: 'Highest',
+                  value:
+                      s.max == null
+                          ? '—'
+                          : unit.format(s.max!, withUnit: false),
+                  unit: s.max == null ? null : unit.label,
+                  pill:
+                      s.max == null ? null : _flagVerdict(highest?.flag).label,
+                  status: _flagVerdict(highest?.flag).status,
+                  at: highest?.at,
+                ),
               ),
-            ),
-            const SizedBox(width: T.s3),
-            Expanded(
-              child: _StatTile(
-                label: 'Estimated HbA1c',
-                value:
-                    s.estimatedHba1c == null
-                        ? '—'
-                        : '~${s.estimatedHba1c!.toStringAsFixed(1)}',
-                unit: s.estimatedHba1c == null ? null : '%',
-                footnote: 'From recent readings',
-                status: Status.neutral,
-                info:
-                    'Worked out from the readings you have logged, not from a '
-                    'blood test. It moves as you log more.',
+              const SizedBox(width: T.s3),
+              Expanded(
+                child: _StatTile(
+                  label: 'Estimated HbA1c',
+                  value:
+                      s.estimatedHba1c == null
+                          ? '—'
+                          : '~${s.estimatedHba1c!.toStringAsFixed(1)}',
+                  unit: s.estimatedHba1c == null ? null : '%',
+                  footnote: 'From recent readings',
+                  status: Status.neutral,
+                  info:
+                      'Worked out from the readings you have logged, not from '
+                      'a blood test. It moves as you log more.',
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
