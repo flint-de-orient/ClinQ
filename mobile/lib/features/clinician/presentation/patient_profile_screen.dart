@@ -1610,6 +1610,53 @@ class _CurrentMedicines extends ConsumerWidget {
                                   color: scheme.onSurfaceVariant,
                                 ),
                               ),
+                              // Shown where the strength disagrees with what
+                              // the clinic's brand list records. A statement of
+                              // both figures, not a correction: the record is
+                              // left exactly as the doctor wrote it, and only a
+                              // person changes a dose.
+                              if (med.hasStrengthMismatch) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warningOn(
+                                      context,
+                                    ).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        size: 15,
+                                        color: AppColors.warningOn(context),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          med.strength.trim().isEmpty
+                                              ? 'No strength recorded. '
+                                                  '${med.strengthExpected} per our records'
+                                                  '${(med.strengthComposition ?? '').isEmpty ? '' : ' (${med.strengthComposition})'}.'
+                                              : 'Recorded as ${med.strengthExpected}'
+                                                  '${(med.strengthComposition ?? '').isEmpty ? '' : ' (${med.strengthComposition})'}.',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            height: 1.35,
+                                            color: scheme.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

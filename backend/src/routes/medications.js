@@ -14,6 +14,7 @@ import { extractPrescription } from '../services/ai/vision.js';
 import { buildSchedule } from '../services/medicationSchedule.js';
 import { PatientProfile } from '../models/PatientProfile.js';
 import { AiUnavailableError } from '../services/ai/gemini.js';
+import { MedicineBrand, brandSlug } from '../models/MedicineBrand.js';
 
 const router = Router({ mergeParams: true });
 router.use(requireAuth, resolvePatientScope);
@@ -55,7 +56,9 @@ router.get(
     const filter = { patient: req.patientId };
     if (!q(req).includeInactive) filter.isActive = true;
     const items = await Medication.find(filter).sort({ createdAt: -1 }).lean();
-    res.json({ items: items.map(serialise) });
+    // Checked against the clinic's brand list on the way out, so a doctor
+    // opening a record sees a wrong strength without anyone running a script.
+    res.json({ items: (await withBrandCheck(items)).map(serialise) });
   }),
 );
 
@@ -354,6 +357,46 @@ router.get(
   }),
 );
 
+/// Just the figures, so "500/1" and "500/1 mg" are one strength.
+const figuresOf = (v) => String(v ?? '').replace(/[^0-9./]/g, '');
+
+/**
+ * Attaches what the clinic's brand list says this product contains, when the
+ * strength on the record disagrees with it.
+ *
+ * The prescribing check catches new mistakes and the audit script cleans up old
+ * ones, but neither shows a doctor opening a record today that a strength is
+ * wrong. This does — as a fact on the row, not a correction to it. `expected`
+ * is what the records hold; what is stored is left exactly as written.
+ */
+export async function withBrandCheck(items) {
+  const names = [...new Set(items.map((m) => brandSlug(m.name)).filter(Boolean))];
+  if (names.length === 0) return items;
+
+  const brands = await MedicineBrand.find({ slug: { $in: names } })
+    .select('slug strengthLabel strengthUnit composition')
+    .lean();
+  if (brands.length === 0) return items;
+  const bySlug = new Map(brands.map((b) => [b.slug, b]));
+
+  return items.map((m) => {
+    const b = bySlug.get(brandSlug(m.name));
+    if (!b?.strengthLabel) return m;
+    const expected = b.strengthUnit ? `${b.strengthLabel} ${b.strengthUnit}` : b.strengthLabel;
+    const has = (m.strength ?? '').trim();
+    // An empty strength is incomplete, not contradictory — both are worth
+    // showing, and the client words them differently.
+    if (has.length > 0 && figuresOf(has) === figuresOf(expected)) return m;
+    return {
+      ...m,
+      strengthExpected: expected,
+      strengthComposition: (b.composition ?? [])
+        .map((c) => `${c.ingredient} ${c.amount} ${c.unit ?? 'mg'}`)
+        .join(' + '),
+    };
+  });
+}
+
 const serialise = (m) => ({
   id: m._id,
   name: m.name,
@@ -371,6 +414,9 @@ const serialise = (m) => ({
   endDate: m.endDate ?? null,
   isActive: m.isActive,
   instructions: m.instructions ?? null,
+  // Present only when the brand list disagrees with what is stored.
+  strengthExpected: m.strengthExpected ?? null,
+  strengthComposition: m.strengthComposition ?? null,
 });
 
 const serialiseLog = (l) => ({

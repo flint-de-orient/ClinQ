@@ -7,6 +7,8 @@ class Medication {
     required this.name,
     required this.form,
     required this.strength,
+    this.strengthExpected,
+    this.strengthComposition,
     required this.dose,
     required this.schedule,
     required this.daysOfWeek,
@@ -26,6 +28,17 @@ class Medication {
   final String? genericName;
   final String form;
   final String strength;
+
+  /// What the clinic's brand list says this product's strength should be.
+  /// Present only when it disagrees with [strength], or when none was recorded.
+  /// Never applied automatically — a dose is changed by a person.
+  final String? strengthExpected;
+
+  /// "Metformin 500 mg + Glimepiride 1 mg", so the disagreement can be judged
+  /// rather than merely reported.
+  final String? strengthComposition;
+
+  bool get hasStrengthMismatch => (strengthExpected ?? '').isNotEmpty;
   final String dose;
   final List<MedicationScheduleEntry> schedule;
   final List<String> daysOfWeek;
@@ -53,6 +66,8 @@ class Medication {
       genericName: json['genericName'] as String?,
       form: json['form']?.toString() ?? '',
       strength: json['strength']?.toString() ?? '',
+      strengthExpected: json['strengthExpected']?.toString(),
+      strengthComposition: json['strengthComposition']?.toString(),
       dose: json['dose']?.toString() ?? '',
       schedule:
           (json['schedule'] as List<dynamic>? ?? const [])
