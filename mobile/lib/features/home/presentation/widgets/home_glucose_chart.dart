@@ -131,6 +131,20 @@ class HomeGlucoseChart extends StatelessWidget {
     final agg = _bucket(dated);
     final spots = agg.mean;
 
+    // Marks are coloured by the server's own flag for that reading, keyed by
+    // its timestamp. Re-deriving "how high is too high" in the client would be
+    // a second copy of a clinical threshold, and the one that goes stale
+    // silently when the clinic changes its bands.
+    final flagAt = <double, String?>{
+      for (final p in dated) p.at!.millisecondsSinceEpoch.toDouble(): p.flag,
+    };
+    bool critical(String? f) =>
+        f == 'critical_high' ||
+        f == 'severe_high' ||
+        f == 'very_high' ||
+        f == 'severe_low';
+    final anyCritical = dated.any((p) => critical(p.flag));
+
     final lowT = unit.fromMgdl(kTargetLowMgdl);
     final highT = unit.fromMgdl(kTargetHighMgdl);
 
@@ -225,7 +239,18 @@ class HomeGlucoseChart extends StatelessWidget {
             // could as easily have meant "post-meal".
             const _Key(color: Color(0x1A0B8A4E), label: 'Target', bar: true),
             const SizedBox(width: T.s3),
-            const _Key(color: T.primaryDeep, label: 'Out of range'),
+            _Key(
+              color: T.warning,
+              label: anyCritical ? 'High' : 'Out of range',
+            ),
+            // The red key appears only when there is something red to explain.
+            // A permanent "critical" legend on a chart with no critical
+            // readings is a warning about nothing, and it is the kind of thing
+            // a patient learns to stop reading.
+            if (anyCritical) ...[
+              const SizedBox(width: T.s3),
+              _Key(color: T.danger, label: 'Needs attention'),
+            ],
           ],
         ),
         const SizedBox(height: T.s2),
@@ -366,17 +391,26 @@ class HomeGlucoseChart extends StatelessWidget {
                                     spots.length <= 40 &&
                                     (spot.y < lowT || spot.y > highT)),
                         getDotPainter: (spot, _, _, _) {
+                          final flag = flagAt[spot.x];
                           final out = spot.y < lowT || spot.y > highT;
-                          // Filled deep navy for a reading outside the band,
-                          // hollow for the latest one in it. The white ring is
-                          // what separates the mark from the line it sits on —
-                          // without it a same-family dot just thickens the
-                          // stroke.
+                          // Two tones, not one. A single colour for everything
+                          // outside the band either cries wolf at a reading of
+                          // 190 or shrugs at one of 438 — and over a bad month
+                          // a chart of solid red stops being information and
+                          // becomes something to avoid looking at. Amber for
+                          // out of target, red kept for the readings the
+                          // clinic itself flagged as needing attention.
+                          final tone =
+                              critical(flag)
+                                  ? T.danger
+                                  : out
+                                  ? T.warning
+                                  : T.primary;
                           return FlDotCirclePainter(
                             radius: out ? 4 : 4.5,
-                            color: out ? T.primaryDeep : Colors.white,
+                            color: out ? tone : Colors.white,
                             strokeWidth: 2,
-                            strokeColor: out ? Colors.white : T.primary,
+                            strokeColor: out ? Colors.white : tone,
                           );
                         },
                       ),
