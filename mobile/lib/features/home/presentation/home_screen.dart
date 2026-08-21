@@ -22,7 +22,7 @@ import '../../medications/presentation/medications_providers.dart';
 import '../domain/care_summary.dart';
 import 'home_providers.dart';
 import 'widgets/home_glucose_chart.dart';
-import 'widgets/home_kit.dart';
+import '../../../shared/widgets/surfaces.dart';
 
 /// The patient's home: their care as the clinic has set it out.
 ///

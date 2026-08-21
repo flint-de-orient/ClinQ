@@ -68,11 +68,11 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
         _syncMedsIfPatient();
       } else if (wasAuthed && !isAuthed) {
         ref.read(pushServiceProvider).stop();
-        // Call signalling is gone with the calling feature — nothing to stop.
-        // Clear a departing patient's dose and check-in reminders from a shared
-        // phone.
-        NotificationService.instance.cancelMedicationReminders();
-        NotificationService.instance.cancelCheckInReminder();
+        // Everything, not just the dose and check-in reminders: a snoozed dose
+        // is scheduled outside the range those sweep, and neither clears the
+        // tray. On a shared phone that difference is the previous patient's
+        // medicine names on someone else's lock screen.
+        NotificationService.instance.cancelAllOnSignOut();
       }
     });
 
@@ -84,7 +84,10 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     // Held to light while the dark palette is finished. The stored preference
     // is still read and written — turning [kDarkThemeEnabled] back on restores
     // whatever each user had chosen, rather than resetting everyone to light.
-    final themeMode = kDarkThemeEnabled ? ref.watch(themeControllerProvider) : ThemeMode.light;
+    final themeMode =
+        kDarkThemeEnabled
+            ? ref.watch(themeControllerProvider)
+            : ThemeMode.light;
 
     return MaterialApp.router(
       title: AppConfig.appName,

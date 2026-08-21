@@ -58,7 +58,8 @@ int medReminderNotificationId(String medId, String hhmm, DateTime day) {
     hash ^= c;
     hash = (hash * 0x01000193) & 0xFFFFFFFF;
   }
-  return NotificationService.medIdBase + (hash % NotificationService.medIdWindow);
+  return NotificationService.medIdBase +
+      (hash % NotificationService.medIdWindow);
 }
 
 /// A stable per-(medicine, slot-time) id for a DAILY-repeating reminder — no
@@ -72,7 +73,8 @@ int medDailyReminderId(String medId, String hhmm) {
     hash ^= c;
     hash = (hash * 0x01000193) & 0xFFFFFFFF;
   }
-  return NotificationService.medIdBase + (hash % NotificationService.medIdWindow);
+  return NotificationService.medIdBase +
+      (hash % NotificationService.medIdWindow);
 }
 
 /// Local notifications: short in-the-moment updates via [show], and repeating
@@ -86,7 +88,8 @@ class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   bool _ready = false;
   int _id = 0;
 
@@ -142,26 +145,28 @@ class NotificationService {
   /// old quiet channel would have gone on chiming once however this code was
   /// written. Alarm usage also means the reminder follows the alarm volume,
   /// which is the one people leave up overnight.
-  static const AndroidNotificationChannel _medsChannel = AndroidNotificationChannel(
-    'clinq_meds_alarm',
-    'Medication alarms',
-    description: 'Rings when it is time to take a medicine',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-    audioAttributesUsage: AudioAttributesUsage.alarm,
-  );
+  static const AndroidNotificationChannel _medsChannel =
+      AndroidNotificationChannel(
+        'clinq_meds_alarm',
+        'Medication alarms',
+        description: 'Rings when it is time to take a medicine',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+      );
 
   /// A deliberately gentle channel — default importance, ordinary sound, no
   /// alarm behaviour — so a nudge to check in never feels like the medication
   /// alarm. Nagging is exactly what makes people mute reminders, and a muted
   /// reminder helps no one.
-  static const AndroidNotificationChannel _checkInChannel = AndroidNotificationChannel(
-    'clinq_checkin',
-    'Check-in reminders',
-    description: 'A gentle nudge to log a glucose reading',
-    importance: Importance.defaultImportance,
-  );
+  static const AndroidNotificationChannel _checkInChannel =
+      AndroidNotificationChannel(
+        'clinq_checkin',
+        'Check-in reminders',
+        description: 'A gentle nudge to log a glucose reading',
+        importance: Importance.defaultImportance,
+      );
 
   /// Safe to call more than once; the first call does the work.
   Future<void> init() async {
@@ -180,14 +185,19 @@ class NotificationService {
         // Stop only needs the notification gone, which the action itself does.
         if (resp.actionId == stopActionId) return;
         final payload = resp.payload;
-        if (payload != null && payload.isNotEmpty) onNotificationTap?.call(payload);
+        if (payload != null && payload.isNotEmpty)
+          onNotificationTap?.call(payload);
       },
       // Action taps while the app is dead arrive in a background isolate;
       // without this handler Stop and Snooze would do nothing outside the app.
       onDidReceiveBackgroundNotificationResponse: medicationActionHandler,
     );
 
-    final android_ = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android_ =
+        _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
     await android_?.createNotificationChannel(_channel);
     await android_?.createNotificationChannel(_medsChannel);
     await android_?.createNotificationChannel(_checkInChannel);
@@ -211,7 +221,11 @@ class NotificationService {
   /// to inexact timing). Safe to call from a "make reminders reliable" prompt.
   Future<bool> ensureAlarmPermissions() async {
     await init();
-    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android =
+        _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
     await android?.requestNotificationsPermission();
     await android?.requestExactAlarmsPermission();
     return await android?.canScheduleExactNotifications() ?? true;
@@ -220,7 +234,11 @@ class NotificationService {
   /// Show a notification now. Keep [title]/[body] short and specific. [payload]
   /// (an FCM data map as JSON) is handed back to [onNotificationTap] on tap, so
   /// the app can open the conversation the notification is about.
-  Future<void> show({required String title, required String body, String? payload}) async {
+  Future<void> show({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
     await init();
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -258,17 +276,23 @@ class NotificationService {
     final details = alarmDetails();
     var armed = 0;
     for (final d in doses) {
-      if (d.id < medIdBase || d.id >= medIdBase + _medIdSpan) continue; // stay in range
+      if (d.id < medIdBase || d.id >= medIdBase + _medIdSpan)
+        continue; // stay in range
       // Anchor the daily repeat at the next occurrence of this dose's clock time,
       // [leadTime] early. `_armDose` repeats it every day, so it keeps firing
       // each morning without the app having to re-arm overnight.
-      var fireAt = _nextInstanceOf(d.when.hour, d.when.minute).subtract(leadTime);
+      var fireAt = _nextInstanceOf(
+        d.when.hour,
+        d.when.minute,
+      ).subtract(leadTime);
       if (!fireAt.isAfter(now)) fireAt = fireAt.add(const Duration(days: 1));
       if (await _armDose(d, fireAt, details)) armed++;
     }
 
     if (doses.isNotEmpty && armed == 0) {
-      debugPrint('medication reminders: armed 0 of ${doses.length} — check notification/exact-alarm permission');
+      debugPrint(
+        'medication reminders: armed 0 of ${doses.length} — check notification/exact-alarm permission',
+      );
     }
     return armed;
   }
@@ -276,8 +300,15 @@ class NotificationService {
   /// Arms one dose, falling back from exact to inexact timing when the device
   /// withholds the exact-alarm permission — a reminder a few minutes off beats
   /// no reminder at all.
-  Future<bool> _armDose(ScheduledDose d, tz.TZDateTime fireAt, NotificationDetails details) async {
-    const modes = [AndroidScheduleMode.exactAllowWhileIdle, AndroidScheduleMode.inexactAllowWhileIdle];
+  Future<bool> _armDose(
+    ScheduledDose d,
+    tz.TZDateTime fireAt,
+    NotificationDetails details,
+  ) async {
+    const modes = [
+      AndroidScheduleMode.exactAllowWhileIdle,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ];
     for (final mode in modes) {
       try {
         await _plugin.zonedSchedule(
@@ -288,7 +319,8 @@ class NotificationService {
           details,
           androidScheduleMode: mode,
           // iOS-only, but a required param; absolute time is what we schedule.
-          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
           // Repeat every day at this clock time — survives reboot (boot receiver)
           // and needs no re-arming, so a morning dose fires every morning.
           matchDateTimeComponents: DateTimeComponents.time,
@@ -298,7 +330,9 @@ class NotificationService {
       } on PlatformException catch (e) {
         // Exact alarms not permitted → retry the same dose inexactly.
         if (mode == AndroidScheduleMode.exactAllowWhileIdle) {
-          debugPrint('exact alarm denied for ${d.name} (${e.code}); falling back to inexact');
+          debugPrint(
+            'exact alarm denied for ${d.name} (${e.code}); falling back to inexact',
+          );
           continue;
         }
         debugPrint('dose alarm failed for ${d.name}: $e');
@@ -329,7 +363,13 @@ class NotificationService {
     final meal = _mealLabel(relationToMeal);
     if (meal != null) bits.add(meal);
     if (time != null && time.isNotEmpty) bits.add('at $time');
-    await _plugin.show(id, 'Time to take $name', bits.join(' · '), alarmDetails(), payload: 'med:${medId ?? ''}');
+    await _plugin.show(
+      id,
+      'Time to take $name',
+      bits.join(' · '),
+      alarmDetails(),
+      payload: 'med:${medId ?? ''}',
+    );
   }
 
   /// Clears every scheduled medication reminder (e.g. on sign-out, so the next
@@ -351,12 +391,19 @@ class NotificationService {
   /// That is the whole trick to reminding without nagging: one pending nudge,
   /// always aimed at the next due date, never a backlog of missed ones. Uses
   /// inexact timing (a nudge, not an alarm) so it needs no exact-alarm grant.
-  Future<void> scheduleCheckInReminder({DateTime? lastReadingAt, int intervalDays = 3, int hour = 10}) async {
+  Future<void> scheduleCheckInReminder({
+    DateTime? lastReadingAt,
+    int intervalDays = 3,
+    int hour = 10,
+  }) async {
     await init();
     await _plugin.cancel(_checkInId);
 
     final now = tz.TZDateTime.now(tz.local);
-    final base = lastReadingAt != null ? tz.TZDateTime.from(lastReadingAt, tz.local) : now;
+    final base =
+        lastReadingAt != null
+            ? tz.TZDateTime.from(lastReadingAt, tz.local)
+            : now;
     final due = base.add(Duration(days: intervalDays < 1 ? 1 : intervalDays));
     var when = tz.TZDateTime(tz.local, due.year, due.month, due.day, hour);
     // Already overdue → the next civilised hour, not this very instant.
@@ -370,7 +417,8 @@ class NotificationService {
         when,
         _checkInDetails(),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         // One-shot on purpose: no matchDateTimeComponents. The next reading
         // re-arms it, and if none comes this fires exactly once, not daily.
       );
@@ -383,6 +431,26 @@ class NotificationService {
   Future<void> cancelCheckInReminder() async {
     await init();
     await _plugin.cancel(_checkInId);
+  }
+
+  /// Everything this device has pending or on screen, gone.
+  ///
+  /// Sign-out used to call [cancelMedicationReminders] and
+  /// [cancelCheckInReminder], which between them missed two things and both
+  /// of them showed a departing patient's medicine names to whoever picked the
+  /// phone up next:
+  ///
+  ///  * a snoozed dose is scheduled from [_snoozeIdBase], outside the range
+  ///    [cancelMedicationReminders] sweeps, so it survived and rang;
+  ///  * neither call touches notifications already sitting in the tray, so a
+  ///    reminder that had fired stayed there, readable from the lock screen.
+  ///
+  /// `cancelAll` is the right instrument here precisely because it is
+  /// indiscriminate. There is no such thing as a notification this device
+  /// should still deliver once nobody is signed in to it.
+  Future<void> cancelAllOnSignOut() async {
+    await init();
+    await _plugin.cancelAll();
   }
 
   static NotificationDetails _checkInDetails() => const NotificationDetails(
@@ -458,7 +526,8 @@ class NotificationService {
         tz.TZDateTime.now(tz.local).add(snoozeFor),
         alarmDetails(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
       );
     } catch (e) {
@@ -484,16 +553,25 @@ class NotificationService {
   /// [scheduleSnoozeFromBackground]: a fresh plugin, no app state, no permission
   /// prompts (there's no activity to attach them to). Uses the same id as the
   /// on-device alarm so the two collapse instead of double-reminding.
-  static Future<void> showMedicationReminderFromBackground(Map<String, dynamic> data) async {
+  static Future<void> showMedicationReminderFromBackground(
+    Map<String, dynamic> data,
+  ) async {
     final id = int.tryParse(data['notifId']?.toString() ?? '');
     if (id == null) return;
     final plugin = FlutterLocalNotificationsPlugin();
     // The alarm channel is created on first app run and persists system-side;
     // recreating it here is idempotent and covers a fresh install edge case.
-    final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android =
+        plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
     await android?.createNotificationChannel(_medsChannel);
 
-    final name = (data['name']?.toString().isNotEmpty ?? false) ? data['name'].toString() : 'your medicine';
+    final name =
+        (data['name']?.toString().isNotEmpty ?? false)
+            ? data['name'].toString()
+            : 'your medicine';
     final bits = <String>[];
     final dose = data['dose']?.toString();
     if (dose != null && dose.isNotEmpty) bits.add(dose);
@@ -503,7 +581,13 @@ class NotificationService {
     if (time != null && time.isNotEmpty) bits.add('at $time');
 
     try {
-      await plugin.show(id, 'Time to take $name', bits.join(' · '), alarmDetails(), payload: 'med:${data['medicationId'] ?? ''}');
+      await plugin.show(
+        id,
+        'Time to take $name',
+        bits.join(' · '),
+        alarmDetails(),
+        payload: 'med:${data['medicationId'] ?? ''}',
+      );
     } catch (e) {
       debugPrint('background med reminder show failed: $e');
     }

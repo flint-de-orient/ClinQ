@@ -13,7 +13,8 @@ class ReminderReliability {
   /// e.g. iOS) — in which case there is nothing to prompt for.
   static Future<bool> isIgnoringBatteryOptimizations() async {
     try {
-      return await _ch.invokeMethod<bool>('isIgnoringBatteryOptimizations') ?? true;
+      return await _ch.invokeMethod<bool>('isIgnoringBatteryOptimizations') ??
+          true;
     } catch (_) {
       return true;
     }

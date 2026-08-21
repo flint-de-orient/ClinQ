@@ -1,4 +1,5 @@
-/// The three surfaces the patient's home is built from, and nothing else.
+/// The three surfaces every patient-facing screen is built from, and nothing
+/// else.
 ///
 /// The screen's worst habit was nesting: page → card → card → card, each with
 /// its own border, until every individual fact sat in a box and none of the
@@ -18,7 +19,7 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/tokens.dart';
+import '../../core/theme/tokens.dart';
 
 /// Level 2: a main section of the page.
 class SectionCard extends StatelessWidget {

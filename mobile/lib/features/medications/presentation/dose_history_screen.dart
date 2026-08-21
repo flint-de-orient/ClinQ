@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/surfaces.dart';
+import '../data/medications_repository.dart';
 import '../domain/medication.dart';
 import 'medications_providers.dart';
 
@@ -95,7 +98,7 @@ class _DoseHistoryScreenState extends ConsumerState<DoseHistoryScreen> {
                       ],
                     );
                   }
-                  return _HistoryList(doses: doses);
+                  return _HistoryList(days: _days, doses: doses);
                 },
               ),
             ),
@@ -107,8 +110,11 @@ class _DoseHistoryScreenState extends ConsumerState<DoseHistoryScreen> {
 }
 
 class _HistoryList extends StatelessWidget {
-  const _HistoryList({required this.doses});
+  const _HistoryList({required this.doses, required this.days});
   final List<DoseHistoryEntry> doses;
+
+  /// Passed down so a recovered dose refreshes the window it was shown in.
+  final int days;
 
   static String _dayLabel(DateTime at) {
     final now = DateTime.now();
@@ -177,16 +183,68 @@ class _HistoryList extends StatelessWidget {
               );
             },
           ),
-          for (final dose in byDay[key]!) _DoseRow(dose: dose),
+          for (final dose in byDay[key]!) _DoseRow(dose: dose, days: days),
         ],
       ],
     );
   }
 }
 
-class _DoseRow extends StatelessWidget {
-  const _DoseRow({required this.dose});
+class _DoseRow extends ConsumerStatefulWidget {
+  const _DoseRow({required this.dose, required this.days});
+
   final DoseHistoryEntry dose;
+
+  /// The window currently on screen, so the right family member is refreshed
+  /// after a dose is recovered.
+  final int days;
+
+  @override
+  ConsumerState<_DoseRow> createState() => _DoseRowState();
+}
+
+class _DoseRowState extends ConsumerState<_DoseRow> {
+  bool _saving = false;
+
+  DoseHistoryEntry get dose => widget.dose;
+
+  /// Records a missed dose as taken, late.
+  ///
+  /// A missed dose used to be a red word and nothing else — the screen told a
+  /// patient they had failed and offered no way to put it right, which is both
+  /// discouraging and inaccurate: people do take a tablet an hour late and
+  /// then have no way to say so. The adherence figure the doctor reads is
+  /// built from these records, so leaving no route to correct one makes that
+  /// figure wrong as well as the screen unkind.
+  ///
+  /// It writes against the dose's own `scheduledFor`, so the record stays
+  /// attached to the slot it belongs to rather than to now.
+  Future<void> _markTaken() async {
+    final at = dose.scheduledFor;
+    if (at == null || _saving) return;
+    setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(medicationsRepositoryProvider)
+          .logDose(
+            medicationId: dose.medicationId,
+            scheduledFor: at,
+            status: 'taken',
+          );
+      if (!mounted) return;
+      ref.invalidate(doseHistoryProvider(widget.days));
+      // Today's schedule and the reminders built from it both read this, so a
+      // dose recovered here stops the slot nagging on the Medicines tab.
+      ref.invalidate(todayScheduleProvider);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not update this dose')),
+      );
+    }
+  }
 
   ({Color color, IconData icon, String label}) get _status => switch (dose
       .status) {
@@ -205,7 +263,6 @@ class _DoseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final s = _status;
     final time =
         dose.scheduledFor != null
@@ -218,56 +275,83 @@ class _DoseRow extends StatelessWidget {
         'took ${DateFormat('h:mm a').format(dose.takenAt!)}',
     ].whereType<String>().join('  ·  ');
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          Icon(s.icon, color: s.color, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    // Only a missed dose can be recovered, and only one with a slot to attach
+    // the record to. A skipped dose was a decision, not an oversight.
+    final recoverable = dose.status == 'missed' && dose.scheduledFor != null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: T.s3),
+      child: SectionCard(
+        padding: const EdgeInsets.all(T.s4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               children: [
-                Text(
-                  dose.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                Icon(s.icon, color: s.color, size: 22),
+                const SizedBox(width: T.s3),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dose.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: T.small.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        sub,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: T.label.copyWith(
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0,
+                          color: T.inkMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 0),
-                Text(
-                  sub,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                const SizedBox(width: T.s2),
+                StatusPill(
+                  label: s.label,
+                  status: switch (dose.status) {
+                    'taken' => Status.ok,
+                    'skipped' => Status.watch,
+                    _ => Status.alert,
+                  },
                 ),
               ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: s.color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              s.label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: s.color,
+            if (recoverable) ...[
+              const SizedBox(height: T.s3),
+              SizedBox(
+                height: 40,
+                child: OutlinedButton.icon(
+                  onPressed: _saving ? null : _markTaken,
+                  icon:
+                      _saving
+                          ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Icon(Icons.check_rounded, size: 18),
+                  label: Text(_saving ? 'Saving…' : 'I took this one'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: T.primary,
+                    side: const BorderSide(color: T.line),
+                    textStyle: T.small.copyWith(fontWeight: FontWeight.w700),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(T.rControl),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }

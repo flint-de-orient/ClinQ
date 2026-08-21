@@ -7,8 +7,9 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/surfaces.dart';
 import '../data/prescriptions_repository.dart';
 import '../domain/patient_prescription.dart';
 
@@ -117,93 +118,79 @@ class _PrescriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final date =
         rx.issuedOn != null
             ? DateFormat('d MMM yyyy').format(rx.issuedOn!)
-            : '—';
-    final dx =
-        rx.diagnosis.isNotEmpty ? rx.diagnosis.join(', ') : 'Prescription';
+            : 'Undated';
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.7),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.accentSoftOn(context),
-                borderRadius: BorderRadius.circular(12),
+    // Date, doctor, and how many medicines. The diagnosis list used to be
+    // printed here and it is the one thing that never fits: a real one reads
+    // "Type 2 Diabetes Mellitus, Obesity, Dyslipidaemia", which filled the
+    // card and still ended in an ellipsis. A preview that truncates its most
+    // clinical line is worse than one that does not carry it — the detail
+    // sheet, one tap away, has room to print it whole.
+    return Padding(
+      padding: const EdgeInsets.only(bottom: T.s3),
+      child: SectionCard(
+        padding: EdgeInsets.zero,
+        child: InnerTile(
+          padding: const EdgeInsets.all(T.s4),
+          tone: Colors.transparent,
+          onTap: onTap,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: T.primaryTint,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.description_outlined,
+                  size: 20,
+                  color: T.primary,
+                ),
               ),
-              child: Icon(
-                Icons.description_rounded,
-                size: 20,
-                color: AppColors.accentOn(context),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          date,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                      if (rx.items.isNotEmpty)
-                        Text(
-                          '${rx.items.length} medicine${rx.items.length == 1 ? '' : 's'}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    dx,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (rx.doctorName != null) ...[
-                    const SizedBox(height: 0),
+              const SizedBox(width: T.s3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      'by ${rx.doctorName}',
+                      date,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: scheme.onSurfaceVariant,
-                      ),
+                      style: T.bodyStrong.copyWith(fontWeight: FontWeight.w700),
                     ),
+                    if (rx.doctorName != null)
+                      Text(
+                        rx.doctorName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: T.small.copyWith(color: T.inkMuted),
+                      ),
                   ],
-                ],
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
-          ],
+              if (rx.items.isNotEmpty) ...[
+                const SizedBox(width: T.s2),
+                StatusPill(
+                  label:
+                      '${rx.items.length} medicine'
+                      '${rx.items.length == 1 ? '' : 's'}',
+                  status: Status.neutral,
+                ),
+              ],
+              const SizedBox(width: T.s1),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: T.inkFaint,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -330,9 +317,15 @@ class _PrescriptionDetailSheetState
                     child: FilledButton.icon(
                       onPressed: _busy ? null : _open,
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        minimumSize: const Size.fromHeight(T.tap),
+                        backgroundColor: T.primary,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(46),
+                        textStyle: T.small.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(T.rControl),
+                        ),
                       ),
                       icon:
                           _busy
@@ -351,15 +344,28 @@ class _PrescriptionDetailSheetState
                       label: const Text('Open PDF'),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: T.s3),
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _busy ? null : _share,
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(46),
+                        // Same height, same radius, same type as the primary,
+                        // so the pair reads as one control split in two rather
+                        // than as a button beside a link. "Share / Save" was
+                        // also two words for one action — the OS sheet is
+                        // where saving is chosen, not here.
+                        minimumSize: const Size.fromHeight(T.tap),
+                        foregroundColor: T.primary,
+                        side: const BorderSide(color: T.line),
+                        textStyle: T.small.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(T.rControl),
+                        ),
                       ),
                       icon: const Icon(Icons.ios_share_rounded, size: 19),
-                      label: const Text('Share / Save'),
+                      label: const Text('Share'),
                     ),
                   ),
                 ],

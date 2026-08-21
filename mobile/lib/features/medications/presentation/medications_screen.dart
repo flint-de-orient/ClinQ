@@ -12,7 +12,9 @@ import '../../../shared/providers/preferences_provider.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/empty_view.dart';
 import '../../../shared/widgets/error_view.dart';
-import '../../../shared/widgets/hero_band.dart';
+import '../../../core/theme/tokens.dart';
+import '../../../shared/widgets/health_ring.dart';
+import '../../../shared/widgets/surfaces.dart';
 import '../data/medications_repository.dart';
 import '../domain/medication.dart';
 import 'medications_providers.dart';
@@ -162,16 +164,12 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
       // screen and the navigation bar alike. An opaque page here left a
       // visible band of ground around the pill and nowhere else.
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _onScan(context, ref),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.document_scanner_outlined),
-        label: const Text(
-          'Scan Prescription',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-      ),
+      // No floating button. An extended FAB over a scrolling list means every
+      // bottom-anchored thing on the screen becomes a special case, and here it
+      // sat on top of the last prescription card and the day's final dose row.
+      // Scanning is the primary action, so it gets a full-width button at the
+      // top of the content instead — more prominent than the FAB was, and it
+      // covers nothing.
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -205,14 +203,27 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
                     // Zero padding so the band reaches both edges; the rest
                     // is padded on its own. See HeroBand.
                     return ListView(
-                      padding: const EdgeInsets.only(bottom: 110),
+                      padding: const EdgeInsets.only(bottom: T.s8),
                       children: [
-                        _DoseHero(schedule: scheduleAsync.valueOrNull),
-                        const SizedBox(height: AppSpacing.md),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
+                          padding: const EdgeInsets.fromLTRB(
+                            T.s6,
+                            T.s2,
+                            T.s6,
+                            0,
                           ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _DoseRing(schedule: scheduleAsync.valueOrNull),
+                              const SizedBox(height: T.s4),
+                              _ScanAction(onTap: () => _onScan(context, ref)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: T.s6),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: T.s6),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
@@ -246,20 +257,20 @@ class _MedicationsScreenState extends ConsumerState<MedicationsScreen>
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: AppSpacing.lg),
+                              const SizedBox(height: T.s8),
 
                               const _MicroLabel('Reminder windows'),
-                              const SizedBox(height: AppSpacing.sm),
+                              const SizedBox(height: T.s3),
                               _ReminderWindows(
                                 meals: meals,
                                 onTap:
                                     () =>
                                         context.push('/medications/reminders'),
                               ),
-                              const SizedBox(height: AppSpacing.lg),
+                              const SizedBox(height: T.s8),
 
                               const _MicroLabel('Active prescriptions'),
-                              const SizedBox(height: AppSpacing.sm),
+                              const SizedBox(height: T.s3),
                               if (active.isEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -345,13 +356,9 @@ class _BrandHeader extends StatelessWidget {
         AppSpacing.sm,
         AppSpacing.md,
       ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
+      // No rule underneath. The cards below carry their own edges, and a hard
+      // line across the top of a page of soft-edged cards is the one element
+      // that makes the whole screen look like a form.
       child: Row(
         children: [
           Image.asset(
@@ -391,10 +398,6 @@ class _BrandHeader extends StatelessWidget {
 
 /// One of the two destinations above the schedule: an icon, what it is, and
 /// what you will find there.
-///
-/// Stacked in a column and given the full width, these read as two more rows
-/// in a screen already made of rows. Paired, they read as a choice — which is
-/// what they are.
 class _HubCard extends StatelessWidget {
   const _HubCard({
     required this.icon,
@@ -410,77 +413,56 @@ class _HubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.55),
+    return InnerTile(
+      padding: const EdgeInsets.all(T.s4),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: T.primaryTint,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: T.primary),
+          ),
+          const SizedBox(height: T.s3),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: T.bodyStrong.copyWith(fontWeight: FontWeight.w700),
+          ),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: T.label.copyWith(
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
+              color: T.inkMuted,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.accentSoftOn(context),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, size: 20, color: AppColors.accentOn(context)),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 0),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
 }
 
+/// The heading above a group of cards. Sentence case at reading size rather
+/// than tracked-out capitals: the all-caps micro label is a device for a label
+/// nobody needs to read, and these name the three things the tab is for.
 class _MicroLabel extends StatelessWidget {
   const _MicroLabel(this.text);
 
   final String text;
 
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Text(
-      text.toUpperCase(),
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.9,
-        color: scheme.onSurfaceVariant,
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      Text(text, style: T.title.copyWith(color: T.ink));
 }
 
 // ---- Reminder windows -----------------------------------------------------
@@ -493,30 +475,40 @@ class _ReminderWindows extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final windows = <({IconData icon, String label, String time})>[
-      (
-        icon: Icons.wb_twilight_rounded,
-        label: 'Breakfast',
-        time: meals?.breakfast ?? '—',
-      ),
-      (
-        icon: Icons.wb_sunny_outlined,
-        label: 'Lunch',
-        time: meals?.lunch ?? '—',
-      ),
-      (
-        icon: Icons.nightlight_round,
-        label: 'Dinner',
-        time: meals?.dinner ?? '—',
-      ),
-    ];
+    // Tints kept to about 6% so they read as a time of day rather than as a
+    // status. Anything stronger and three coloured tiles start competing with
+    // the alerts elsewhere on the screen, which do mean something.
+    final windows =
+        <({IconData icon, String label, String time, Color tint, Color tone})>[
+          (
+            icon: Icons.wb_twilight_rounded,
+            label: 'Breakfast',
+            time: meals?.breakfast ?? '—',
+            tint: const Color(0xFFFDF4E7),
+            tone: const Color(0xFFB4761B),
+          ),
+          (
+            icon: Icons.wb_sunny_outlined,
+            label: 'Lunch',
+            time: meals?.lunch ?? '—',
+            tint: const Color(0xFFEAF4FE),
+            tone: const Color(0xFF1B6FB4),
+          ),
+          (
+            icon: Icons.nightlight_round,
+            label: 'Dinner',
+            time: meals?.dinner ?? '—',
+            tint: const Color(0xFFEDEDFB),
+            tone: const Color(0xFF4B4BA8),
+          ),
+        ];
 
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < windows.length; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpacing.sm),
+            if (i > 0) const SizedBox(width: T.s3),
             Expanded(child: _WindowCard(window: windows[i], onTap: onTap)),
           ],
         ],
@@ -525,51 +517,42 @@ class _ReminderWindows extends StatelessWidget {
   }
 }
 
+/// One reminder window.
+///
+/// The three were identical but for their icon, so a patient checking "when
+/// does the evening one fire" had to read all three. Each now carries the
+/// light of its own time of day — warm for breakfast, bright for midday, cool
+/// for night — which is recognisable before the words are.
 class _WindowCard extends StatelessWidget {
   const _WindowCard({required this.window, required this.onTap});
 
-  final ({IconData icon, String label, String time}) window;
+  final ({IconData icon, String label, String time, Color tint, Color tone})
+  window;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: scheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.md,
-            horizontal: AppSpacing.sm,
+    return InnerTile(
+      padding: const EdgeInsets.symmetric(vertical: T.s4, horizontal: T.s2),
+      tone: window.tint,
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(window.icon, size: 24, color: window.tone),
+          const SizedBox(height: T.s2),
+          Text(
+            window.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: T.small.copyWith(fontWeight: FontWeight.w700),
           ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.7),
-            ),
+          Text(
+            window.time,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: T.small.copyWith(color: T.inkMuted),
           ),
-          child: Column(
-            children: [
-              Icon(window.icon, size: 24, color: AppColors.accentOn(context)),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                window.label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 0),
-              Text(
-                window.time,
-                style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -583,12 +566,20 @@ class _PrescriptionCard extends StatelessWidget {
   final Medication medication;
   final ({String breakfast, String lunch, String dinner})? meals;
 
-  /// Splits "500 mg" into the number and its unit, so the amount can carry the
-  /// weight and the unit sit quietly beside it.
+  /// Splits "500 mg" into the number and its unit, so the amount can carry
+  /// the weight and the unit sit quietly beside it.
+  ///
+  /// A combination strength stays whole. "500/50" is one dose of a two-drug
+  /// tablet — the old pattern took the leading number and left "/50" behind as
+  /// the unit, so the card rendered "500 /50", which reads as a count of
+  /// tablets remaining rather than as a strength.
   static (String, String) _splitStrength(String raw) {
-    final match = RegExp(r'^\s*([\d.]+)\s*(.*)$').firstMatch(raw);
-    if (match == null) return (raw, '');
-    return (match.group(1) ?? raw, (match.group(2) ?? '').trim());
+    final match = RegExp(
+      r'^\s*([\d.]+(?:\s*/\s*[\d.]+)*)\s*(.*)$',
+    ).firstMatch(raw);
+    if (match == null) return (raw.trim(), '');
+    final amount = (match.group(1) ?? raw).replaceAll(RegExp(r'\s*/\s*'), '/');
+    return (amount, (match.group(2) ?? '').trim());
   }
 
   /// Which meal window a dose time falls closest to. Uses the patient's own
@@ -654,96 +645,35 @@ class _PrescriptionCard extends StatelessWidget {
     final (amount, unit) = _splitStrength(medication.strength);
     final schedule = _schedule();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      medication.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        height: 1.2,
-                      ),
-                    ),
-                    // The doctor's own note about this medicine. No invented
-                    // "what it's for" line: the record does not hold one, and a
-                    // guessed indication is a clinical claim.
-                    if (medication.instructions?.isNotEmpty == true) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        medication.instructions!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.accentSoftOn(context),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'ACTIVE',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: AppColors.accentOn(context),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Divider(
-            height: 1,
-            color: scheme.outlineVariant.withValues(alpha: 0.7),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              if (amount.isNotEmpty)
+    return Padding(
+      padding: const EdgeInsets.only(bottom: T.s3),
+      child: SectionCard(
+        padding: const EdgeInsets.all(T.s4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        amount,
-                        style: TextStyle(
-                          fontSize: 32,
+                        medication.name,
+                        style: const TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.accentOn(context),
+                          height: 1.2,
                         ),
                       ),
-                      if (unit.isNotEmpty) ...[
-                        const SizedBox(width: 4),
+                      // The doctor's own note about this medicine. No invented
+                      // "what it's for" line: the record does not hold one, and a
+                      // guessed indication is a clinical claim.
+                      if (medication.instructions?.isNotEmpty == true) ...[
+                        const SizedBox(height: 4),
                         Text(
-                          unit,
+                          medication.instructions!,
                           style: TextStyle(
                             fontSize: 14,
                             color: scheme.onSurfaceVariant,
@@ -752,49 +682,90 @@ class _PrescriptionCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                )
-              else
-                const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
                 ),
-                decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHigh.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(schedule.icon, size: 18, color: scheme.onSurface),
-                    const SizedBox(width: 8),
-                    Text(
-                      schedule.label,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                const SizedBox(width: AppSpacing.sm),
+                const StatusPill(label: 'Active', status: Status.ok),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Divider(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                if (amount.isNotEmpty)
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          amount,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.accentOn(context),
+                          ),
+                        ),
+                        if (unit.isNotEmpty) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            unit,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  )
+                else
+                  const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(schedule.icon, size: 18, color: scheme.onSurface),
+                      const SizedBox(width: 8),
+                      Text(
+                        schedule.label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// The Medicines band: how much of today is already done.
+/// How much of today is already done, as a ring.
 ///
-/// The tab used to open with the words "Medications" and a sentence explaining
-/// what the tab was for — a heading that told a returning patient nothing they
-/// did not already know. What they actually come here to find out is whether
-/// they are behind, so that is the number.
-class _DoseHero extends StatelessWidget {
-  const _DoseHero({required this.schedule});
+/// This was a figure and a linear bar. A bar that fills left to right is a
+/// download; a ring that closes is a day completed, and closing it is the only
+/// reward this screen has to offer for taking a tablet on time. The number
+/// stays in the middle because "2 of 3" is the fact, and the ring is how far
+/// off it is at a glance.
+class _DoseRing extends StatelessWidget {
+  const _DoseRing({required this.schedule});
 
   final TodaySchedule? schedule;
 
@@ -806,47 +777,127 @@ class _DoseHero extends StatelessWidget {
     final missed = slots.where((s) => s.status == 'missed').length;
     final left = slots.where((s) => s.status == 'pending').length;
 
-    final (tone, label) = switch (0) {
-      _ when total == 0 => (AppColors.primary, 'Nothing scheduled'),
-      _ when missed > 0 => (AppColors.danger, '$missed missed'),
-      _ when left == 0 => (AppColors.success, 'All done'),
-      _ => (AppColors.warning, '$left to go'),
+    final (status, label) = switch (0) {
+      _ when missed > 0 => (Status.alert, '$missed missed'),
+      _ when left == 0 => (Status.ok, 'All done'),
+      _ => (Status.watch, '$left to go'),
     };
 
-    return HeroBand(
-      eyebrow: DateFormat('EEEE, d MMMM').format(DateTime.now()),
-      title: 'Today',
-      figure:
-          total == 0
-              ? null
-              : HeroFigure(
-                value: '$taken/$total',
-                unit: total == 1 ? 'dose' : 'doses',
-                statusLabel: label,
-                statusColor: tone,
-                caption: 'Taken so far today',
+    final today = DateFormat('EEEE, d MMMM').format(DateTime.now());
+
+    if (total == 0) {
+      return SectionCard(
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: T.primaryTint,
+                shape: BoxShape.circle,
               ),
-      footer:
-          total == 0
-              ? null
-              : HeroProgress(
-                fraction: taken / total,
-                label:
-                    left == 0
-                        ? 'Every dose accounted for'
-                        : 'Next dose ${slots.firstWhere((s) => s.status == 'pending', orElse: () => slots.first).time}',
-                tone: tone,
+              child: const Icon(
+                Icons.event_available_rounded,
+                size: 22,
+                color: T.primary,
               ),
-      child:
-          total == 0
-              ? Text(
-                'No doses scheduled for today.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: T.s4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Nothing scheduled',
+                    style: T.title.copyWith(color: T.ink),
+                  ),
+                  Text(today, style: T.small.copyWith(color: T.inkMuted)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final next = slots.where((s) => s.status == 'pending').firstOrNull;
+
+    return SectionCard(
+      child: Row(
+        children: [
+          HealthRing(
+            value: taken / total * 100,
+            color: status.tone,
+            size: 92,
+            strokeWidth: 10,
+            centerLabel: '$taken/$total',
+            centerSubLabel: total == 1 ? 'dose' : 'doses',
+          ),
+          const SizedBox(width: T.s5),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Today', style: T.title.copyWith(color: T.ink)),
+                Text(
+                  today,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: T.small.copyWith(color: T.inkMuted),
                 ),
-              )
-              : null,
+                const SizedBox(height: T.s3),
+                StatusPill(
+                  label: label,
+                  status: status,
+                  icon:
+                      status == Status.ok
+                          ? Icons.check_rounded
+                          : status == Status.alert
+                          ? Icons.warning_amber_rounded
+                          : Icons.schedule_rounded,
+                ),
+                if (next != null) ...[
+                  const SizedBox(height: T.s2),
+                  Text(
+                    'Next at ${next.time}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: T.small.copyWith(color: T.inkMuted),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
+
+/// Scanning a prescription, as a full-width button rather than a thing
+/// floating over the list. See the note where the FAB used to be.
+class _ScanAction extends StatelessWidget {
+  const _ScanAction({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: T.hControl,
+    child: FilledButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.document_scanner_outlined, size: 20),
+      label: const Text('Scan prescription'),
+      style: FilledButton.styleFrom(
+        backgroundColor: T.primary,
+        foregroundColor: Colors.white,
+        textStyle: T.bodyStrong.copyWith(fontWeight: FontWeight.w700),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(T.rControl),
+        ),
+      ),
+    ),
+  );
 }

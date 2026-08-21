@@ -91,13 +91,18 @@ class PushService {
 
     // A tap that brought the app back from the background.
     _onOpened?.cancel();
-    _onOpened = FirebaseMessaging.onMessageOpenedApp.listen((m) => _routeFromData(m.data));
+    _onOpened = FirebaseMessaging.onMessageOpenedApp.listen(
+      (m) => _routeFromData(m.data),
+    );
 
     // A tap that cold-started the app from a terminated state. Delayed a beat so
     // the post-login route settles before the conversation is pushed on top.
     FirebaseMessaging.instance.getInitialMessage().then((m) {
       if (m != null) {
-        Future.delayed(const Duration(milliseconds: 700), () => _routeFromData(m.data));
+        Future.delayed(
+          const Duration(milliseconds: 700),
+          () => _routeFromData(m.data),
+        );
       }
     });
   }
@@ -148,7 +153,9 @@ class PushService {
 
   Future<void> _register(String token) async {
     try {
-      await _ref.read(apiClientProvider).postJson('/auth/device-token', body: {'token': token});
+      await _ref
+          .read(apiClientProvider)
+          .postJson('/auth/device-token', body: {'token': token});
     } catch (e) {
       // Not fatal: the next launch re-registers. Worth logging, because a
       // patient whose token never registers simply stops receiving alerts and
@@ -167,14 +174,33 @@ class PushService {
     await _onOpened?.cancel();
     _onOpened = null;
     NotificationService.instance.onNotificationTap = null;
+
+    // Two separate attempts, deliberately.
+    //
+    // These were one try block, and the server call is the one that fails:
+    // by the time sign-out reaches here the credentials it needs are already
+    // cleared, so the DELETE 401s, throws, and took `deleteToken` down with
+    // it. The device therefore kept a live FCM token and the server kept
+    // pushing dose reminders to a signed-out phone — which is exactly the
+    // symptom, and why local cancellation alone never fixed it.
+    //
+    // Deleting the token locally is the half that actually stops delivery, so
+    // it must not depend on the half that talks to a server we may no longer
+    // be authorised to call.
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        await _ref.read(apiClientProvider).delete('/auth/device-token', body: {'token': token});
+        await _ref
+            .read(apiClientProvider)
+            .delete('/auth/device-token', body: {'token': token});
       }
+    } catch (e) {
+      debugPrint('push: could not tell the server to detach this device — $e');
+    }
+    try {
       await FirebaseMessaging.instance.deleteToken();
     } catch (e) {
-      debugPrint('push: could not detach device token — $e');
+      debugPrint('push: could not delete the local FCM token — $e');
     }
   }
 }
