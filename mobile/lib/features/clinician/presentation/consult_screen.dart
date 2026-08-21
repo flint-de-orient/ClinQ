@@ -21,6 +21,7 @@ import '../domain/lab_catalog.dart';
 import 'clinician_providers.dart';
 import '../../medications/domain/strength.dart';
 import '../../../shared/widgets/strength_field.dart';
+import '../data/medicine_brand_repository.dart';
 
 /// The consultation flow: Vitals → Diagnosis → Clinical advice, ending in a
 /// generated prescription. Vitals are recorded to the patient's history and the
@@ -107,6 +108,95 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
 
   bool get _hasMedicine => _meds.any((m) => m.name.text.trim().isNotEmpty);
 
+  /// Checks each medicine's strength against the recorded composition of its
+  /// brand, and asks about any that disagree.
+  ///
+  /// Returns false when the doctor chose to go back and change something.
+  /// Brands the clinic has not recorded raise nothing at all — an unknown
+  /// product is unknown, and inventing a warning about it would teach the
+  /// prescriber to dismiss warnings.
+  Future<bool> _confirmStrengths() async {
+    final repo = ref.read(medicineBrandRepositoryProvider);
+    final mismatches = <({String name, String typed, String expected, String composition})>[];
+
+    for (final m in _meds) {
+      final name = m.name.text.trim();
+      final typed = m.strength.text.trim();
+      if (name.isEmpty || typed.isEmpty) continue;
+
+      MedicineBrand? brand;
+      try {
+        brand = await repo.lookup(name);
+      } catch (_) {
+        // A lookup that fails must not block prescribing. The check is an aid,
+        // and an aid that stops the clinic working is worse than no aid.
+        continue;
+      }
+      if (brand == null || brand.strengthLabel.isEmpty) continue;
+
+      // Compare the figures only, so "500/1" and "500/1 mg" agree.
+      String figures(String v) => v.replaceAll(RegExp(r'[^0-9./]'), '');
+      if (figures(typed) == figures(brand.strengthWithUnit)) continue;
+
+      mismatches.add((
+        name: name,
+        typed: typed,
+        expected: brand.strengthWithUnit,
+        composition: brand.compositionLabel,
+      ));
+    }
+
+    if (mismatches.isEmpty || !mounted) return true;
+
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          mismatches.length == 1 ? 'Check this strength' : 'Check these strengths',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final m in mismatches) ...[
+              Text(m.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                'You wrote ${m.typed}. Our records have this as ${m.expected} '
+                '(${m.composition}).',
+                style: const TextStyle(fontSize: 14, height: 1.4),
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            Text(
+              'Issue it as written, or go back and change it.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Go back'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Issue as written'),
+          ),
+        ],
+      ),
+    );
+
+    if (proceed != true) {
+      if (mounted) setState(() => _step = 2);
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _generate() async {
     // Bad vitals (out of range, or a diastolic ≥ systolic) block generation and
     // send the doctor back to the Vitals step to fix them.
@@ -124,6 +214,17 @@ class _ConsultScreenState extends ConsumerState<ConsultScreen> {
       });
       return;
     }
+    // Every medicine checked against the clinic's own brand list before the
+    // prescription is issued. This is what "Gluconorm G1 500/50" needed: the
+    // brand is metformin 500 with glimepiride 1, so its strength is 500/1, and
+    // 500/50 belongs to a different product entirely.
+    //
+    // A warning, never a correction. The doctor prescribes; if they mean to
+    // override the list they say so once and it is issued exactly as written.
+    // Software that silently rewrites a dose is worse than software that shows
+    // an inconsistency, because the inconsistency is visible and gets caught.
+    if (!await _confirmStrengths()) return;
+
     // A prescription without medicines is legitimate — a visit can end in tests,
     // diet advice or reassurance and nothing to dispense. It is also the shape a
     // half-finished form takes, so it is confirmed rather than blocked: the
@@ -1302,13 +1403,18 @@ class _MedCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: TextField(
+                // Suggests from the clinic's own brand list and fills the
+                // strength when one is picked, so the common case needs no
+                // typing at all — and the strength that arrives is the one the
+                // product actually has.
+                child: _BrandField(
                   controller: draft.name,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: InputDecoration(
-                    labelText: 'Medicine ${index + 1}',
-                    isDense: true,
-                  ),
+                  label: 'Medicine ${index + 1}',
+                  onBrandPicked: (b) {
+                    if (b.strengthWithUnit.isNotEmpty) {
+                      draft.strength.text = b.strengthWithUnit;
+                    }
+                  },
                 ),
               ),
               if (onRemove != null)
@@ -1606,6 +1712,89 @@ class _SelectChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The medicine name, with suggestions from the clinic's brand list.
+///
+/// Typing is still free — a product the list does not carry is prescribed
+/// exactly as written, because a prescriber who has to fight an autocomplete
+/// stops using it. Picking a suggestion fills the strength, which is the whole
+/// value: the figure comes from a recorded composition rather than memory.
+class _BrandField extends ConsumerWidget {
+  const _BrandField({
+    required this.controller,
+    required this.label,
+    required this.onBrandPicked,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final ValueChanged<MedicineBrand> onBrandPicked;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return RawAutocomplete<MedicineBrand>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
+      optionsBuilder: (value) async {
+        final q = value.text.trim();
+        if (q.length < 2) return const Iterable<MedicineBrand>.empty();
+        try {
+          return await ref.read(medicineBrandRepositoryProvider).search(q);
+        } catch (_) {
+          // No suggestions is a fine outcome; a red error over a prescribing
+          // form because a lookup timed out is not.
+          return const Iterable<MedicineBrand>.empty();
+        }
+      },
+      displayStringForOption: (b) => b.name,
+      onSelected: onBrandPicked,
+      fieldViewBuilder: (context, textController, focusNode, onSubmit) => TextField(
+        controller: textController,
+        focusNode: focusNode,
+        textCapitalization: TextCapitalization.words,
+        onSubmitted: (_) => onSubmit(),
+        decoration: InputDecoration(labelText: label, isDense: true),
+      ),
+      optionsViewBuilder: (context, onSelected, options) {
+        final scheme = Theme.of(context).colorScheme;
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 3,
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 260, maxWidth: 420),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: options.length,
+                itemBuilder: (context, i) {
+                  final b = options.elementAt(i);
+                  return ListTile(
+                    dense: true,
+                    title: Text(
+                      b.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    // What is in it, so the right product is picked from a list
+                    // of brands that differ by one character.
+                    subtitle: Text(
+                      b.compositionLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                    ),
+                    onTap: () => onSelected(b),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

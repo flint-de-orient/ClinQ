@@ -10,6 +10,7 @@ import trackingRoutes from './tracking.js';
 import medicationRoutes from './medications.js';
 import foodLogRoutes from './foodlog.js';
 import labTestRoutes from './labtests.js';
+import medicineBrandRoutes from './medicineBrands.js';
 import careRoutes from './care.js';
 import appointmentRoutes from './appointments.js';
 import clinicRoutes from './clinics.js';
@@ -72,6 +73,8 @@ router.use('/messages', messageRoutes);
 router.use('/doctor', doctorRoutes);
 router.use('/dietician', dieticianRoutes);
 router.use('/feedback', feedbackRoutes);
+// Prescribing aid: brand -> composition, for autocomplete and the strength check.
+router.use('/medicine-brands', medicineBrandRoutes);
 router.use('/uploads', uploadRoutes);
 
 // Patient-scoped clinical data. `:patientId` is 'me' for patients, or a real

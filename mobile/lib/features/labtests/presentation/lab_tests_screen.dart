@@ -33,14 +33,21 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
   final _picker = ImagePicker();
   String? _uploading;
 
+  /// Upload against a test the doctor advised: source, then send.
+  ///
+  /// One sheet, because the test is already known — this is the row's own
+  /// Upload button, not the general one.
   Future<void> _upload(String testName) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final source = await _pickSource();
-    if (source == null) return;
+    final picked = await _pickFile();
+    if (picked == null) return;
+    await _send(testName: testName, path: picked.path, filename: picked.filename);
+  }
 
-    // Path and display name, whichever way it was chosen.
-    String path;
-    String filename;
+  /// Choose a file, from wherever the patient has it. Returns null when they
+  /// backed out — nothing has been sent at this point.
+  Future<({String path, String filename})?> _pickFile() async {
+    final source = await _pickSource();
+    if (source == null) return null;
 
     if (source == _Source.document) {
       // Most lab reports arrive as a PDF by email or WhatsApp. Photographing a
@@ -52,21 +59,26 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
         withData: false,
       );
       final file = result?.files.singleOrNull;
-      if (file?.path == null) return;
-      path = file!.path!;
-      filename = file.name;
-    } else {
-      final x = await _picker.pickImage(
-        source:
-            source == _Source.camera ? ImageSource.camera : ImageSource.gallery,
-        maxWidth: 1600,
-        imageQuality: 85,
-      );
-      if (x == null) return;
-      path = x.path;
-      filename = x.name;
+      if (file?.path == null) return null;
+      return (path: file!.path!, filename: file.name);
     }
 
+    final x = await _picker.pickImage(
+      source: source == _Source.camera ? ImageSource.camera : ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (x == null) return null;
+    return (path: x.path, filename: x.name);
+  }
+
+  /// Send the chosen file, tagged with the test it answers.
+  Future<void> _send({
+    required String testName,
+    required String path,
+    required String filename,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _uploading = testName);
     try {
       final asset = await ref
@@ -157,33 +169,125 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
     }
   }
 
+  /// Upload a report the doctor did not specifically advise.
+  ///
+  /// File first, then name it. It used to ask "which test?" in a dialog, then
+  /// open a second sheet for the source — two hurdles before anything happened,
+  /// and the name was demanded before the patient had even found the file.
+  ///
+  /// Nothing is sent until the name is confirmed. Uploading first and tagging
+  /// afterwards would be fewer taps, but a patient who backs out at the tag
+  /// leaves a file on the server belonging to no test, and nobody ever goes
+  /// looking for those.
   Future<void> _uploadOther() async {
+    final picked = await _pickFile();
+    if (picked == null || !mounted) return;
+
+    final name = await _askTestName(picked.filename);
+    if (name == null || name.trim().isEmpty) return;
+
+    await _send(testName: name.trim(), path: picked.path, filename: picked.filename);
+  }
+
+  /// The test name, asked once, with the doctor's advised list one tap away.
+  ///
+  /// Most uploads answer a test the doctor already asked for, so those are
+  /// chips rather than something to spell — and a lab report's name is exactly
+  /// the sort of thing that gets typed three different ways.
+  Future<String?> _askTestName(String filename) {
     final controller = TextEditingController();
-    final name = await showDialog<String>(
+    final advised = ref.read(labTestsProvider).valueOrNull?.advised ?? const <String>[];
+
+    return showModalBottomSheet<String>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Which test?'),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'e.g. HbA1c, Lipid profile',
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          MediaQuery.viewInsetsOf(ctx).bottom + AppSpacing.lg,
+        ),
+        child: StatefulBuilder(
+          builder: (ctx, setSheet) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Which test is this?',
+                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancel'),
+              const SizedBox(height: 4),
+              // The chosen file, named. Confirms the right one was picked
+              // before it goes anywhere.
+              Row(
+                children: [
+                  Icon(
+                    Icons.insert_drive_file_outlined,
+                    size: 16,
+                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      filename,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-                child: const Text('Next'),
+              if (advised.isNotEmpty) ...[
+                const SizedBox(height: AppSpacing.md),
+                Text('ASKED FOR BY YOUR DOCTOR', style: _label(Theme.of(ctx).colorScheme)),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final t in advised)
+                      ActionChip(
+                        label: Text(t),
+                        onPressed: () => Navigator.pop(ctx, t),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: controller,
+                autofocus: advised.isEmpty,
+                textCapitalization: TextCapitalization.words,
+                onChanged: (_) => setSheet(() {}),
+                onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
+                decoration: const InputDecoration(
+                  labelText: 'Or type the test name',
+                  hintText: 'e.g. HbA1c, Lipid profile',
+                  floatingLabelBehavior: FloatingLabelBehavior.always,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: FilledButton(
+                  onPressed:
+                      controller.text.trim().isEmpty
+                          ? null
+                          : () => Navigator.pop(ctx, controller.text.trim()),
+                  child: const Text('Upload'),
+                ),
               ),
             ],
           ),
+        ),
+      ),
     );
-    if (name != null && name.isNotEmpty) await _upload(name);
   }
 
   @override

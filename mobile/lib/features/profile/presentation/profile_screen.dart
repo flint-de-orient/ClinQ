@@ -22,6 +22,7 @@ import '../../auth/presentation/auth_controller.dart';
 import 'widgets/profile_section.dart';
 import 'widgets/theme_selector.dart';
 import '../../../shared/providers/theme_provider.dart';
+import 'licenses_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -203,10 +204,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              showLicensePage(
-                context: context,
-                applicationName: AppConfig.appName,
-                applicationVersion: 'v${AppConfig.appVersion}',
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LicensesScreen(),
+                ),
               );
             },
             child: const Text('View licenses'),
