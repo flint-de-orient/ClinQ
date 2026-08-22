@@ -99,8 +99,20 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
   /// assistant answers in the language the patient is actually using, exactly as
   /// the doctor assistant does. The nutrition thread used to omit this, leaving
   /// the server to fall back to the account default (usually English).
+  /// The language the app is *actually rendered in*, which is the one the
+  /// assistant must answer in.
+  ///
+  /// This used to read the stored picker choice and fall back to the language
+  /// on the account. Those two disagree the moment a patient never opens the
+  /// picker: the UI resolves to English through the device locale while the
+  /// account still says Bengali, so the whole screen was in English and the
+  /// assistant answered in Bengali. `Localizations.localeOf` cannot disagree
+  /// with what is on screen, because it *is* what is on screen.
+  ///
+  /// The account language stays as the fallback for the impossible case where
+  /// the locale is not one of the three the clinic supports.
   String get _replyLanguage => resolveReplyLanguage(
-    appLocale: ref.read(localeControllerProvider)?.languageCode,
+    appLocale: Localizations.localeOf(context).languageCode,
     accountLanguage: ref.read(authControllerProvider).user?.language,
   );
 
