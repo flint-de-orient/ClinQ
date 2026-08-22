@@ -40,7 +40,11 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
   Future<void> _upload(String testName) async {
     final picked = await _pickFile();
     if (picked == null) return;
-    await _send(testName: testName, path: picked.path, filename: picked.filename);
+    await _send(
+      testName: testName,
+      path: picked.path,
+      filename: picked.filename,
+    );
   }
 
   /// Choose a file, from wherever the patient has it. Returns null when they
@@ -64,7 +68,8 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
     }
 
     final x = await _picker.pickImage(
-      source: source == _Source.camera ? ImageSource.camera : ImageSource.gallery,
+      source:
+          source == _Source.camera ? ImageSource.camera : ImageSource.gallery,
       maxWidth: 1600,
       imageQuality: 85,
     );
@@ -186,7 +191,11 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
     final name = await _askTestName(picked.filename);
     if (name == null || name.trim().isEmpty) return;
 
-    await _send(testName: name.trim(), path: picked.path, filename: picked.filename);
+    await _send(
+      testName: name.trim(),
+      path: picked.path,
+      filename: picked.filename,
+    );
   }
 
   /// The test name, asked once, with the doctor's advised list one tap away.
@@ -196,97 +205,110 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
   /// the sort of thing that gets typed three different ways.
   Future<String?> _askTestName(String filename) {
     final controller = TextEditingController();
-    final advised = ref.read(labTestsProvider).valueOrNull?.advised ?? const <String>[];
+    final advised =
+        ref.read(labTestsProvider).valueOrNull?.advised ?? const <String>[];
 
     return showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          AppSpacing.lg,
-          0,
-          AppSpacing.lg,
-          MediaQuery.viewInsetsOf(ctx).bottom + AppSpacing.lg,
-        ),
-        child: StatefulBuilder(
-          builder: (ctx, setSheet) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Which test is this?',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
-              // The chosen file, named. Confirms the right one was picked
-              // before it goes anywhere.
-              Row(
-                children: [
-                  Icon(
-                    Icons.insert_drive_file_outlined,
-                    size: 16,
-                    color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      filename,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+      builder:
+          (ctx) => Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              MediaQuery.viewInsetsOf(ctx).bottom + AppSpacing.lg,
+            ),
+            child: StatefulBuilder(
+              builder:
+                  (ctx, setSheet) => Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Which test is this?',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              if (advised.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text('ASKED FOR BY YOUR DOCTOR', style: _label(Theme.of(ctx).colorScheme)),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    for (final t in advised)
-                      ActionChip(
-                        label: Text(t),
-                        onPressed: () => Navigator.pop(ctx, t),
+                      const SizedBox(height: 4),
+                      // The chosen file, named. Confirms the right one was picked
+                      // before it goes anywhere.
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.insert_drive_file_outlined,
+                            size: 16,
+                            color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              filename,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color:
+                                    Theme.of(ctx).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              TextField(
-                controller: controller,
-                autofocus: advised.isEmpty,
-                textCapitalization: TextCapitalization.words,
-                onChanged: (_) => setSheet(() {}),
-                onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
-                decoration: const InputDecoration(
-                  labelText: 'Or type the test name',
-                  hintText: 'e.g. HbA1c, Lipid profile',
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: FilledButton(
-                  onPressed:
-                      controller.text.trim().isEmpty
-                          ? null
-                          : () => Navigator.pop(ctx, controller.text.trim()),
-                  child: const Text('Upload'),
-                ),
-              ),
-            ],
+                      if (advised.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'ASKED FOR BY YOUR DOCTOR',
+                          style: _label(Theme.of(ctx).colorScheme),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
+                          children: [
+                            for (final t in advised)
+                              ActionChip(
+                                label: Text(t),
+                                onPressed: () => Navigator.pop(ctx, t),
+                              ),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.md),
+                      TextField(
+                        controller: controller,
+                        autofocus: advised.isEmpty,
+                        textCapitalization: TextCapitalization.words,
+                        onChanged: (_) => setSheet(() {}),
+                        onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
+                        decoration: const InputDecoration(
+                          labelText: 'Or type the test name',
+                          hintText: 'e.g. HbA1c, Lipid profile',
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton(
+                          onPressed:
+                              controller.text.trim().isEmpty
+                                  ? null
+                                  : () => Navigator.pop(
+                                    ctx,
+                                    controller.text.trim(),
+                                  ),
+                          child: const Text('Upload'),
+                        ),
+                      ),
+                    ],
+                  ),
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -334,7 +356,10 @@ class _LabTestsScreenState extends ConsumerState<LabTestsScreen> {
                     AppSpacing.md,
                     AppSpacing.md,
                     AppSpacing.md,
-                    96,
+                    // Clears the extended FAB (48) plus its margin (16) with
+                    // room left for the label growing under a large text
+                    // scale — at 96 the last row sat under the button.
+                    128,
                   ),
                   children: [
                     Text('ADVISED BY YOUR DOCTOR', style: _label(scheme)),

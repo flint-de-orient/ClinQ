@@ -19,7 +19,9 @@ class JumpToLatest extends StatelessWidget {
       child: IgnorePointer(
         ignoring: !visible,
         child: Padding(
-          padding: const EdgeInsets.only(right: 12, bottom: 8),
+          // 8px left it sitting on the composer's shoulder, reading as part
+          // of the input bar rather than as something floating over the thread.
+          padding: const EdgeInsets.only(right: 12, bottom: 20),
           child: Material(
             color: AppColors.accentOn(context),
             shape: const CircleBorder(),

@@ -28,6 +28,21 @@ String _mealLabel(String type) =>
         .firstWhere((m) => m.$1 == type, orElse: () => ('other', 'Meal'))
         .$2;
 
+/// A colour per meal, so a month of logs can be skimmed for "what were my
+/// dinners like" without reading a single label.
+///
+/// Ordered by the clock rather than by palette: amber morning, green midday,
+/// indigo night. The badge keeps its word in every case — colour is the fast
+/// path here, never the only one, and roughly one in twelve men with diabetes
+/// has a red-green deficiency.
+Color _mealTone(String type) => switch (type) {
+  'breakfast' => const Color(0xFFD97706),
+  'lunch' => const Color(0xFF0B8A4E),
+  'dinner' => const Color(0xFF4338CA),
+  'snack' => const Color(0xFF0369A1),
+  _ => const Color(0xFF6B7280),
+};
+
 /// The patient's food log: meals they record (a photo and/or a note) for their
 /// dietician to review.
 class FoodLogScreen extends ConsumerWidget {
@@ -103,7 +118,10 @@ class FoodLogScreen extends ConsumerWidget {
                 AppSpacing.md,
                 AppSpacing.md,
                 AppSpacing.md,
-                96,
+                // Clears the extended FAB (48) plus its margin (16) with
+                // room left for the label growing under a large text
+                // scale — at 96 the last row sat under the button.
+                128,
               ),
               itemCount: entries.length,
               separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
@@ -218,8 +236,8 @@ class _FoodCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.accentOn(
-                              context,
+                            color: _mealTone(
+                              entry.mealType,
                             ).withValues(alpha: 0.11),
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -228,7 +246,7 @@ class _FoodCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.accentOn(context),
+                              color: _mealTone(entry.mealType),
                             ),
                           ),
                         ),
@@ -357,13 +375,20 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: AppSpacing.md),
+          // Centred, and with a run gap. Left-aligned it wrapped to three
+          // chips then two, leaving a ragged hole on the right of the second
+          // row; centring balances whatever the wrap turns out to be, which
+          // matters because the labels are translated and the break moves.
           Wrap(
             spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
             children: [
               for (final (value, label) in _mealTypes)
                 ChoiceChip(
                   label: Text(label),
                   selected: _mealType == value,
+                  showCheckmark: false,
                   onSelected: (_) => setState(() => _mealType = value),
                 ),
             ],
@@ -425,14 +450,17 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
             InkWell(
               onTap: () => _showPhotoSource(context),
               borderRadius: BorderRadius.circular(12),
+              // Secondary, and visibly so. Filled and bold it competed with
+              // "Save meal" directly beneath it — two heavy blue blocks, and
+              // no way to tell which one finishes the job. A photo is optional
+              // here; saving is not.
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 13),
                 decoration: BoxDecoration(
-                  color: AppColors.accentOn(context).withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.accentOn(context).withValues(alpha: 0.35),
+                    color: AppColors.accentOn(context).withValues(alpha: 0.30),
                   ),
                 ),
                 child: Row(
@@ -440,13 +468,15 @@ class _LogMealSheetState extends ConsumerState<_LogMealSheet> {
                   children: [
                     Icon(
                       Icons.add_a_photo_outlined,
+                      size: 20,
                       color: AppColors.accentOn(context),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       'Add a photo of your meal',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                         color: AppColors.accentOn(context),
                       ),
                     ),

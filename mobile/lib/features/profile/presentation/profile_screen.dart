@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/tokens.dart';
 import '../../../shared/widgets/hero_band.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../../shared/data/upload_repository.dart';
@@ -183,41 +186,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final scheme = Theme.of(context).colorScheme;
     await showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppConfig.appName),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Version ${AppConfig.appVersion}',
-              style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Your care, on your phone.',
-              style: const TextStyle(fontSize: 15, height: 1.4),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const LicensesScreen(),
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(AppConfig.appName),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Version ${AppConfig.appVersion}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
-              );
-            },
-            child: const Text('View licenses'),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Your care, on your phone.',
+                  style: const TextStyle(fontSize: 15, height: 1.4),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LicensesScreen(),
+                    ),
+                  );
+                },
+                child: const Text('View licenses'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(AppLocalizations.of(context).commonClose),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(AppLocalizations.of(context).commonClose),
-          ),
-        ],
-      ),
     );
   }
 
@@ -304,19 +311,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         automaticallyImplyLeading: false,
       ),
       body: ListView(
-        // Zero padding so the band reaches both edges, as on Home and
-        // Medicines; everything below it is padded on its own.
         padding: const EdgeInsets.only(bottom: AppSpacing.xl),
         children: [
-          HeroSurface(
-            child: _Header(
-              user: user,
-              accent: accent,
-              uploading: _uploadingAvatar,
-              onEditPhoto: _uploadingAvatar ? null : _changeAvatar,
+          // A framed card rather than a full-bleed gradient fading into the
+          // page. Edge to edge, the band had no bottom — identity and settings
+          // ran into each other and the whole top of the screen read as
+          // unfinished. Given a card it becomes one object you can point at.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              0,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(T.rSection),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(T.rSection),
+                  boxShadow: T.e1,
+                ),
+                child: HeroSurface(
+                  child: _Header(
+                    user: user,
+                    accent: accent,
+                    uploading: _uploadingAvatar,
+                    onEditPhoto: _uploadingAvatar ? null : _changeAvatar,
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Column(
@@ -462,8 +488,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       title: l10n.profileAbout,
                       value: 'v${AppConfig.appVersion}',
                       showDivider: false,
-                      onTap:
-                          () => _showAbout(context),
+                      onTap: () => _showAbout(context),
                     ),
                   ],
                 ),
@@ -572,11 +597,28 @@ class _Header extends StatelessWidget {
                     : null,
             child: Stack(
               children: [
-                UserAvatar(
-                  name: name,
-                  avatarUrl: user?.avatarUrl,
-                  accent: accent,
-                  size: 96,
+                // A white ring and a soft shadow. Against a pale tinted
+                // band the photo's own edge was the only thing separating it
+                // from the background, so it sat *in* the band rather than on
+                // it — the single biggest reason this header looked flat.
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1F0B1B3A),
+                        blurRadius: 16,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: UserAvatar(
+                    name: name,
+                    avatarUrl: user?.avatarUrl,
+                    accent: accent,
+                    size: 96,
+                  ),
                 ),
                 // Dim + spinner while the new photo is uploading.
                 if (uploading)
@@ -598,20 +640,36 @@ class _Header extends StatelessWidget {
                     ),
                   ),
                 // Camera badge in the corner.
+                // Frosted rather than a solid blue disc. At 96px the badge
+                // is the second-brightest thing in the header and it was
+                // winning against the face; a real backdrop blur keeps it
+                // legible over whatever the photo puts behind it without
+                // shouting. This is one of the two places in the app where a
+                // blur has something detailed to work on and earns its cost.
                 Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: scheme.surface, width: 2.5),
-                    ),
-                    child: const Icon(
-                      Icons.photo_camera_rounded,
-                      size: 15,
-                      color: Colors.white,
+                  right: 2,
+                  bottom: 2,
+                  child: ClipOval(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFF0B1B3A,
+                          ).withValues(alpha: 0.55),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.55),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -623,9 +681,9 @@ class _Header extends StatelessWidget {
         Text(
           name,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          style: T.title.copyWith(fontSize: 22, fontWeight: FontWeight.w800),
         ),
-        const SizedBox(height: 0),
+        const SizedBox(height: 2),
         Text(
           user?.phone ?? '',
           style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),

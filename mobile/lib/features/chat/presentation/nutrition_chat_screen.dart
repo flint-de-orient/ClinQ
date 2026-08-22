@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../shared/providers/core_providers.dart';
 import '../../../shared/providers/locale_provider.dart';
 import '../../../shared/widgets/chat_background.dart';
+import 'widgets/assistant_disclaimer_banner.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../../shared/widgets/pinned_banner.dart';
 import '../../../shared/widgets/user_avatar.dart';
@@ -411,6 +412,7 @@ class _NutritionChatScreenState extends ConsumerState<NutritionChatScreen>
       body: ChatBackground(
         child: Column(
           children: [
+            const AssistantDisclaimerBanner(),
             // The same banner the care thread carries. A message the dietician
             // pinned is one they meant the patient to keep in view, and it was
             // scrolling away with everything else.

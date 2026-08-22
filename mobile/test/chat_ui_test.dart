@@ -111,9 +111,17 @@ void main() {
 
       expect(find.byType(EmergencyCard), findsNothing);
       expect(find.byType(UrgentCard), findsNothing);
+
+      // The caveat is still carried by the bubble itself — that is the part
+      // that must never regress, because it is what survives a screenshot or
+      // a reply read months later out of order. It is a chip now, with the
+      // sentence on its tooltip and repeated in a banner above the thread, so
+      // assert both halves: the badge is visible, and the words are on it.
+      final chip = find.widgetWithText(Tooltip, 'AI');
+      expect(chip, findsOneWidget);
       expect(
-        find.text('AI-assisted guidance, not a diagnosis'),
-        findsOneWidget,
+        tester.widget<Tooltip>(chip).message,
+        'AI-assisted guidance, not a diagnosis',
       );
     });
 

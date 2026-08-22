@@ -570,18 +570,35 @@ class ChatMessageBubble extends StatelessWidget {
                       label: l10n.chatFlagMessage,
                       onTap: onFlag!,
                     ),
-                  const SizedBox(width: 0),
-                  // Under every reply, not once at the top: a patient scrolling
-                  // back to a month-old answer sees it there too, and the line
-                  // travels with the message when it is screenshotted or read
-                  // out of order.
-                  Flexible(
-                    child: Text(
-                      l10n.chatDisclaimer,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontStyle: FontStyle.italic,
-                        color: scheme.onSurfaceVariant,
+                  const SizedBox(width: 4),
+                  // Still on every assistant reply, because the point of it is
+                  // that it travels with the message — screenshotted, or read
+                  // months later out of order, the claim and the caveat stay
+                  // together. But a full italic sentence repeated under every
+                  // bubble became the loudest recurring text in the thread, so
+                  // it is a chip now, with the sentence itself promoted to a
+                  // banner that is always on screen. Long-pressable for anyone
+                  // who wants the words rather than the badge.
+                  Tooltip(
+                    message: l10n.chatDisclaimer,
+                    triggerMode: TooltipTriggerMode.longPress,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: scheme.outlineVariant),
+                      ),
+                      child: Text(
+                        'AI',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.4,
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' show FontFeature;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,12 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
 
   /// The downloaded file, kept so a finished note can be reloaded and replayed.
   String? _cachedPath;
+
+  /// The scrubbable track's width. Named because the seek maths divides by it,
+  /// and a literal in three places is a literal that eventually disagrees.
+  ///
+  /// Trimmed from 132 to make room for the clock on the same row.
+  static const double _waveWidth = 112;
 
   @override
   void dispose() {
@@ -263,13 +270,13 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
             // Seeking needs a loaded clip, so before that this is inert rather
             // than jumping to a position the player cannot honour.
             SizedBox(
-              width: 132,
+              width: _waveWidth,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapDown:
                     total == null
                         ? null
-                        : (d) => _seekTo(d.localPosition.dx / 132),
+                        : (d) => _seekTo(d.localPosition.dx / _waveWidth),
                 onHorizontalDragStart:
                     total == null
                         ? null
@@ -277,7 +284,7 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
                 onHorizontalDragUpdate:
                     total == null
                         ? null
-                        : (d) => _seekTo(d.localPosition.dx / 132),
+                        : (d) => _seekTo(d.localPosition.dx / _waveWidth),
                 onHorizontalDragEnd:
                     total == null
                         ? null
@@ -285,8 +292,28 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
                 child: _Waveform(progress: progress, colour: fg, track: track),
               ),
             ),
+            const SizedBox(width: 10),
+            // On the same line as the waveform, not stranded on a second row
+            // under it. One clock, fixed width, so starting playback cannot
+            // shuffle the bubble sideways: the total before you play, the
+            // position once you have.
+            SizedBox(
+              width: 34,
+              child: Text(
+                total == null
+                    ? '--:--'
+                    : _clock(_position > Duration.zero ? _position : total),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color:
+                      widget.onDark ? Colors.white70 : scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
             if (total != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _SpeedChip(
                 speed: _speed,
                 onTap: _cycleSpeed,
@@ -295,19 +322,6 @@ class _VoiceNotePlayerState extends ConsumerState<VoiceNotePlayer> {
             ],
           ],
         ),
-        if (total != null) ...[
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.only(left: 52),
-            child: Text(
-              '${_clock(_position)} / ${_clock(total)}',
-              style: TextStyle(
-                fontSize: 12,
-                color: widget.onDark ? Colors.white70 : scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }

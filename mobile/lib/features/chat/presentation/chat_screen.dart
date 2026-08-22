@@ -20,6 +20,7 @@ import 'widgets/chat_composer.dart';
 import 'widgets/chat_empty_state.dart';
 import 'widgets/chat_message_bubble.dart';
 import '../../../shared/widgets/chat_background.dart';
+import 'widgets/assistant_disclaimer_banner.dart';
 import 'widgets/generating_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -312,6 +313,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         child: _KeyboardInset(
           child: Column(
             children: [
+              const AssistantDisclaimerBanner(),
               if (chatState.error != null)
                 Container(
                   width: double.infinity,

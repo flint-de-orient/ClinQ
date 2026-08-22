@@ -44,8 +44,12 @@ class _LicensesScreenState extends State<LicensesScreen> {
       }
     }
     final list =
-        byPackage.entries.map((e) => _Package(name: e.key, licences: e.value)).toList()
-          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        byPackage.entries
+            .map((e) => _Package(name: e.key, licences: e.value))
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
     return list;
   }
 
@@ -70,7 +74,10 @@ class _LicensesScreenState extends State<LicensesScreen> {
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
                 hintText: 'Search packages…',
-                prefixIcon: Icon(Icons.search_rounded, color: scheme.onSurfaceVariant),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: scheme.onSurfaceVariant,
+                ),
                 suffixIcon:
                     _query.isEmpty
                         ? null
@@ -149,7 +156,10 @@ class _LicensesScreenState extends State<LicensesScreen> {
                   child: Text(
                     '${AppConfig.appName} v${AppConfig.appVersion} is built on '
                     '${snapshot.data!.length} open-source packages.',
-                    style: TextStyle(fontSize: 13.5, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 );
               }
@@ -157,11 +167,19 @@ class _LicensesScreenState extends State<LicensesScreen> {
               return ExpansionTile(
                 title: Text(
                   p.name,
-                  style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 subtitle: Text(
-                  p.licences.length == 1 ? '1 licence' : '${p.licences.length} licences',
-                  style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+                  p.licences.length == 1
+                      ? '1 licence'
+                      : '${p.licences.length} licences',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
                 childrenPadding: const EdgeInsets.fromLTRB(
                   AppSpacing.md,
