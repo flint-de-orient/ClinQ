@@ -10,16 +10,44 @@ void main() {
     // digits, so validation runs against those 10 digits alone.
     test('accepts a 10-digit Indian mobile number', () {
       expect(AuthValidators.isValidPhone('9830012345'), isTrue);
-      expect(AuthValidators.isValidPhone('6000000000'), isTrue, reason: 'starts with 6');
-      expect(AuthValidators.isValidPhone('98300 12345'), isTrue, reason: 'spaces tolerated');
+      expect(
+        AuthValidators.isValidPhone('6000000000'),
+        isTrue,
+        reason: 'starts with 6',
+      );
+      expect(
+        AuthValidators.isValidPhone('98300 12345'),
+        isTrue,
+        reason: 'spaces tolerated',
+      );
     });
 
     test('rejects anything that is not a valid 10-digit mobile', () {
-      expect(AuthValidators.isValidPhone('983001234'), isFalse, reason: '9 digits');
-      expect(AuthValidators.isValidPhone('98300123456'), isFalse, reason: '11 digits');
-      expect(AuthValidators.isValidPhone('5830012345'), isFalse, reason: 'starts below 6');
-      expect(AuthValidators.isValidPhone('0830012345'), isFalse, reason: 'leading zero');
-      expect(AuthValidators.isValidPhone('98300abcde'), isFalse, reason: 'not digits');
+      expect(
+        AuthValidators.isValidPhone('983001234'),
+        isFalse,
+        reason: '9 digits',
+      );
+      expect(
+        AuthValidators.isValidPhone('98300123456'),
+        isFalse,
+        reason: '11 digits',
+      );
+      expect(
+        AuthValidators.isValidPhone('5830012345'),
+        isFalse,
+        reason: 'starts below 6',
+      );
+      expect(
+        AuthValidators.isValidPhone('0830012345'),
+        isFalse,
+        reason: 'leading zero',
+      );
+      expect(
+        AuthValidators.isValidPhone('98300abcde'),
+        isFalse,
+        reason: 'not digits',
+      );
       expect(AuthValidators.isValidPhone(''), isFalse);
     });
 

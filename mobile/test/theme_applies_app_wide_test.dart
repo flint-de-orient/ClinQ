@@ -16,7 +16,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<ProviderContainer> container([Map<String, Object> initial = const {}]) async {
+  Future<ProviderContainer> container([
+    Map<String, Object> initial = const {},
+  ]) async {
     SharedPreferences.setMockInitialValues(initial);
     final prefs = await SharedPreferences.getInstance();
     final c = ProviderContainer(
@@ -28,20 +30,21 @@ void main() {
 
   /// Mirrors app.dart: both themes supplied, themeMode driven by the provider.
   Widget app(Widget home) => Consumer(
-    builder: (context, ref, _) => MaterialApp(
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: ref.watch(themeControllerProvider),
-      locale: const Locale('en'),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: home),
-    ),
+    builder:
+        (context, ref, _) => MaterialApp(
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: ref.watch(themeControllerProvider),
+          locale: const Locale('en'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: home),
+        ),
   );
 
   Brightness brightnessOf(WidgetTester tester, Type screenType) {
@@ -49,7 +52,9 @@ void main() {
     return Theme.of(ctx).brightness;
   }
 
-  testWidgets('switching the theme repaints a screen elsewhere in the app', (tester) async {
+  testWidgets('switching the theme repaints a screen elsewhere in the app', (
+    tester,
+  ) async {
     final c = await container();
     // EmergencyCard stands in for "any other screen" — it lives in Chat and
     // knows nothing about the Profile control.
@@ -70,7 +75,9 @@ void main() {
     expect(brightnessOf(tester, EmergencyCard), Brightness.light);
   });
 
-  testWidgets('the emergency card still renders in both themes', (tester) async {
+  testWidgets('the emergency card still renders in both themes', (
+    tester,
+  ) async {
     for (final mode in [ThemeMode.light, ThemeMode.dark]) {
       final c = await container();
       await c.read(themeControllerProvider.notifier).setMode(mode);
@@ -84,19 +91,27 @@ void main() {
 
       // Safety-critical: the loudest element on the screen must survive a
       // theme it was not originally designed against.
-      expect(find.text('Go to the nearest hospital immediately'), findsOneWidget);
+      expect(
+        find.text('Go to the nearest hospital immediately'),
+        findsOneWidget,
+      );
       expect(find.text('Call clinic'), findsOneWidget);
       expect(tester.takeException(), isNull, reason: '$mode');
     }
   });
 
-  testWidgets('tapping a segment changes the mode and the app follows', (tester) async {
+  testWidgets('tapping a segment changes the mode and the app follows', (
+    tester,
+  ) async {
     final c = await container();
     await tester.pumpWidget(
-      UncontrolledProviderScope(container: c, child: app(const ThemeSelector())),
+      UncontrolledProviderScope(
+        container: c,
+        child: app(const ThemeSelector()),
+      ),
     );
     await tester.pumpAndSettle();
-    expect(c.read(themeControllerProvider), ThemeMode.system);
+    expect(c.read(themeControllerProvider), ThemeMode.light);
 
     await tester.tap(find.text('Dark'));
     await tester.pumpAndSettle();
@@ -109,10 +124,15 @@ void main() {
     expect(brightnessOf(tester, ThemeSelector), Brightness.light);
   });
 
-  testWidgets('all three segments are offered, not a binary toggle', (tester) async {
+  testWidgets('all three segments are offered, not a binary toggle', (
+    tester,
+  ) async {
     final c = await container();
     await tester.pumpWidget(
-      UncontrolledProviderScope(container: c, child: app(const ThemeSelector())),
+      UncontrolledProviderScope(
+        container: c,
+        child: app(const ThemeSelector()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -121,10 +141,15 @@ void main() {
     }
   });
 
-  testWidgets('the appearance card matches the section cards, not a grey box', (tester) async {
+  testWidgets('the appearance card matches the section cards, not a grey box', (
+    tester,
+  ) async {
     final c = await container();
     await tester.pumpWidget(
-      UncontrolledProviderScope(container: c, child: app(const ThemeSelector())),
+      UncontrolledProviderScope(
+        container: c,
+        child: app(const ThemeSelector()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -135,7 +160,10 @@ void main() {
     final scheme = Theme.of(ctx).colorScheme;
     final box = tester.widget<Container>(
       find
-          .descendant(of: find.byType(ThemeSelector), matching: find.byType(Container))
+          .descendant(
+            of: find.byType(ThemeSelector),
+            matching: find.byType(Container),
+          )
           .first,
     );
     expect((box.decoration! as BoxDecoration).color, scheme.surface);
@@ -144,21 +172,36 @@ void main() {
   testWidgets('the three segments share the width evenly', (tester) async {
     final c = await container();
     await tester.pumpWidget(
-      UncontrolledProviderScope(container: c, child: app(const ThemeSelector())),
+      UncontrolledProviderScope(
+        container: c,
+        child: app(const ThemeSelector()),
+      ),
     );
     await tester.pumpAndSettle();
 
     // Measure the Expanded flex cells, not the pills: the pills differ by the
     // deliberate 3px inter-segment gap (the last has none), but the flex split
     // must be even.
-    final widths = ['Light', 'Dark', 'System']
-        .map((l) => tester.getSize(find.ancestor(
-              of: find.text(l),
-              matching: find.byType(Expanded),
-            )).width)
-        .toList();
+    final widths =
+        ['Light', 'Dark', 'System']
+            .map(
+              (l) =>
+                  tester
+                      .getSize(
+                        find.ancestor(
+                          of: find.text(l),
+                          matching: find.byType(Expanded),
+                        ),
+                      )
+                      .width,
+            )
+            .toList();
     for (final w in widths) {
-      expect((w - widths.first).abs() < 1.0, isTrue, reason: 'segments: $widths');
+      expect(
+        (w - widths.first).abs() < 1.0,
+        isTrue,
+        reason: 'segments: $widths',
+      );
     }
   });
 }

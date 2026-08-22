@@ -43,10 +43,16 @@ class ThemeController extends StateNotifier<ThemeMode> {
         return ThemeMode.light;
       case 'dark':
         return ThemeMode.dark;
+      // An explicit choice of "System" has to be honoured like any other. This
+      // case was missing: the Profile toggle wrote 'system', took effect for
+      // the session, and then came back as Light on the next launch — a
+      // setting that silently forgets itself is worse than one not offered.
+      case 'system':
+        return ThemeMode.system;
       // Anything else — unset, or a value written by an older build — opens
       // light. The screens are designed light-first, and a patient whose phone
       // happens to be in dark mode should not meet a different-looking app than
-      // the one the clinic showed them. "System" is still selectable in Profile.
+      // the one the clinic showed them.
       default:
         return ThemeMode.light;
     }
@@ -67,6 +73,7 @@ class ThemeController extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeControllerProvider = StateNotifierProvider<ThemeController, ThemeMode>((ref) {
-  return ThemeController(ref.watch(sharedPreferencesProvider));
-});
+final themeControllerProvider =
+    StateNotifierProvider<ThemeController, ThemeMode>((ref) {
+      return ThemeController(ref.watch(sharedPreferencesProvider));
+    });

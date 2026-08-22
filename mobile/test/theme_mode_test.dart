@@ -19,9 +19,12 @@ void main() {
   }
 
   group('ThemeController', () {
-    test('defaults to following the device', () async {
+    test('opens light when nothing has been chosen', () async {
+      // Light-first by decision, not by accident: the dark palette is
+      // unfinished, and a patient whose phone is in dark mode should meet the
+      // app the clinic showed them. Following the device is still selectable.
       final c = await containerWith({});
-      expect(c.read(themeControllerProvider), ThemeMode.system);
+      expect(c.read(themeControllerProvider), ThemeMode.light);
     });
 
     test('restores a stored choice', () async {
@@ -35,10 +38,10 @@ void main() {
       }
     });
 
-    test('falls back to system for an unrecognised stored value', () async {
+    test('falls back to light for an unrecognised stored value', () async {
       // A value written by an older or newer build must not crash the app.
       final c = await containerWith({'akd_theme_mode': 'sepia'});
-      expect(c.read(themeControllerProvider), ThemeMode.system);
+      expect(c.read(themeControllerProvider), ThemeMode.light);
     });
 
     test('persists each choice so it survives a restart', () async {
@@ -47,7 +50,9 @@ void main() {
       final first = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-      await first.read(themeControllerProvider.notifier).setMode(ThemeMode.dark);
+      await first
+          .read(themeControllerProvider.notifier)
+          .setMode(ThemeMode.dark);
       expect(first.read(themeControllerProvider), ThemeMode.dark);
       first.dispose();
 
@@ -64,7 +69,9 @@ void main() {
       var notifications = 0;
       c.listen(themeControllerProvider, (_, _) => notifications++);
 
-      await c.read(themeControllerProvider.notifier).setMode(ThemeMode.system);
+      // Light, because that is where an unset container starts — setting the
+      // mode it is already in is the no-op being tested.
+      await c.read(themeControllerProvider.notifier).setMode(ThemeMode.light);
       expect(notifications, 0, reason: 'no rebuild should be triggered');
 
       await c.read(themeControllerProvider.notifier).setMode(ThemeMode.dark);

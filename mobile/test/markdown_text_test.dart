@@ -25,7 +25,9 @@ void main() {
     expect(bolded, contains('250'));
   });
 
-  testWidgets('turns "- " lines into real bullets, not raw dashes', (tester) async {
+  testWidgets('turns "- " lines into real bullets, not raw dashes', (
+    tester,
+  ) async {
     await pump(tester, 'Do this:\n- Drink water\n- Recheck in 2 hours');
     expect(find.textContaining('- Drink'), findsNothing); // no raw dash prefix
     expect(find.text('•'), findsNWidgets(2));
@@ -49,7 +51,9 @@ void _plainTextChecks() {
   group('MarkdownText.toPlainText — clean copy', () {
     test('strips bold and bullet marks', () {
       expect(
-        MarkdownText.toPlainText('Take **250** seriously.\n- Drink water\n- Rest'),
+        MarkdownText.toPlainText(
+          'Take **250** seriously.\n- Drink water\n- Rest',
+        ),
         'Take 250 seriously.\n• Drink water\n• Rest',
       );
     });

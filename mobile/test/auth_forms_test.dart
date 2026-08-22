@@ -2,6 +2,7 @@ import 'package:akd_care/core/utils/auth_validators.dart';
 import 'package:akd_care/features/auth/presentation/login_screen.dart';
 import 'package:akd_care/features/auth/presentation/register_screen.dart';
 import 'package:akd_care/l10n/gen/app_localizations.dart';
+import 'package:akd_care/shared/widgets/auth_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +29,17 @@ void main() {
   );
 
   Future<void> enter(WidgetTester tester, String label, String text) async {
-    await tester.enterText(find.widgetWithText(TextFormField, label), text);
+    // Scoped through the AuthField wrapper. The label used to be the field's
+    // own InputDecoration.labelText; the auth kit moved it out to a Text above
+    // the input, so matching the label against the TextFormField itself found
+    // nothing and every enterText threw "Bad state: No element".
+    await tester.enterText(
+      find.descendant(
+        of: find.widgetWithText(AuthField, label),
+        matching: find.byType(TextFormField),
+      ),
+      text,
+    );
     await tester.pump();
   }
 
@@ -46,16 +57,29 @@ void main() {
   /// Errors are hidden until the first submit attempt, so most field-rule
   /// tests have to press the button once before anything is on screen.
   Future<void> submit(WidgetTester tester, String label) async {
-    await tester.tap(find.widgetWithText(ElevatedButton, label));
+    // PillButton, not ElevatedButton: both forms were rebuilt on the auth
+    // kit and this finder silently matched nothing afterwards.
+    await tester.tap(find.widgetWithText(PillButton, label));
     await tester.pumpAndSettle();
   }
 
   group('AuthValidators', () {
     test('phone accepts 10-digit numbers starting 6-9', () {
-      for (final ok in ['9830012345', '6000000000', '7412589630', '8888888888']) {
+      for (final ok in [
+        '9830012345',
+        '6000000000',
+        '7412589630',
+        '8888888888',
+      ]) {
         expect(AuthValidators.isValidPhone(ok), isTrue, reason: ok);
       }
-      for (final bad in ['5830012345', '983001234', '98300123456', '', 'abcdefghij']) {
+      for (final bad in [
+        '5830012345',
+        '983001234',
+        '98300123456',
+        '',
+        'abcdefghij',
+      ]) {
         expect(AuthValidators.isValidPhone(bad), isFalse, reason: bad);
       }
     });
@@ -84,15 +108,27 @@ void main() {
         AuthValidators.diabetesTypes,
         containsAll(['type1', 'type2', 'gestational', 'prediabetes', 'none']),
       );
-      expect(AuthValidators.genders, containsAll(['male', 'female', 'other', 'undisclosed']));
+      expect(
+        AuthValidators.genders,
+        containsAll(['male', 'female', 'other', 'undisclosed']),
+      );
     });
 
     test('date of birth rejects the future, today, and implausible ages', () {
       final now = DateTime(2026, 7, 23);
-      expect(AuthValidators.isPlausibleDateOfBirth(DateTime(1975, 4, 2), now: now), isTrue);
-      expect(AuthValidators.isPlausibleDateOfBirth(DateTime(2027, 1, 1), now: now), isFalse);
+      expect(
+        AuthValidators.isPlausibleDateOfBirth(DateTime(1975, 4, 2), now: now),
+        isTrue,
+      );
+      expect(
+        AuthValidators.isPlausibleDateOfBirth(DateTime(2027, 1, 1), now: now),
+        isFalse,
+      );
       expect(AuthValidators.isPlausibleDateOfBirth(now, now: now), isFalse);
-      expect(AuthValidators.isPlausibleDateOfBirth(DateTime(1850, 1, 1), now: now), isFalse);
+      expect(
+        AuthValidators.isPlausibleDateOfBirth(DateTime(1850, 1, 1), now: now),
+        isFalse,
+      );
     });
   });
 
@@ -110,7 +146,9 @@ void main() {
       expect(find.text('Please enter your password'), findsOneWidget);
     });
 
-    testWidgets('rejects a 9-digit number and one starting below 6', (tester) async {
+    testWidgets('rejects a 9-digit number and one starting below 6', (
+      tester,
+    ) async {
       await tester.pumpWidget(harness(const LoginScreen()));
       await tester.pumpAndSettle();
       await submit(tester, 'Log in');
@@ -125,22 +163,28 @@ void main() {
       expect(find.text('Enter a valid 10-digit mobile number'), findsNothing);
     });
 
-    testWidgets('does not impose the 8-char registration rule on an existing password', (
-      tester,
-    ) async {
-      await tester.pumpWidget(harness(const LoginScreen()));
-      await tester.pumpAndSettle();
-      await submit(tester, 'Log in');
+    testWidgets(
+      'does not impose the 8-char registration rule on an existing password',
+      (tester) async {
+        await tester.pumpWidget(harness(const LoginScreen()));
+        await tester.pumpAndSettle();
+        await submit(tester, 'Log in');
 
-      // The server accepts any non-empty password on login.
-      await enter(tester, 'Password', 'short');
-      expect(find.text('Password must be at least 8 characters'), findsNothing);
-      expect(find.text('Please enter your password'), findsNothing);
-    });
+        // The server accepts any non-empty password on login.
+        await enter(tester, 'Password', 'short');
+        expect(
+          find.text('Password must be at least 8 characters'),
+          findsNothing,
+        );
+        expect(find.text('Please enter your password'), findsNothing);
+      },
+    );
   });
 
   group('Register form', () {
-    testWidgets('typing in one field does not turn the rest of the form red', (tester) async {
+    testWidgets('typing in one field does not turn the rest of the form red', (
+      tester,
+    ) async {
       useTallSurface(tester);
       await tester.pumpWidget(harness(const RegisterScreen()));
       await tester.pumpAndSettle();
@@ -156,11 +200,17 @@ void main() {
         'Please select your date of birth',
         'Please select an option',
       ]) {
-        expect(find.text(error), findsNothing, reason: 'shown while still typing: $error');
+        expect(
+          find.text(error),
+          findsNothing,
+          reason: 'shown while still typing: $error',
+        );
       }
     });
 
-    testWidgets('blocks submit until every required field is answered', (tester) async {
+    testWidgets('blocks submit until every required field is answered', (
+      tester,
+    ) async {
       useTallSurface(tester);
       await tester.pumpWidget(harness(const RegisterScreen()));
       await tester.pumpAndSettle();
@@ -171,7 +221,9 @@ void main() {
       expect(find.text('Please select an option'), findsOneWidget);
     });
 
-    testWidgets('after a failed submit, fixing a field clears its error live', (tester) async {
+    testWidgets('after a failed submit, fixing a field clears its error live', (
+      tester,
+    ) async {
       useTallSurface(tester);
       await tester.pumpWidget(harness(const RegisterScreen()));
       await tester.pumpAndSettle();
@@ -226,7 +278,9 @@ void main() {
       expect(find.text('Passwords do not match'), findsNothing);
     });
 
-    testWidgets('correcting the first password clears a stale mismatch', (tester) async {
+    testWidgets('correcting the first password clears a stale mismatch', (
+      tester,
+    ) async {
       useTallSurface(tester);
       await tester.pumpWidget(harness(const RegisterScreen()));
       await tester.pumpAndSettle();
@@ -257,10 +311,16 @@ void main() {
       expect(find.text('Please enter your full name'), findsNothing);
 
       await enter(tester, 'Password', 'short');
-      expect(find.text('Password must be at least 8 characters'), findsOneWidget);
+      expect(
+        find.text('Password must be at least 8 characters'),
+        findsOneWidget,
+      );
 
       await enter(tester, 'Password', 'x' * 129);
-      expect(find.text('Password must be 128 characters or fewer'), findsOneWidget);
+      expect(
+        find.text('Password must be 128 characters or fewer'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('email is optional but validated when present', (tester) async {
@@ -270,13 +330,22 @@ void main() {
       await submit(tester, 'Create account');
 
       await enter(tester, 'Email (optional)', 'not-an-email');
-      expect(find.text('Enter a valid email address, or leave it blank'), findsOneWidget);
+      expect(
+        find.text('Enter a valid email address, or leave it blank'),
+        findsOneWidget,
+      );
 
       await enter(tester, 'Email (optional)', '');
-      expect(find.text('Enter a valid email address, or leave it blank'), findsNothing);
+      expect(
+        find.text('Enter a valid email address, or leave it blank'),
+        findsNothing,
+      );
 
       await enter(tester, 'Email (optional)', 'rahul@example.com');
-      expect(find.text('Enter a valid email address, or leave it blank'), findsNothing);
+      expect(
+        find.text('Enter a valid email address, or leave it blank'),
+        findsNothing,
+      );
     });
   });
 }

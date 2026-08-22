@@ -12,30 +12,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  const secureStorageChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+  const secureStorageChannel = MethodChannel(
+    'plugins.it_nomads.com/flutter_secure_storage',
+  );
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      secureStorageChannel,
-      (call) async {
-        switch (call.method) {
-          case 'readAll':
-            return <String, String>{};
-          case 'read':
-            return null;
-          default:
-            return null;
-        }
-      },
-    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, (call) async {
+          switch (call.method) {
+            case 'readAll':
+              return <String, String>{};
+            case 'read':
+              return null;
+            default:
+              return null;
+          }
+        });
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      secureStorageChannel,
-      null,
-    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureStorageChannel, null);
   });
 
   testWidgets('App boots to the language picker on a fresh install', (

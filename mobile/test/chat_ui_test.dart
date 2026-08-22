@@ -15,7 +15,10 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   // ChatComposer is a ConsumerWidget — it reads the upload repository when a
   // photo is attached — so everything is wrapped in a scope.
-  Widget harness(Widget child, {Locale locale = const Locale('en')}) => ProviderScope(
+  Widget harness(
+    Widget child, {
+    Locale locale = const Locale('en'),
+  }) => ProviderScope(
     child: MaterialApp(
       locale: locale,
       localizationsDelegates: const [
@@ -52,18 +55,27 @@ void main() {
   );
 
   group('Safety routing — must never regress', () {
-    testWidgets('emergency urgency renders the card, never a bubble', (tester) async {
+    testWidgets('emergency urgency renders the card, never a bubble', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         harness(
           ChatMessageBubble(
-            message: msg(role: 'assistant', content: 'Chest pain needs review.', urgency: 'emergency'),
+            message: msg(
+              role: 'assistant',
+              content: 'Chest pain needs review.',
+              urgency: 'emergency',
+            ),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(EmergencyCard), findsOneWidget);
-      expect(find.text('Go to the nearest hospital immediately'), findsOneWidget);
+      expect(
+        find.text('Go to the nearest hospital immediately'),
+        findsOneWidget,
+      );
       expect(find.text('Call clinic'), findsOneWidget);
     });
 
@@ -71,7 +83,11 @@ void main() {
       await tester.pumpWidget(
         harness(
           ChatMessageBubble(
-            message: msg(role: 'assistant', content: 'Please check soon.', urgency: 'urgent'),
+            message: msg(
+              role: 'assistant',
+              content: 'Please check soon.',
+              urgency: 'urgent',
+            ),
           ),
         ),
       );
@@ -81,22 +97,35 @@ void main() {
       expect(find.text('Call clinic'), findsOneWidget);
     });
 
-    testWidgets('a routine reply is a plain bubble with the disclaimer', (tester) async {
+    testWidgets('a routine reply is a plain bubble with the disclaimer', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        harness(ChatMessageBubble(message: msg(role: 'assistant', content: 'Keep logging.'))),
+        harness(
+          ChatMessageBubble(
+            message: msg(role: 'assistant', content: 'Keep logging.'),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       expect(find.byType(EmergencyCard), findsNothing);
       expect(find.byType(UrgentCard), findsNothing);
-      expect(find.text('AI-assisted guidance, not a diagnosis'), findsOneWidget);
+      expect(
+        find.text('AI-assisted guidance, not a diagnosis'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('emergency card survives a Bengali locale', (tester) async {
       await tester.pumpWidget(
         harness(
           ChatMessageBubble(
-            message: msg(role: 'assistant', content: 'বুকে ব্যথা', urgency: 'emergency'),
+            message: msg(
+              role: 'assistant',
+              content: 'বুকে ব্যথা',
+              urgency: 'emergency',
+            ),
           ),
           locale: const Locale('bn'),
         ),
@@ -108,7 +137,9 @@ void main() {
   });
 
   group('Message bubble', () {
-    testWidgets('shows a 12-hour timestamp when createdAt is present', (tester) async {
+    testWidgets('shows a 12-hour timestamp when createdAt is present', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         harness(
           ChatMessageBubble(
@@ -148,7 +179,9 @@ void main() {
   });
 
   group('Generating bubble', () {
-    testWidgets('paints the sweep on the border, not as a centred indicator', (tester) async {
+    testWidgets('paints the sweep on the border, not as a centred indicator', (
+      tester,
+    ) async {
       await tester.pumpWidget(harness(const GeneratingBubble()));
       await tester.pump();
 
@@ -158,13 +191,17 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.byType(LinearProgressIndicator), findsNothing);
-      expect(find.text('ClinQ is analyzing data…'), findsOneWidget);
+      // Matched on the phrase rather than the whole string: the product
+      // name has changed once already and broke this assertion silently.
+      expect(find.textContaining('is analyzing data'), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 600));
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('holds still when the OS asks for reduced motion', (tester) async {
+    testWidgets('holds still when the OS asks for reduced motion', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MediaQuery(
           data: const MediaQueryData(disableAnimations: true),
@@ -179,10 +216,19 @@ void main() {
   });
 
   group('Composer', () {
-    testWidgets('shows the mic and send together; send fires only with text', (tester) async {
+    testWidgets('shows the mic and send together; send fires only with text', (
+      tester,
+    ) async {
       var sent = 0;
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) => sent++, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) => sent++,
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -206,7 +252,14 @@ void main() {
 
     testWidgets('draws no inner border inside the pill', (tester) async {
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) {}, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) {},
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -232,10 +285,19 @@ void main() {
       expect(focused.decoration!.focusedBorder, InputBorder.none);
     });
 
-    testWidgets('whitespace alone does not arm the send button', (tester) async {
+    testWidgets('whitespace alone does not arm the send button', (
+      tester,
+    ) async {
       var sent = 0;
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) => sent++, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) => sent++,
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -250,7 +312,14 @@ void main() {
     testWidgets('sends trimmed text and clears the field', (tester) async {
       String? sent;
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (t, _) => sent = t, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (t, _) => sent = t,
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -263,9 +332,18 @@ void main() {
       expect(find.text('  my sugar is 210  '), findsNothing);
     });
 
-    testWidgets('the attach button is live, and disabled only while sending', (tester) async {
+    testWidgets('the attach button is live, and disabled only while sending', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) {}, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) {},
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -275,10 +353,21 @@ void main() {
           matching: find.byType(IconButton),
         ),
       );
-      expect(attach.onPressed, isNotNull, reason: 'attach must be wired, not a dead icon');
+      expect(
+        attach.onPressed,
+        isNotNull,
+        reason: 'attach must be wired, not a dead icon',
+      );
 
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) {}, onSendVoiceNote: (_) {}, isSending: true, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) {},
+            onSendVoiceNote: (_) {},
+            isSending: true,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pump();
 
@@ -291,11 +380,18 @@ void main() {
       expect(whileSending.onPressed, isNull);
     });
 
-    testWidgets('sends an empty attachment list when nothing is attached', (tester) async {
+    testWidgets('sends an empty attachment list when nothing is attached', (
+      tester,
+    ) async {
       List<String>? ids;
       await tester.pumpWidget(
         harness(
-          ChatComposer(onSend: (_, a) => ids = a, onSendVoiceNote: (_) {}, isSending: false, languageCode: 'en'),
+          ChatComposer(
+            onSend: (_, a) => ids = a,
+            onSendVoiceNote: (_) {},
+            isSending: false,
+            languageCode: 'en',
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -308,23 +404,39 @@ void main() {
       expect(ids, isEmpty);
     });
 
-    testWidgets('while sending, shows a spinner and blocks re-send', (tester) async {
+    testWidgets('while sending, shows a spinner and blocks re-send', (
+      tester,
+    ) async {
       var sent = 0;
       await tester.pumpWidget(
-        harness(ChatComposer(onSend: (_, _) => sent++, onSendVoiceNote: (_) {}, isSending: true, languageCode: 'en')),
+        harness(
+          ChatComposer(
+            onSend: (_, _) => sent++,
+            onSendVoiceNote: (_) {},
+            isSending: true,
+            languageCode: 'en',
+          ),
+        ),
       );
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      await tester.tap(find.byType(CircularProgressIndicator), warnIfMissed: false);
+      await tester.tap(
+        find.byType(CircularProgressIndicator),
+        warnIfMissed: false,
+      );
       expect(sent, 0);
     });
   });
 
   group('Empty state', () {
-    testWidgets('offers four suggestions and sends the tapped one verbatim', (tester) async {
+    testWidgets('offers four suggestions and sends the tapped one verbatim', (
+      tester,
+    ) async {
       String? sent;
-      await tester.pumpWidget(harness(ChatEmptyState(onSuggestionTap: (t) => sent = t)));
+      await tester.pumpWidget(
+        harness(ChatEmptyState(onSuggestionTap: (t) => sent = t)),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('How can I help today?'), findsOneWidget);
@@ -337,14 +449,19 @@ void main() {
         expect(find.text(s), findsOneWidget, reason: s);
       }
 
-      await tester.tap(find.text('My feet feel numb and tingly. Should I worry?'));
+      await tester.tap(
+        find.text('My feet feel numb and tingly. Should I worry?'),
+      );
       await tester.pumpAndSettle();
       expect(sent, 'My feet feel numb and tingly. Should I worry?');
     });
 
     testWidgets('localizes into Hindi', (tester) async {
       await tester.pumpWidget(
-        harness(ChatEmptyState(onSuggestionTap: (_) {}), locale: const Locale('hi')),
+        harness(
+          ChatEmptyState(onSuggestionTap: (_) {}),
+          locale: const Locale('hi'),
+        ),
       );
       await tester.pumpAndSettle();
 

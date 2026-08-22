@@ -24,23 +24,31 @@ void main() {
     ),
   );
 
-  testWidgets('opens in English with a single-language heading', (tester) async {
+  testWidgets('opens in English with a single-language heading', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
     expect(find.text('Choose your language'), findsOneWidget);
-    expect(find.text('You can change this anytime from your profile.'), findsOneWidget);
+    expect(
+      find.text('You can change this anytime from your profile.'),
+      findsOneWidget,
+    );
     expect(find.text('Continue'), findsOneWidget);
 
     // The old bug: all three languages concatenated into one static heading.
     expect(
       find.textContaining('Choose your language / '),
       findsNothing,
-      reason: 'heading must be a single localized string, not a tri-lingual concatenation',
+      reason:
+          'heading must be a single localized string, not a tri-lingual concatenation',
     );
   });
 
-  testWidgets('tapping বাংলা retranslates heading, subtitle and button', (tester) async {
+  testWidgets('tapping বাংলা retranslates heading, subtitle and button', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
@@ -48,15 +56,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('আপনার ভাষা বেছে নিন'), findsOneWidget);
-    expect(find.text('প্রোফাইল থেকে আপনি যেকোনো সময় ভাষা বদলাতে পারবেন।'), findsOneWidget);
+    expect(
+      find.text('প্রোফাইল থেকে আপনি যেকোনো সময় ভাষা বদলাতে পারবেন।'),
+      findsOneWidget,
+    );
     expect(find.text('এগিয়ে যান'), findsOneWidget);
 
     // English copy must be gone — this is what was broken before.
     expect(find.text('Choose your language'), findsNothing);
-    expect(find.text('You can change this anytime from your profile.'), findsNothing);
+    expect(
+      find.text('You can change this anytime from your profile.'),
+      findsNothing,
+    );
   });
 
-  testWidgets('tapping हिन्दी retranslates heading, subtitle and button', (tester) async {
+  testWidgets('tapping हिन्दी retranslates heading, subtitle and button', (
+    tester,
+  ) async {
     await tester.pumpWidget(harness());
     await tester.pumpAndSettle();
 
@@ -82,7 +98,11 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final label in ['English', 'বাংলা', 'हिन्दी']) {
-      expect(find.text(label), findsOneWidget, reason: '$label must survive a locale switch');
+      expect(
+        find.text(label),
+        findsOneWidget,
+        reason: '$label must survive a locale switch',
+      );
     }
   });
 }
